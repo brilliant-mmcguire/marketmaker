@@ -1,13 +1,13 @@
 /*---
-The ticker/price endpoint returns the last trade price for the symbol.
-https://binance-docs.github.io/apidocs/spot/en/#symbol-price-ticker
+The avgPrice endpoint returns the average price for the last five minutes.
+https://binance-docs.github.io/apidocs/spot/en/#current-average-price
 ---*/
 
 const axios = require('axios');
 
-async function fetchLastPrice(symbol) {
+async function fetchAvgPrice(symbol) {
     try {
-        const response = await axios.get('https://api.binance.com/api/v3/ticker/price', {
+        const response = await axios.get('https://api.binance.com/api/v3/avgPrice', {
             params: {
                 symbol: symbol,
             }
@@ -21,8 +21,8 @@ async function fetchLastPrice(symbol) {
 }
 
 async function main() {
-    const btcPrice = await fetchLastPrice('BTCUSDC');
-    const ethPrice = await fetchLastPrice('ETHUSDC');
+    const btcPrice = await fetchAvgPrice('BTCUSDC');
+    const ethPrice = await fetchAvgPrice('ETHUSDC');
 }
 
 main();
