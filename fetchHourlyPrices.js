@@ -8,16 +8,6 @@ https://binance-docs.github.io/apidocs/spot/en/#kline-candlestick-data
 
 const axios = require('axios');
 
-async function getHourlyClosePrices(symbol, interval, limit) {
-    const response = await axios.get('https://api.binance.com/api/v3/klines', {
-        params: {
-            symbol: symbol,
-            interval: interval,
-            limit: limit,
-        }
-    });
-    return response.data.map(d => parseFloat(d[4])); 
-}
 async function getHourlyKLines(symbol, interval, limit) {
     const response = await axios.get('https://api.binance.com/api/v3/klines', {
         params: {
@@ -35,18 +25,20 @@ async function getHourlyKLines(symbol, interval, limit) {
         close: parseFloat(d[4])
     }));     
 }
+async function getHourlyClosePrices(symbol, interval, limit) {
+    const response = await axios.get('https://api.binance.com/api/v3/klines', {
+        params: {
+            symbol: symbol,
+            interval: interval,
+            limit: limit,
+        }
+    });
+    return response.data.map(d => parseFloat(d[4])); 
+}
+
 async function fetchAndLogHourlyPrices(symbol) {   
     const interval = '1h';
     const intervalCount = 4;  // Small set to fit on the console output.
-
-    try {
-        const closeprices = await getHourlyClosePrices(symbol, interval, intervalCount);
-        console.log(`Hourly closing prices for ${symbol}`);
-        console.log(closeprices);   
-    } catch (error) {
-        console.error("Error fetching Close Prioces", error.message);
-    }
-
     try {
         const kLines = await getHourlyKLines(symbol, interval, intervalCount);
         console.log(`Hourly K-Lines for ${symbol}`);
@@ -54,6 +46,13 @@ async function fetchAndLogHourlyPrices(symbol) {
     } catch (error) {
         console.error("Error fetching K-Lines", error.message);
     } 
+    try {
+        const closeprices = await getHourlyClosePrices(symbol, interval, intervalCount);
+        console.log(`Hourly closing prices for ${symbol}`);
+        console.log(closeprices);   
+    } catch (error) {
+        console.error("Error fetching Close Prioces", error.message);
+    }
 }
 
 fetchAndLogHourlyPrices('BTCUSDC');
