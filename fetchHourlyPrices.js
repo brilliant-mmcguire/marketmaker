@@ -8,7 +8,7 @@ https://binance-docs.github.io/apidocs/spot/en/#kline-candlestick-data
 
 const axios = require('axios');
 
-async function getHourlyKLines(symbol, interval, limit) {
+async function getKLines(symbol, interval, limit) {
     const response = await axios.get('https://api.binance.com/api/v3/klines', {
         params: {
             symbol: symbol,
@@ -17,7 +17,6 @@ async function getHourlyKLines(symbol, interval, limit) {
         }
     });
     return response.data.map(d => ({
-        openTimeUT: d[0],
         openTime: new Date(d[0]),
         open: parseFloat(d[1]),
         high: parseFloat(d[2]),
@@ -25,34 +24,26 @@ async function getHourlyKLines(symbol, interval, limit) {
         close: parseFloat(d[4])
     }));     
 }
-async function getHourlyClosePrices(symbol, interval, limit) {
-    const response = await axios.get('https://api.binance.com/api/v3/klines', {
-        params: {
-            symbol: symbol,
-            interval: interval,
-            limit: limit,
-        }
-    });
-    return response.data.map(d => parseFloat(d[4])); 
-}
 
 async function fetchAndLogHourlyPrices(symbol) {   
     const interval = '1h';
     const intervalCount = 4;  // Small set to fit on the console output.
     try {
-        const kLines = await getHourlyKLines(symbol, interval, intervalCount);
-        console.log(`Hourly K-Lines for ${symbol}`);
-        console.log(kLines);         
+        const kLines = await getKLines(symbol, interval, intervalCount);
+        console.log(`Hourly price K-LINES for ${symbol}`, kLines);
+
+        const prices = {
+            openTime : kLines.map(d => d.openTime), 
+            open : kLines.map(d => d.open),
+            close : kLines.map(d => d.close),
+            high : kLines.map(d => d.high),
+            low : kLines.map(d => d.low)
+        };
+        console.log(`Hourly price time series for ${symbol}`, prices);
     } catch (error) {
-        console.error("Error fetching K-Lines", error.message);
+        console.error("Error fetching Hourly Prices", error.message);
     } 
-    try {
-        const closeprices = await getHourlyClosePrices(symbol, interval, intervalCount);
-        console.log(`Hourly closing prices for ${symbol}`);
-        console.log(closeprices);   
-    } catch (error) {
-        console.error("Error fetching Close Prioces", error.message);
-    }
+
 }
 
 fetchAndLogHourlyPrices('BTCUSDC');
