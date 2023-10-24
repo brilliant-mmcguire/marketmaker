@@ -1,3 +1,7 @@
+/*
+We may need to check our open orders to make trading decisions. 
+https://binance-docs.github.io/apidocs/spot/en/#current-open-orders-user_data
+*/
 const cfg = require('dotenv').config();
 const axios = require('axios');
 const crypto = require('crypto');
