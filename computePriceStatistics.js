@@ -22,7 +22,45 @@ async function getHourlyClosePrices(symbol, hourCount) {
 
     return prices; 
 }
+
+async function getKLines(symbol, hourCount) {
+    const interval = '1h'; 
+    const response = await axios.get('https://api.binance.com/api/v3/klines', {
+        params: {
+            symbol: symbol,
+            interval: interval,
+            limit: hourCount,
+        }
+    });
+    return response.data.map(d => ({
+        openTime: new Date(d[0]),
+        open: parseFloat(d[1]),
+        high: parseFloat(d[2]),
+        low: parseFloat(d[3]),
+        close: parseFloat(d[4])
+    }));     
+}
+
+function fetchClosePrices(klines) {
+    const closePrices = klines.map(entry => entry.close);
+    if (closePrices.length == 0) {throw "Failed to fetch historical data.";}
+    return closePrices; 
+}
+
 function compute24hStatistcs(prices) {
+    const returns = prices.slice(1).map((price, h) => (
+        price - prices[h]) / prices[h]
+        );
+    const meanReturn = (returns.reduce((sum, r) => sum + r, 0) / returns.length) * 24;
+    const variance = returns.reduce((sum, r) => sum + Math.pow(r - meanReturn/24, 2), 0) / returns.length;
+    const volatility = Math.sqrt(variance) * Math.sqrt(24);
+
+    return {
+        volatility,
+        meanReturn
+    };
+}
+function compute24hVolatility(klines) {
     const returns = prices.slice(1).map((price, h) => (
         price - prices[h]) / prices[h]
         );
@@ -41,7 +79,7 @@ async function main(symbol) {
 
         const hourCount = 100;
         const prices = await getHourlyClosePrices(symbol,hourCount);
-    
+       
         const { volatility, meanReturn } = compute24hStatistcs(prices);
  
         console.log(`Daily Price Statistics for ${symbol} based on latest ${hourCount} hourly prices.`) 
@@ -53,5 +91,25 @@ async function main(symbol) {
     }
 }
 
-main('BTCUSDC'); 
-main('ETHUSDC'); 
+async function computeAndLogStatistics(symbol) {
+    try {
+        const hourCount = 100;
+        const klines = await getKLines(symbol,hourCount);
+        const closePrices =  klines.map(entry => entry.close);
+        const highPrices =  klines.map(entry => entry.high);
+        const lowPrices =  klines.map(entry => entry.low);
+        const closeStats = compute24hStatistcs(closePrices);
+        const highStats = compute24hStatistcs(highPrices);
+        const lowStats = compute24hStatistcs(lowPrices);
+        
+        console.log(`Daily Price Statistics for ${symbol} based on latest ${hourCount} hourly prices.`); 
+        console.log(`Close :`, closeStats);
+        console.log(`High  :`, highStats);
+        console.log(`Low   :`, lowStats);
+
+    } catch (error) {
+        console.error(error);    
+    }
+}
+computeAndLogStatistics('BTCUSDC'); 
+computeAndLogStatistics('ETHUSDC'); 
