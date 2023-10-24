@@ -3,7 +3,8 @@ Given hourly data, the return for each hour is the percentage change in price ov
 The mean daily return is the mean of the hourly returns multiplied by 24.
 The daily volatility is then the standard deviation of the hourly returns, 
 multiplied by the square root of 24 to transform from hourly to daily volatility.
-We fetch the hourly close prices from the k-lines endpoint with an interval of 1h.
+We fetch the hourly low, high and close prices from the k-lines endpoint 
+with an interval of 1 hour.
 https://binance-docs.github.io/apidocs/spot/en/#kline-candlestick-data
 */
 const axios = require('axios');
