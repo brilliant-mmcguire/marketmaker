@@ -8,7 +8,7 @@ https://binance-docs.github.io/apidocs/spot/en/#kline-candlestick-data
 
 const axios = require('axios');
 
-async function getKLines(symbol, interval, limit) {
+async function fetchKLines(symbol, interval, limit) {
     const response = await axios.get('https://api.binance.com/api/v3/klines', {
         params: {
             symbol: symbol,
@@ -24,26 +24,27 @@ async function getKLines(symbol, interval, limit) {
         close: parseFloat(d[4])
     }));     
 }
-
+function transformToTimeSeries(kLines){
+    return {
+        hour : kLines.map(d => d.openTime.getHours()), 
+        open : kLines.map(d => d.open),
+        close : kLines.map(d => d.close),
+        high : kLines.map(d => d.high),
+        low : kLines.map(d => d.low)
+    };
+}
 async function fetchAndLogHourlyPrices(symbol) {   
     const interval = '1h';
     const intervalCount = 4;  // Small set to fit on the console output.
     try {
-        const kLines = await getKLines(symbol, interval, intervalCount);
+        const kLines = await fetchKLines(symbol, interval, intervalCount);
         console.log(`Hourly price K-LINES for ${symbol}`, kLines);
 
-        const prices = {
-            openTime : kLines.map(d => d.openTime), 
-            open : kLines.map(d => d.open),
-            close : kLines.map(d => d.close),
-            high : kLines.map(d => d.high),
-            low : kLines.map(d => d.low)
-        };
+        const prices = transformToTimeSeries(kLines);
         console.log(`Hourly price time series for ${symbol}`, prices);
     } catch (error) {
         console.error("Error fetching Hourly Prices", error.message);
     } 
-
 }
 
 fetchAndLogHourlyPrices('BTCUSDC');
