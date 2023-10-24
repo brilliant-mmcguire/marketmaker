@@ -41,6 +41,7 @@ async function main() {
     const noneZeroBalances = filterBalances(accountInfo);
     console.log(`Balances for uid ${accountInfo.uid} @ `, new Date());
     console.log(noneZeroBalances);
+
 }
 
 main()
