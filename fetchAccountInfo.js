@@ -37,11 +37,14 @@ function filterBalances(accountInfo){
     );
 }
 async function main() {
-    const accountInfo =  await fetchAccountInfo();
-    const noneZeroBalances = filterBalances(accountInfo);
-    console.log(`Balances for uid ${accountInfo.uid} @ `, new Date());
-    console.log(noneZeroBalances);
-
+    try {
+        const accountInfo =  await fetchAccountInfo();
+        const noneZeroBalances = filterBalances(accountInfo);
+        console.log(`Balances for uid ${accountInfo.uid} @ `, new Date());
+        console.log(noneZeroBalances);    
+    } catch (error) {
+        console.error(`Error fetching Account Info ${error}`);
+    }
 }
 
 main()
