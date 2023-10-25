@@ -19,6 +19,7 @@ async function fetchHourlyKLines(symbol, hourCount) {
         }
     });
     return response.data.map(d => ({
+        open: parseFloat(d[1]),
         high: parseFloat(d[2]),
         low: parseFloat(d[3]),
         close: parseFloat(d[4])
@@ -26,9 +27,10 @@ async function fetchHourlyKLines(symbol, hourCount) {
 }
 function transformToTimeSeries(kLines){
     return {
-        close : kLines.map(d => d.close),
-        high : kLines.map(d => d.high),
-        low : kLines.map(d => d.low)
+        open   : kLines.map(d => d.open),
+        close  : kLines.map(d => d.close),
+        high   : kLines.map(d => d.high),
+        low    : kLines.map(d => d.low)
     };
 }
 function compute24hStatistcs(prices) {
@@ -48,9 +50,11 @@ async function computeAndLogStatistics(symbol) {
     try {
         const hourCount = 100;
         const klines = await fetchHourlyKLines(symbol,hourCount);
+        
         const priceTS = transformToTimeSeries(klines);
 
         const stats = {
+            open: compute24hStatistcs(priceTS.open),
             close: compute24hStatistcs(priceTS.close),
             high: compute24hStatistcs(priceTS.high),
             low: compute24hStatistcs(priceTS.low)
