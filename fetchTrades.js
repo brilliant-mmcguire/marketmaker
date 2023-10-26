@@ -20,13 +20,11 @@ async function fetchMyTrades(symbol, limit) {
     const query = `symbol=${symbol}&limit=${limit}&timestamp=${timestamp}`;
     const signature = createSignature(query);
     const url = `${BASE_URL}${endpoint}?${query}&signature=${signature}`;
-
     const response = await axios.get(url, {
         headers: {
             'X-MBX-APIKEY': API_KEY
         }
     });
-
     return {
         buys: response.data.filter(trade => trade.isBuyer),
         sells: response.data.filter(trade => !trade.isBuyer)
@@ -35,10 +33,8 @@ async function fetchMyTrades(symbol, limit) {
 function computePosition(trades) {
     const totalQty = trades
         .reduce((sum, trade) => sum + parseFloat(trade.qty), 0);
-
     const totalValue = trades
         .reduce((sum, trade) => sum + (parseFloat(trade.qty) * parseFloat(trade.price)), 0);
-
     return {
         tradeCount: trades.length,
         quantity: totalQty,
