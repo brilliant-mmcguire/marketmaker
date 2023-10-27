@@ -11,13 +11,34 @@ const API_SECRET = process.env.API_SECRET;
 
 const BASE_URL = 'https://api.binance.com';
 
-const fetchOpenOrders = async (symbol) => {
+async function fetchOpenOrders(symbol) {
+    const endpoint = '/api/v3/openOrders';
+    const timestamp = Date.now();
+    const query = `symbol=${symbol}&timestamp=${timestamp}`;
+    const signature = createSignature(query);
+    const url = `${BASE_URL}${endpoint}?${query}&signature=${signature}`;
+
+    const response = await axios.get(url, {
+        headers: {
+            'X-MBX-APIKEY': API_KEY
+        }
+    });
+    return response.data.map(d => ({
+        orderId: d.orderId,
+        side: d.side,
+        origQty: d.origQty,
+        symbol: d.symbol,
+        price: d.price
+    }));
+}
+/*
+async function fetchOpenOrders(symbol) {
     const endpoint = '/api/v3/openOrders';
     const timestamp = Date.now();
     const query = `symbol=${symbol}&timestamp=${timestamp}`;
     const signature = crypto.createHmac('sha256', API_SECRET).update(query).digest('hex');
     const url = `${BASE_URL}${endpoint}?${query}&signature=${signature}`;
-    
+
     const response = await axios({
         method: 'GET',
         url: url,
@@ -26,21 +47,22 @@ const fetchOpenOrders = async (symbol) => {
         }
     });
     return response.data.map(d => ({
-        orderId : d.orderId,
-        side    : d.side,
-        origQty : d.origQty,
-        symbol  : d.symbol,
-        price   : d.price
-    }));   
-};
+        orderId: d.orderId,
+        side: d.side,
+        origQty: d.origQty,
+        symbol: d.symbol,
+        price: d.price
+    }));
+}
+*/
 
-const cancelOrder = async (symbol, orderId) => {
+async function cancelOrder(symbol, orderId) {
     const endpoint = '/api/v3/order';
     const timestamp = Date.now();
     const query = `symbol=${symbol}&orderId=${orderId}&timestamp=${timestamp}`;
     const signature = crypto.createHmac('sha256', API_SECRET).update(query).digest('hex');
     const url = `${BASE_URL}${endpoint}?${query}&signature=${signature}`;
-    
+
     try {
         const response = await axios({
             method: 'DELETE',
@@ -56,7 +78,7 @@ const cancelOrder = async (symbol, orderId) => {
 }
 async function main(){
     try {
-        //'ETHUSDC';
+        //const orders = await fetchOpenOrders('ETHUSDC');
         const orders = await fetchOpenOrders('BTCUSDC');
         if(orders.length==0) {
             console.log(`No orders to cancel.`)
