@@ -14,18 +14,18 @@ const ORDER_ENDPOINT = '/api/v3/order';
 const API_KEY = process.env.API_KEY;
 const API_SECRET = process.env.API_SECRET;
 
-const getLastPrice = async (symbol) => {
+async function getLastPrice(symbol) {
     const { data } = await axios.get(`${BASE_URL}${PRICE_ENDPOINT}`, {
         params: { symbol: `${symbol}` }
     });
     return parseFloat(data.price);
 }
-const placeOrder = async (side, quantity, symbol, price) => {
+async function placeOrder(side, quantity, symbol, price) {
     const timestamp = Date.now();
     const query = `symbol=${symbol}&side=${side}&type=LIMIT&timeInForce=GTC&quantity=${quantity}&price=${price.toFixed(2)}&timestamp=${timestamp}`;
     const signature = crypto.createHmac('sha256', API_SECRET).update(query).digest('hex');
     const url = `${BASE_URL}${ORDER_ENDPOINT}?${query}&signature=${signature}`;
-   
+
     const response = await axios({
         method: 'POST',
         url: url,
@@ -38,9 +38,9 @@ const placeOrder = async (side, quantity, symbol, price) => {
 function getOrderPrices(currentPrice) {
     return {
         sell : [
-            Math.round((currentPrice * 1.003) * 100) / 100,
-            Math.round((currentPrice * 1.006) * 100) / 100,
-            Math.round((currentPrice * 1.010) * 100) / 100
+            Math.round((currentPrice * 1.004) * 100) / 100,
+            Math.round((currentPrice * 1.007) * 100) / 100,
+            Math.round((currentPrice * 1.011) * 100) / 100
         ],
         buy : [
             Math.round((currentPrice * 0.997) * 100) / 100,
@@ -49,15 +49,15 @@ function getOrderPrices(currentPrice) {
         ]
     }
 }
-const placeOrders = async (symbol) => {
+async function placeOrders(symbol) {
     const currentPrice = await getLastPrice(symbol);
-    const  quantity = (Math.round((12.0 / currentPrice) * 10000)) / 10000;
+    const quantity = (Math.round((12.0 / currentPrice) * 10000)) / 10000;
     const orderPrices = getOrderPrices(currentPrice);
 
     const dt = new Date();
     console.log(`${symbol} current price ${currentPrice} order quantity ${quantity} at ${dt}`);
     console.log(`Placing limit orders ${orderPrices.buy} < ${currentPrice} > ${orderPrices.sell}`);
-    
+
     for (i = 0; i < orderPrices.buy.length; i++) {
         const buyOrder = await placeOrder('BUY', quantity, symbol, orderPrices.buy[i]);
         console.log('Order placed:', buyOrder);
@@ -70,7 +70,7 @@ const placeOrders = async (symbol) => {
 }
 async function main() {
     try{
-        // await placeOrders('ETHUSDC');  
+        //await placeOrders('ETHUSDC');  
         await placeOrders('BTCUSDC');         
     } catch (error) {
         console.error(`Error placing order: ${error}`);
