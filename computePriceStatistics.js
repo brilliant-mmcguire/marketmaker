@@ -1,7 +1,7 @@
 /* 
-Given hourly data, the return for each hour is the percentage change in price over the hour. 
-The mean daily return is the mean of the hourly returns multiplied by 24.
-The daily volatility is then the standard deviation of the hourly returns, 
+Given hourly data, the drift per hour is the percentage change in price over the hour. 
+The mean daily drift is calcualted from the hourly drift by multiplying by 24.
+The daily volatility is the standard deviation of the hourly returns, 
 multiplied by the square root of 24 to transform from hourly to daily volatility.
 We fetch the hourly low, high and close prices from the k-lines endpoint 
 with an interval of 1 hour.
@@ -30,39 +30,60 @@ function transformToTimeSeries(kLines){
         open   : kLines.map(d => d.open),
         close  : kLines.map(d => d.close),
         high   : kLines.map(d => d.high),
-        low    : kLines.map(d => d.low)
+        low    : kLines.map(d => d.low),
     };
 }
 function compute24hStatistcs(prices) {
+
     const returns = prices.slice(1).map((price, h) => (
         price - prices[h]) / prices[h]
-        );
-    const meanReturn = (returns.reduce((sum, r) => sum + r, 0) / returns.length) * 24;
-    const variance = returns.reduce((sum, r) => sum + Math.pow(r - meanReturn/24, 2), 0) / returns.length;
-    const volatility = Math.sqrt(variance) * Math.sqrt(24);
+    );
+    
+    const drift = (returns.reduce((sum, r) => sum + r, 0) / returns.length);
+    const variance = returns.reduce((sum, r) => sum + Math.pow(r - drift, 2), 0) / returns.length;
+    const volatility = Math.sqrt(variance) ;
 
     return {
         volatility,
-        meanReturn
+        drift
     };
+}
+function getVariables(kLines){
+    return {
+        close  : kLines.map(d => (d.close - d.open)/d.open),
+        high   : kLines.map(d => (d.high - d.open)/d.open),
+        low    : kLines.map(d => (d.low - d.open)/d.open)
+    };
+}
+function computeStats (timeSeries){
+    const count = timeSeries.length;
+    const mean = (timeSeries.reduce((sum, r) => sum + r, 0) / count); 
+    const variance = timeSeries.reduce((sum, r) => sum + Math.pow(r - mean, 2), 0) / count;
+    const volatility = Math.sqrt(variance);
+    return {
+        mean: mean,
+        volatility: volatility
+    }     
 }
 async function computeAndLogStatistics(symbol) {
     try {
         const hourCount = 100;
-        const klines = await fetchHourlyKLines(symbol,hourCount);
+        const kLines = await fetchHourlyKLines(symbol,hourCount);
         
-        const priceTS = transformToTimeSeries(klines);
-
+        const priceTS = transformToTimeSeries(kLines);
         const stats = {
-            open: compute24hStatistcs(priceTS.open),
-            close: compute24hStatistcs(priceTS.close),
-            high: compute24hStatistcs(priceTS.high),
-            low: compute24hStatistcs(priceTS.low)
+            close: compute24hStatistcs(priceTS.close)
+        };
+        const series = getVariables(kLines);
+        const y = {
+            symbol: symbol,
+            close: computeStats(series.close),
+            high: computeStats(series.high),
+            low: computeStats(series.low)
         };
 
-        console.log(`Daily Price Statistics for ${symbol} based on latest ${hourCount} hourly prices.`); 
         console.log(stats);
-
+        console.log(y);
     } catch (error) {
         console.error(error);    
     }
