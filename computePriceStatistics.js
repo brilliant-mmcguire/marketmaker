@@ -34,7 +34,6 @@ function transformToTimeSeries(kLines){
     };
 }
 function compute24hStatistcs(prices) {
-
     const returns = prices.slice(1).map((price, h) => (
         price - prices[h]) / prices[h]
     );
