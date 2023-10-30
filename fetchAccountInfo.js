@@ -6,31 +6,12 @@ https://binance-docs.github.io/apidocs/spot/en/#spot-account-endpoints
 Do we care about recent trading activity, average prices, p&l?
 */
 
-const cfg = require('dotenv').config();
-const axios = require('axios');
 const crypto = require('crypto');
-
-const API_KEY = process.env.API_KEY;
+const cfg = require('dotenv').config();
 const API_SECRET = process.env.API_SECRET;
 
-const createSignature = (query) => {
-    return crypto.createHmac('sha256', API_SECRET).update(query).digest('hex');
-}
-async function fetchAccountInfo() {
-    const timestamp = Date.now();
-    const query = `timestamp=${timestamp}`;
-    const signature = createSignature(query);
-    const url = `https://api.binance.com/api/v3/account?${query}&signature=${signature}`;
+const { fetchAccountInfo } = require('./accountTxns');
 
-    const response = await axios({
-        method: 'GET',
-        url: url,
-        headers: {
-            'X-MBX-APIKEY': API_KEY
-        }
-    });
-    return response.data;
-}
 function filterBalances(accountInfo){
     return accountInfo.balances.filter(
         balance => (balance.free>0 || balance.locked>0)
