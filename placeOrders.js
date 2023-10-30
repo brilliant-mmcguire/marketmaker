@@ -1,14 +1,12 @@
 /*
 Place orders in a small grid around the current spot price. 
-Here I place three buy orders below the spot price and three sell order above.
+Here, we place three buy orders below the spot price and three sell orders above.
 These orders are priced so that they are within the expected hourly highs and lows.
-Order quatity is calculated so that the order consideration is $12. 
+Order quatity is calculated so that the order consideration is $12.
 https://binance-docs.github.io/apidocs/spot/en/#new-order-trade
 */
-//const cfg = require('dotenv').config();
 const axios = require('axios');
 const crypto = require('crypto');
-//const { brotliDecompress } = require('zlib');
 const { placeOrder } = require('./orderTxns');
 
 const BASE_URL = 'https://api.binance.com';
@@ -22,7 +20,7 @@ async function fetchLastPrice(symbol) {
 }
 function getOrderParameters(currentPrice) {
     return {
-        quatity : (Math.round((12.0 / currentPrice) * 10000)) / 10000,
+        quantity : (Math.round((12.0 / currentPrice) * 10000)) / 10000,
         sell : [
             Math.round((currentPrice * 1.004) * 100) / 100,
             Math.round((currentPrice * 1.007) * 100) / 100,
@@ -35,25 +33,22 @@ function getOrderParameters(currentPrice) {
         ]
     }
 }
-
 async function placeOrders(symbol) {
     const currentPrice = await fetchLastPrice(symbol);
     const params = getOrderParameters(currentPrice);
-
     const dt = new Date();
     console.log(`${symbol} current price ${currentPrice} order quantity ${params.quantity} at ${dt}`);
     console.log(`Placing limit orders ${params.buy} < ${currentPrice} > ${params.sell}`);
-
     for (i = 0; i < params.buy.length; i++) {
         const buyOrder = await placeOrder(
             'BUY', 
             params.quantity, 
             symbol, 
-            params.buy[i])
-        ;
+            params.buy[i]
+        );
         console.log('Order placed:', buyOrder);
     }
-    for (i = 0; i < orderPrices.sell.length; i++) {
+    for (i = 0; i < params.sell.length; i++) {
         const sellOrder = await placeOrder(
             'SELL', 
             params.quantity, 

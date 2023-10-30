@@ -4,6 +4,7 @@ const crypto = require("crypto");
 
 const BASE_URL = 'https://api.binance.com';
 const ORDER_ENDPOINT = '/api/v3/order';
+const TEST_ENDPOINT = '/api/v3/order/test';
 
 const API_KEY = process.env.API_KEY;
 const API_SECRET = process.env.API_SECRET;
@@ -40,12 +41,12 @@ async function cancelOrder(symbol, orderId) {
 Place a new order for the specified parameters.
 https://binance-docs.github.io/apidocs/spot/en/#new-order-trade
 */
-async function placeOrder(side, quantity, symbol, price) {
+async function placeOrder(side, quantity, symbol, price, test=false) {
     const timestamp = Date.now();
     const query = `symbol=${symbol}&side=${side}&type=LIMIT&timeInForce=GTC&quantity=${quantity}&price=${price.toFixed(2)}&timestamp=${timestamp}`;
     const signature = crypto.createHmac('sha256', API_SECRET).update(query).digest('hex');
-    const url = `${BASE_URL}${ORDER_ENDPOINT}?${query}&signature=${signature}`;
-
+    ep = test ? TEST_ENDPOINT: ORDER_ENDPOINT; 
+    const url = `${BASE_URL}${ep}?${query}&signature=${signature}`;
     const response = await axios({
         method: 'POST',
         url: url,
