@@ -59,11 +59,16 @@ async function placeOrders(symbol) {
     }
     return;
 }
-
 async function main() {
+    const symbol = process.argv[2];
+    if(!symbol) {
+        console.log('Symbol not provided.'); 
+        return; 
+    }
+
+    console.log(`Placing ordr for ${symbol}`)
     try{
-        //await placeOrders('ETHUSDC');  
-        await placeOrders('BTCUSDC');         
+       await placeOrders(symbol);   
     } catch (error) {
         console.error(`Error placing order: ${error}`);
     }
