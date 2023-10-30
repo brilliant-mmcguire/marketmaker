@@ -7,7 +7,6 @@ https://binance-docs.github.io/apidocs/spot/en/#current-open-orders-user_data
 */
 
 const { fetchOpenOrders } = require('./orderTxns');
-
 async function fetchAndLogOrders(symbol) {
     const orders = await fetchOpenOrders(symbol);
     console.log(`${orders.length} open orders for ${symbol} at `, new Date());
