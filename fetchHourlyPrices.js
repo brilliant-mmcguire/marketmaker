@@ -1,29 +1,5 @@
-/*
-To help us calculate statistics, such as volatility, we will need to be able 
-to fetch historic prices.  The time window will vary but for market making 
-purposes the time intervals will typically be hourly or perhaps even every minute. 
+const { fetchKLines } = require('./marketDataTxns');
 
-https://binance-docs.github.io/apidocs/spot/en/#kline-candlestick-data
-*/
-
-const axios = require('axios');
-
-async function fetchKLines(symbol, interval, limit) {
-    const response = await axios.get('https://api.binance.com/api/v3/klines', {
-        params: {
-            symbol: symbol,
-            interval: interval,
-            limit: limit,
-        }
-    });
-    return response.data.map(d => ({
-        openTime: new Date(d[0]),
-        open: parseFloat(d[1]),
-        high: parseFloat(d[2]),
-        low: parseFloat(d[3]),
-        close: parseFloat(d[4])
-    }));     
-}
 function transformToTimeSeries(kLines){
     return {
         hour : kLines.map(d => d.openTime.getHours()), 
