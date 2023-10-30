@@ -5,9 +5,13 @@ https://binance-docs.github.io/apidocs/spot/en/#cancel-order-trade
 const { cancelOrder } = require('./orderTxns');
 const { fetchOpenOrders } = require('./orderTxns');
 async function main(){
+    const symbol = process.argv[2];
+    if(!symbol) {
+        console.log('Symbol not provided.'); 
+        return; 
+    }
     try {
-        //const orders = await fetchOpenOrders('ETHUSDC');
-        const orders = await fetchOpenOrders('BTCUSDC');
+        const orders = await fetchOpenOrders(symbol);
         if(orders.length==0) {
             console.log(`No orders to cancel.`);
             return;
