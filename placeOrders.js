@@ -3,7 +3,6 @@ Place orders in a small grid around the current spot price.
 Here, we place three buy orders below the spot price and three sell orders above.
 These orders are priced so that they are within the expected hourly highs and lows.
 Order quatity is calculated so that the order consideration is $12.
-https://binance-docs.github.io/apidocs/spot/en/#new-order-trade
 */
 const axios = require('axios');
 const crypto = require('crypto');
@@ -66,7 +65,7 @@ async function main() {
         return; 
     }
 
-    console.log(`Placing ordr for ${symbol}`)
+    console.log(`Placing orders for ${symbol}`)
     try{
        await placeOrders(symbol);   
     } catch (error) {
