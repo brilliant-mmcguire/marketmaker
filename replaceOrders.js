@@ -26,6 +26,7 @@ function getOrderParameters(currentPrice) {
         ]
     }
 }
+exports.placeNewOrders = placeNewOrders;
 async function placeNewOrders(symbol) {
     const spot = await fetchLastPrice(symbol);
     const params = getOrderParameters(spot.price);
@@ -52,6 +53,7 @@ async function placeNewOrders(symbol) {
     }
     return;
 }
+exports.cancelOpenOrders = cancelOpenOrders;
 async function cancelOpenOrders(symbol) {
     const orders = await fetchOpenOrders(symbol);
     if(orders.length==0) {
