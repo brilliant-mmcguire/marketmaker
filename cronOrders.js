@@ -2,8 +2,8 @@ const cron = require('node-cron');
 const { cancelOpenOrders } = require('./replaceOrders');
 const { placeNewOrders } = require('./replaceOrders');
 
-// Schedule the task to run every hour.
-const jobB = cron.schedule('0 * * * *', async () => {
+// Schedule the task to run every hour at 13 minutes past the hour.
+const jobB = cron.schedule('13 * * * *', async () => {
     console.log('Invoking hourly task at ' + new Date().toLocaleString());
     symbol = 'BTCUSDC';
     try {
