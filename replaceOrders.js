@@ -15,14 +15,14 @@ function getOrderParameters(currentPrice) {
     return {
         quantity : (Math.round((12.0 / currentPrice) * 10000)) / 10000,
         sell : [
-            Math.round((currentPrice * 1.004) * 100) / 100,
+            Math.round((currentPrice * 1.011) * 100) / 100,
             Math.round((currentPrice * 1.007) * 100) / 100,
-            Math.round((currentPrice * 1.011) * 100) / 100
+            Math.round((currentPrice * 1.004) * 100) / 100
         ],
         buy : [
-            Math.round((currentPrice * 0.997) * 100) / 100,
+            Math.round((currentPrice * 0.990) * 100) / 100,
             Math.round((currentPrice * 0.994) * 100) / 100,
-            Math.round((currentPrice * 0.990) * 100) / 100
+            Math.round((currentPrice * 0.997) * 100) / 100
         ]
     }
 }
