@@ -1,16 +1,17 @@
 /*
-Place orders in a small grid around the current spot price. 
-Here, we place three buy orders below the spot price and three sell orders above.
+Implement a sweep of a trading strategy. 
+Cancel all open orders and then place new orders 
+in a small grid around the current spot price. 
+Here I place three buy orders below the spot price and three sell order above.
 These orders are priced so that they are within the expected hourly highs and lows.
-Order quatity is calculated so that the order consideration is $12.
+Order quatity is caclulated to trade in lots of $12.
 */
-const axios = require('axios');
-const crypto = require('crypto');
+const { cancelOrder } = require('./orderTxns');
 const { placeOrder } = require('./orderTxns');
+const { fetchOpenOrders } = require('./orderTxns');
 const { fetchLastPrice } = require('./marketDataTxns');
 
 function getOrderParameters(currentPrice) {
-    console.log(currentPrice);
     return {
         quantity : (Math.round((12.0 / currentPrice) * 10000)) / 10000,
         sell : [
@@ -25,7 +26,7 @@ function getOrderParameters(currentPrice) {
         ]
     }
 }
-async function placeOrders(symbol) {
+async function placeNewOrders(symbol) {
     const spot = await fetchLastPrice(symbol);
     const params = getOrderParameters(spot.price);
     const dt = new Date();
@@ -51,18 +52,32 @@ async function placeOrders(symbol) {
     }
     return;
 }
+async function cancelOpenOrders(symbol) {
+    const orders = await fetchOpenOrders(symbol);
+    if(orders.length==0) {
+        console.log(`No orders to cancel.`);
+        return;
+    }
+    
+    console.log(`Cancelling orders: ${orders}`);
+    orders.forEach(order => {
+        cancelOrder(order.symbol, order.orderId).then(response => {
+            console.log(`Cancelled order ${order.orderId}:`, response);
+        });
+    });    
+}  
 async function main() {
     const symbol = process.argv[2];
     if(!symbol) {
         console.log('Symbol not provided.'); 
         return; 
     }
-
-    console.log(`Placing orders for ${symbol}`)
-    try{
-       await placeOrders(symbol);   
-    } catch (error) {
-        console.error(`Error placing order: ${error}`);
+    try {
+        await cancelOpenOrders(symbol);
+        await placeNewOrders(symbol);    
+    } catch (error) {    
+        console.error(`Error replacing orders: ${error}`);
     }
 }
+
 main();
