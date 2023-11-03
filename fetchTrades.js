@@ -33,18 +33,26 @@ async function fetchMyTrades(symbol, limit) {
 function computePosition(trades) {
     const totalQty = trades
         .reduce((sum, trade) => sum + parseFloat(trade.qty), 0);
+    const totalQuoteQty = trades
+        .reduce((sum, trade) => sum + parseFloat(trade.quoteQty), 0);
     const totalValue = trades
         .reduce((sum, trade) => sum + (parseFloat(trade.qty) * parseFloat(trade.price)), 0);
+    const totalCommision = trades
+        .reduce((sum, trade) => sum + parseFloat(trade.commission), 0);
+
     return {
         tradeCount: trades.length,
-        quantity: totalQty,
+        qty: totalQty,
+        quoteQty: totalQuoteQty,
         consideration: totalValue,
+        commission: totalCommision,
         avgPrice: totalValue / totalQty
     };
 }
-async function main(symbol) {
+exports.fetchPositions = fetchPositions;
+async function fetchPositions(symbol) {
     try {
-        const trades = await fetchMyTrades(symbol, 20);
+        const trades = await fetchMyTrades(symbol, 50);
         const positions = {
             symbol : symbol,
             long  : computePosition(trades.buys),
@@ -57,5 +65,5 @@ async function main(symbol) {
     }
 }
 
-main('BTCUSDC');
-main('ETHUSDC');
+fetchPositions('BTCUSDC');
+fetchPositions('ETHUSDC');

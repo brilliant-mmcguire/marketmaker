@@ -10,6 +10,7 @@ const { cancelOrder } = require('./orderTxns');
 const { placeOrder } = require('./orderTxns');
 const { fetchOpenOrders } = require('./orderTxns');
 const { fetchLastPrice } = require('./marketDataTxns');
+const { fetchAvgPrice } = require('./marketDataTxns');
 
 function getOrderParameters(currentPrice) {
     return {
@@ -32,10 +33,10 @@ function getOrderParameters(currentPrice) {
 }
 exports.placeNewOrders = placeNewOrders;
 async function placeNewOrders(symbol) {
-    const spot = await fetchLastPrice(symbol);
+    const spot = await fetchAvgPrice(symbol);
     const params = getOrderParameters(spot.price);
     const dt = new Date();
-    console.log(`${symbol} current price ${spot.price} order quantity ${params.quantity} at ${dt}`);
+    console.log(`${symbol} current price ${spot.price} order quantity ${params.quantity} at ${dt.toLocaleString()}`);
     console.log(`Placing limit orders ${params.buy} < ${spot.price} > ${params.sell}`);
     for (i = 0; i < params.buy.length; i++) {
         const buyOrder = await placeOrder(
@@ -80,6 +81,7 @@ async function main() {
     }
     try {
         await cancelOpenOrders(symbol);
+        await fetchPositions(symbol);
         await placeNewOrders(symbol);    
     } catch (error) {    
         console.error(`Error replacing orders: ${error}`);

@@ -1,6 +1,7 @@
 const cron = require('node-cron');
 const { cancelOpenOrders } = require('./replaceOrders');
 const { placeNewOrders } = require('./replaceOrders');
+const { fetchPositions } = require('./fetchTrades');
 
 const symbol = process.argv[2];
 if(!symbol) throw "Symbol not provided.";
@@ -10,9 +11,9 @@ const jobB = cron.schedule('13 * * * *', async () => {
     console.log('Invoking hourly task at ' + new Date().toLocaleString());
     try {
         await cancelOpenOrders(symbol);
+        await fetchPositions(symbol);
         await placeNewOrders(symbol);    
     } catch (error) {    
         console.error(`Error replacing orders: ${error}`);
     }
 });
-jobB.now();
