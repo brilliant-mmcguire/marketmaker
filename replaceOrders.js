@@ -17,30 +17,34 @@ const { fetchPositions } = require('./fetchTrades');
 bps
     buy  : [-35, -45, -60, -80, -100, -125, -150] 
     sell : [+25, +35, +50, +70,  +90, +115, +140] 
-*/
 
 function priceLevel(spot,bps){
     const scalar = 1+ (bps /10000); 
     const orderPrice = spot * scalar;
     return Math.round((orderPrice) * 100) / 100;
 }
+*/
 
 function getOrderParameters(currentPrice) {
     return {
         quantity : (Math.round((12.0 / currentPrice) * 10000)) / 10000,
         sell : [
-            Math.round((currentPrice * 1.0130) * 100) / 100,
-            Math.round((currentPrice * 1.0090) * 100) / 100,
+            Math.round((currentPrice * 1.0110) * 100) / 100,
+            Math.round((currentPrice * 1.0080) * 100) / 100,
             Math.round((currentPrice * 1.0060) * 100) / 100,
+            Math.round((currentPrice * 1.0050) * 100) / 100,
             Math.round((currentPrice * 1.0040) * 100) / 100,
-            Math.round((currentPrice * 1.0025) * 100) / 100
+            Math.round((currentPrice * 1.0030) * 100) / 100,
+            Math.round((currentPrice * 1.0020) * 100) / 100
         ],
         buy : [
-            Math.round((currentPrice * 0.9860) * 100) / 100,
-            Math.round((currentPrice * 0.9900) * 100) / 100,
+            Math.round((currentPrice * 0.9880) * 100) / 100,
+            Math.round((currentPrice * 0.9910) * 100) / 100,
             Math.round((currentPrice * 0.9930) * 100) / 100,
+            Math.round((currentPrice * 0.9940) * 100) / 100,
             Math.round((currentPrice * 0.9950) * 100) / 100,
-            Math.round((currentPrice * 0.9965) * 100) / 100
+            Math.round((currentPrice * 0.9960) * 100) / 100,
+            Math.round((currentPrice * 0.9970) * 100) / 100
         ]
     }
 }
@@ -86,7 +90,6 @@ async function cancelOpenOrders(symbol) {
     });    
 }  
 async function main() {
-    if (require.main !== module) return;
     const symbol = process.argv[2];
     if(!symbol) throw 'Symbol not provided.'; 
     try {
@@ -97,4 +100,4 @@ async function main() {
         console.error(`Error replacing orders: ${error}`);
     }
 }
-main();
+if (require.main === module) main();
