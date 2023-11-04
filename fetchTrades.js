@@ -65,5 +65,9 @@ async function fetchPositions(symbol) {
     }
 }
 
-fetchPositions('BTCUSDC');
-fetchPositions('ETHUSDC');
+async function main() {
+    if (require.main !== module) return;
+    fetchPositions('BTCUSDC');
+    fetchPositions('ETHUSDC');
+}
+main();

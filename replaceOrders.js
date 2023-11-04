@@ -11,6 +11,19 @@ const { placeOrder } = require('./orderTxns');
 const { fetchOpenOrders } = require('./orderTxns');
 const { fetchLastPrice } = require('./marketDataTxns');
 const { fetchAvgPrice } = require('./marketDataTxns');
+const { fetchPositions } = require('./fetchTrades');
+
+/*
+bps
+    buy  : [-35, -45, -60, -80, -100, -125, -150] 
+    sell : [+25, +35, +50, +70,  +90, +115, +140] 
+*/
+
+function priceLevel(spot,bps){
+    const scalar = 1+ (bps /10000); 
+    const orderPrice = spot * scalar;
+    return Math.round((orderPrice) * 100) / 100;
+}
 
 function getOrderParameters(currentPrice) {
     return {
@@ -65,7 +78,6 @@ async function cancelOpenOrders(symbol) {
         console.log(`No orders to cancel.`);
         return;
     }
-    
     console.log(`Cancelling orders: ${orders}`);
     orders.forEach(order => {
         cancelOrder(order.symbol, order.orderId).then(response => {
@@ -74,11 +86,9 @@ async function cancelOpenOrders(symbol) {
     });    
 }  
 async function main() {
+    if (require.main !== module) return;
     const symbol = process.argv[2];
-    if(!symbol) {
-        console.log('Symbol not provided.'); 
-        return; 
-    }
+    if(!symbol) throw 'Symbol not provided.'; 
     try {
         await cancelOpenOrders(symbol);
         await fetchPositions(symbol);
@@ -87,5 +97,4 @@ async function main() {
         console.error(`Error replacing orders: ${error}`);
     }
 }
-
 main();
