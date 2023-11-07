@@ -27,26 +27,28 @@ function priceLevel(spot,bps){
 
 function getOrderParameters(currentPrice) {
     return {
-        quantity : (Math.round((12.0 / currentPrice) * 10000)) / 10000,
+        quantity : (Math.round((15.0 / currentPrice) * 10000)) / 10000,
         sell : [
+            Math.round((currentPrice * 1.0180) * 100) / 100,
+            Math.round((currentPrice * 1.0160) * 100) / 100,
+            Math.round((currentPrice * 1.0140) * 100) / 100,
             Math.round((currentPrice * 1.0120) * 100) / 100,
             Math.round((currentPrice * 1.0100) * 100) / 100,
             Math.round((currentPrice * 1.0080) * 100) / 100,
             Math.round((currentPrice * 1.0060) * 100) / 100,
-            Math.round((currentPrice * 1.0050) * 100) / 100,
             Math.round((currentPrice * 1.0040) * 100) / 100,
-            Math.round((currentPrice * 1.0030) * 100) / 100,
             Math.round((currentPrice * 1.0020) * 100) / 100
         ],
         buy : [
-            Math.round((currentPrice * 0.9870) * 100) / 100,
-            Math.round((currentPrice * 0.9890) * 100) / 100,
-            Math.round((currentPrice * 0.9910) * 100) / 100,
-            Math.round((currentPrice * 0.9930) * 100) / 100,
+            Math.round((currentPrice * 0.9820) * 100) / 100,
+            Math.round((currentPrice * 0.9840) * 100) / 100,
+            Math.round((currentPrice * 0.9860) * 100) / 100,
+            Math.round((currentPrice * 0.9880) * 100) / 100,
+            Math.round((currentPrice * 0.9900) * 100) / 100,
+            Math.round((currentPrice * 0.9920) * 100) / 100,
             Math.round((currentPrice * 0.9940) * 100) / 100,
-            Math.round((currentPrice * 0.9950) * 100) / 100,
             Math.round((currentPrice * 0.9960) * 100) / 100,
-            Math.round((currentPrice * 0.9970) * 100) / 100
+            Math.round((currentPrice * 0.9980) * 100) / 100
         ]
     }
 }
@@ -56,7 +58,8 @@ async function placeNewOrders(symbol) {
     const params = getOrderParameters(spot.price);
     const dt = new Date();
     console.log(`${symbol} current price ${spot.price} order quantity ${params.quantity} at ${dt.toLocaleString()}`);
-    console.log(`Placing limit orders ${params.buy} < ${spot.price} > ${params.sell}`);
+    //console.log(`Placing limit orders ${params.buy} < ${spot.price} > ${params.sell}`);
+    console.log(`Place orders at:`, params);
     for (i = 0; i < params.buy.length; i++) {
         const buyOrder = await placeOrder(
             'BUY', 
