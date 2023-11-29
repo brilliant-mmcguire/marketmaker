@@ -12,6 +12,7 @@ const { fetchOpenOrders } = require('./orderTxns');
 const { fetchLastPrice } = require('./marketDataTxns');
 const { fetchAvgPrice } = require('./marketDataTxns');
 const { fetchPositions } = require('./fetchTrades');
+const { fetchKLines } = require('./marketDataTxns');
 
 /*
 bps
@@ -25,37 +26,41 @@ function priceLevel(spot,bps){
 }
 */
 
-function getOrderParameters(currentPrice) {
+function getOrderParameters(currentPrice, kLine) {
+    const sellBasePrc = 0.5*(kLine.high+kLine.close);
+    const buyBasePrice = 0.5*(kLine.low+kLine.close);
     return {
         quantity : (Math.round((15.0 / currentPrice) * 10000)) / 10000,
         sell : [
-            Math.round((currentPrice * 1.0180) * 100) / 100,
-            Math.round((currentPrice * 1.0160) * 100) / 100,
-            Math.round((currentPrice * 1.0140) * 100) / 100,
-            Math.round((currentPrice * 1.0120) * 100) / 100,
-            Math.round((currentPrice * 1.0100) * 100) / 100,
-            Math.round((currentPrice * 1.0080) * 100) / 100,
-            Math.round((currentPrice * 1.0060) * 100) / 100,
-            Math.round((currentPrice * 1.0040) * 100) / 100,
-            Math.round((currentPrice * 1.0020) * 100) / 100
+            Math.round((sellBasePrc * 1.0180) * 100) / 100,
+            Math.round((sellBasePrc * 1.0160) * 100) / 100,
+            Math.round((sellBasePrc * 1.0140) * 100) / 100,
+            Math.round((sellBasePrc * 1.0120) * 100) / 100,
+            Math.round((sellBasePrc * 1.0100) * 100) / 100,
+            Math.round((sellBasePrc * 1.0080) * 100) / 100,
+            Math.round((sellBasePrc * 1.0060) * 100) / 100,
+            Math.round((sellBasePrc * 1.0040) * 100) / 100,
+            Math.round((sellBasePrc * 1.0020) * 100) / 100
         ],
         buy : [
-            Math.round((currentPrice * 0.9800) * 100) / 100,
-            Math.round((currentPrice * 0.9820) * 100) / 100,
-            Math.round((currentPrice * 0.9840) * 100) / 100,
-            Math.round((currentPrice * 0.9860) * 100) / 100,
-            Math.round((currentPrice * 0.9880) * 100) / 100,
-            Math.round((currentPrice * 0.9900) * 100) / 100,
-            Math.round((currentPrice * 0.9920) * 100) / 100,
-            Math.round((currentPrice * 0.9940) * 100) / 100,
-            Math.round((currentPrice * 0.9960) * 100) / 100
+            Math.round((buyBasePrice * 0.9800) * 100) / 100,
+            Math.round((buyBasePrice * 0.9820) * 100) / 100,
+            Math.round((buyBasePrice * 0.9840) * 100) / 100,
+            Math.round((buyBasePrice * 0.9860) * 100) / 100,
+            Math.round((buyBasePrice * 0.9880) * 100) / 100,
+            Math.round((buyBasePrice * 0.9900) * 100) / 100,
+            Math.round((buyBasePrice * 0.9920) * 100) / 100,
+            Math.round((buyBasePrice * 0.9940) * 100) / 100,
+            Math.round((buyBasePrice * 0.9960) * 100) / 100, 
+            Math.round((buyBasePrice * 0.9980) * 100) / 100
         ]
     }
 }
 exports.placeNewOrders = placeNewOrders;
 async function placeNewOrders(symbol) {
     const spot = await fetchAvgPrice(symbol);
-    const params = getOrderParameters(spot.price);
+    const kLines = await fetchKLines(symbol, '4h', 1);
+    const params = getOrderParameters(spot.price, kLines[0]);
     const dt = new Date();
     console.log(`${symbol} current price ${spot.price} order quantity ${params.quantity} at ${dt.toLocaleString()}`);
     //console.log(`Placing limit orders ${params.buy} < ${spot.price} > ${params.sell}`);
