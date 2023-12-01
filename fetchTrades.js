@@ -17,20 +17,16 @@ function createSignature(query) {
 }
 async function fetchMyTrades(symbol, limit) {
     const endpoint = '/api/v3/myTrades';
-
-
-    const timestamp = Date.now();
+    const ts = new Date();
+    
     const params = {
         symbol: symbol,
-        timestamp: timestamp,
+        timestamp: Date.now(),
         limit: limit,
-        // Add other necessary parameters like startTime and endTime for the last 24 hours
-        startTime: Date.now() - 24 * 60 * 60 * 1000, // 24 hours ago
+        startTime : new Date(ts.getFullYear(), ts.getMonth(), ts.getDate()).getTime(),
+       // endTime : ts.getTime(), // endTime can't be more that 24hrs ahead of startTime.
     };
-//    const startTime = Date.now() - 24 * 60 * 60 * 1000; // 24 hours ago
-
     const query = qs.stringify(params);
-    //const query = `symbol=${symbol}&limit=${limit}&timestamp=${timestamp}&startTime=${startTime}`;
     const signature = createSignature(query);
     const url = `${BASE_URL}${endpoint}?${query}&signature=${signature}`;
     const response = await axios.get(url, {
@@ -66,12 +62,29 @@ exports.fetchPositions = fetchPositions;
 async function fetchPositions(symbol) {
     try {
         const trades = await fetchMyTrades(symbol, 1000);
-        const positions = {
+
+        const position = {
             symbol : symbol,
+            qty : 0.0,
+            avgPrice : 0.0,
+            cost: 0.0,
+            realisedPL : 0.0,
             sold : computePosition(trades.sells),
             bought  : computePosition(trades.buys)
         };
-        console.log(positions);
+
+        position.qty = position.bought.qty - position.sold.qty;
+        position.cost = position.bought.consideration -  position.sold.consideration;
+        const matchedQty = Math.min(position.bought.qty,position.sold.qty);
+        position.realisedPL = matchedQty*(position.sold.avgPrice-position.bought.avgPrice);
+
+        if(position.qty>=0){
+            position.avgPrice = position.bought.avgPrice;
+        } else {
+            position.avgPrice = position.sold.avgPrice;
+        }
+
+        console.log(position);
     } catch (error) {
         console.error(`Error fetching trades: ${error}`);
     }
