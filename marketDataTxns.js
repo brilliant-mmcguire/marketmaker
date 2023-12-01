@@ -7,6 +7,22 @@ https://binance-docs.github.io/apidocs/spot/en/#current-average-price
 */
 
 const axios = require("axios");
+//const crypto = require('crypto');
+//const qs = require('qs');
+
+exports.fetchBestOfferPrice = fetchBestOfferPrice;
+async function fetchBestOfferPrice(symbol) {
+    try {
+        const response = await axios.get('https://api.binance.com/api/v3/depth', {
+            params: { symbol: symbol, limit: 5 }
+        });
+        const bestOfferPrice = response.data.asks[0][0]; // Top ask price
+        return parseFloat(bestOfferPrice);
+    } catch (error) {
+        console.error(`Error fetching order book: ${error.message}`);
+        return null;
+    }
+}
 
 exports.fetchLastPrice = fetchLastPrice;
 async function fetchLastPrice(symbol) {
