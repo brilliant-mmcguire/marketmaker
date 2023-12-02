@@ -24,6 +24,20 @@ async function fetchBestOfferPrice(symbol) {
     }
 }
 
+exports.fetchBestBidPrice = fetchBestBidPrice;
+async function fetchBestBidPrice(symbol) {
+    try {
+        const response = await axios.get('https://api.binance.com/api/v3/depth', {
+            params: { symbol: symbol, limit: 5 }
+        });
+        const bestBidPrice = response.data.bids[0][0]; // Top bid price
+        return parseFloat(bestBidPrice);
+    } catch (error) {
+        console.error(`Error fetching order book: ${error.message}`);
+        return null;
+    }
+}
+
 exports.fetchLastPrice = fetchLastPrice;
 async function fetchLastPrice(symbol) {
     try {

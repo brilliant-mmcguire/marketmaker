@@ -13,18 +13,19 @@ Step one: sell orders only.
 Get current offer price.
 Get open orders. 
 If number or orders at the best bid < 3 then add and order at the offer. 
-
 */
 
 const { fetchOpenOrders } = require('./orderTxns');
 const { placeOrder } = require('./orderTxns');
 const { fetchBestOfferPrice } = require('./marketDataTxns');
+const { fetchBestBidPrice } = require('./marketDataTxns');
 
 const symbol = 'USDCUSDT';
 const qty = 12.0;
 const sellPrcFloor = parseFloat('0.9998');
+const buyPrcCeiling = parseFloat('0.9995');
 
-async function main() {
+async function makeAnOffer() {
     console.log("Fetching best offer price.");
     const bestOfferPrice = await fetchBestOfferPrice(symbol);
     console.log(`Best offer price: ${bestOfferPrice}`);
@@ -52,6 +53,42 @@ async function main() {
         bestOfferPrice
     );
     console.log(`Order placed:`, joinOffer);
+}
+
+
+async function makeABid() {
+    console.log("Fetching best offer price.");
+    const bestBidPrice = await fetchBestBidPrice(symbol);
+    console.log(`Best bid price: ${bestBidPrice}`);
+
+    if(bestBidPrice>buyPrcCeiling) {
+        console.log("Noting to do here.");
+        return;
+    }
+
+    console.log("Fetching open orders");
+    const allOrders = await fetchOpenOrders(symbol);
+    const orders = allOrders.filter(order => parseFloat(order.price) === bestBidPrice );
+    console.log(`We have ${orders.length} order on the bid.`);
+
+    if(orders.length>=3) {
+        console.log("We already have 3+ orders on the bid. Do nothing.");
+        return;
+    }
+
+    console.log(`Placing buy order on the offer.`);
+    joinBid = await placeOrder(
+        'BUY', 
+        qty, 
+        symbol, 
+        bestBidPrice
+    );
+    console.log(`Buy order placed:`, joinBid);
+}
+
+async function main() {
+    makeAnOffer();
+    makeABid();
 }
 
 main();
