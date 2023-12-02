@@ -86,6 +86,7 @@ async function makeABid() {
     console.log(`Buy order placed:`, joinBid);
 }
 
+exports.placeSCoinOrders = placeSCoinOrders;
 async function placeSCoinOrders() {
     makeAnOffer();
     makeABid();
