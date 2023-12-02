@@ -86,9 +86,9 @@ async function makeABid() {
     console.log(`Buy order placed:`, joinBid);
 }
 
-async function main() {
+async function placeSCoinOrders() {
     makeAnOffer();
     makeABid();
 }
 
-main();
+if (require.main === module) placeSCoinOrders();
