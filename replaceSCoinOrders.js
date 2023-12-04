@@ -46,7 +46,7 @@ async function makeAnOffer() {
         return;
     }
 
-    console.log(`Placing sell order on the offer.`);
+    console.log(`Placing sell order at ${bestOfferPrice}.`);
     joinOffer = await placeOrder(
         'SELL', 
         qty, 
@@ -77,7 +77,7 @@ async function makeABid() {
         return;
     }
 
-    console.log(`Placing buy order on the offer.`);
+    console.log(`Placing buy order at ${bestBidPrice}.`);
     joinBid = await placeOrder(
         'BUY', 
         qty, 
@@ -122,19 +122,19 @@ async function makeOffers(bestOffers, allOrders) {
     
     for(let i = 0; i< bestOffers.length; i++) {
         let offer = bestOffers[i];
-        if(offer.price>buyPrcCeiling) {
+        if(offer.price<sellPrcFloor) {
             console.log(`Ignoring price level ${offer.price}`);
         } else {
             let orders = allOrders.filter(order => parseFloat(order.price) === offer.price ); 
-            console.log(`We have ${orders.length} orders on price level ${bid.price}.`);
+            console.log(`We have ${orders.length} orders on price level ${offer.price}.`);
             if(orders.length<=3) {
-                console.log(`Placing buy order at price level ${bid.price}.`);
+                console.log(`Placing buy order at price level ${offer.price}.`);
                 try {
                     joinOffer = await placeOrder(
                         'SELL', 
                         qty, 
                         symbol, 
-                        bid.price
+                        offer.price
                     );
                     console.log(`Sell order placed:`, joinOffer);   
                 } catch (error) {
