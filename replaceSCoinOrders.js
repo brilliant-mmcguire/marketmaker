@@ -17,79 +17,18 @@ If number or orders at the best bid < 3 then add and order at the offer.
 
 const { fetchOpenOrders } = require('./orderTxns');
 const { placeOrder } = require('./orderTxns');
-const { fetchBestOfferPrice } = require('./marketDataTxns');
-const { fetchBestBidPrice } = require('./marketDataTxns');
 const { fetchPriceDepth } = require('./marketDataTxns');
 
 const symbol = 'USDCUSDT';
-const qty = 12.0;
+const qty = 16.0;
 const sellPrcFloor = parseFloat('0.9998');
-const buyPrcCeiling = parseFloat('0.9998');
-
-async function makeAnOffer() {
-    console.log("Fetching best offer price.");
-    const bestOfferPrice = await fetchBestOfferPrice(symbol);
-    console.log(`Best offer price: ${bestOfferPrice}`);
-
-    if(bestOfferPrice<sellPrcFloor) {
-        console.log("Noting to do here.");
-        return;
-    }
-
-    console.log("Fetching open orders");
-    const allOrders = await fetchOpenOrders(symbol);
-    const orders = allOrders.filter(order => parseFloat(order.price) === bestOfferPrice );
-    console.log(`We have ${orders.length} order on the offer.`);
-
-    if(orders.length>=3) {
-        console.log("We already have 3+ orders on the offer. Do nothing.");
-        return;
-    }
-
-    console.log(`Placing sell order at ${bestOfferPrice}.`);
-    joinOffer = await placeOrder(
-        'SELL', 
-        qty, 
-        symbol, 
-        bestOfferPrice
-    );
-    console.log(`Order placed:`, joinOffer);
-}
-
-
-async function makeABid() {
-    console.log("Fetching best offer price.");
-    const bestBidPrice = await fetchBestBidPrice(symbol);
-    console.log(`Best bid price: ${bestBidPrice}`);
-
-    if(bestBidPrice>buyPrcCeiling) {
-        console.log("Noting to do here.");
-        return;
-    }
-
-    console.log("Fetching open orders");
-    const allOrders = await fetchOpenOrders(symbol);
-    const orders = allOrders.filter(order => parseFloat(order.price) === bestBidPrice );
-    console.log(`We have ${orders.length} order on the bid.`);
-
-    if(orders.length>=3) {
-        console.log("We already have 3+ orders on the bid. Do nothing.");
-        return;
-    }
-
-    console.log(`Placing buy order at ${bestBidPrice}.`);
-    joinBid = await placeOrder(
-        'BUY', 
-        qty, 
-        symbol, 
-        bestBidPrice
-    );
-    console.log(`Buy order placed:`, joinBid);
-}
+const buyPrcCeiling = parseFloat('1.0002');
+const maxBidsForPrice = 4;
+const maxOffersForPrice = 2;
 
 async function makeBids(bestBidPrices, allOrders) {
  
-    console.log(`Making bids for ${symbol}`);
+    console.log(`Making bids for ${symbol} at ${new Date()}`);
     
     for(let i = 0; i< bestBidPrices.length; i++) {
         let bid = bestBidPrices[i];
@@ -98,7 +37,7 @@ async function makeBids(bestBidPrices, allOrders) {
         } else {
             let orders = allOrders.filter(order => parseFloat(order.price) === bid.price ); 
             console.log(`We have ${orders.length} orders on price level ${bid.price}.`);
-            if(orders.length<=3) {
+            if(orders.length <= maxBidsForPrice) {
                 console.log(`Placing buy order at price level ${bid.price}.`);
                 try {
                     joinBid = await placeOrder(
@@ -118,7 +57,7 @@ async function makeBids(bestBidPrices, allOrders) {
 
 async function makeOffers(bestOffers, allOrders) {
  
-    console.log(`Making offers for ${symbol}`);
+    console.log(`Making offers for ${symbol}  at ${new Date()}`);
     
     for(let i = 0; i< bestOffers.length; i++) {
         let offer = bestOffers[i];
@@ -127,8 +66,8 @@ async function makeOffers(bestOffers, allOrders) {
         } else {
             let orders = allOrders.filter(order => parseFloat(order.price) === offer.price ); 
             console.log(`We have ${orders.length} orders on price level ${offer.price}.`);
-            if(orders.length<=3) {
-                console.log(`Placing buy order at price level ${offer.price}.`);
+            if(orders.length <= maxOffersForPrice) {
+                console.log(`Placing sell order at price level ${offer.price}.`);
                 try {
                     joinOffer = await placeOrder(
                         'SELL', 
@@ -147,8 +86,6 @@ async function makeOffers(bestOffers, allOrders) {
 
 exports.placeSCoinOrders = placeSCoinOrders;
 async function placeSCoinOrders() {
-   // makeAnOffer();
-   // makeABid();
 
    console.log("Fetching best offer prices.");
    const prcDepth = await fetchPriceDepth(symbol);
