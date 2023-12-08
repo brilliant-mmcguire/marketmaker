@@ -37,7 +37,7 @@ async function makeBids(bestBidPrices, allOrders) {
     for(let i = 0; i< bestBidPrices.length; i++) {
         let bid = bestBidPrices[i];
         if(bid.price>buyPrcCeiling || bid.qty < qtyQuantum) {
-            console.log(`Ignoring price level ${bid.price}`);
+            console.log(`Ignoring price level ${bid.price} | ${bid.qty}`);
         } else {
             let orders = allOrders.filter(order => parseFloat(order.price) === bid.price ); 
             console.log(`We have ${orders.length} orders on price level ${bid.price}.`);
@@ -66,7 +66,7 @@ async function makeOffers(bestOffers, allOrders) {
     for(let i = 0; i< bestOffers.length; i++) {
         let offer = bestOffers[i];
         if(offer.price<sellPrcFloor || offer.qty < qtyQuantum) {
-            console.log(`Ignoring price level ${offer.price}`);
+            console.log(`Ignoring price level ${offer.price} | ${offer.qty}`);
         } else {
             let orders = allOrders.filter(order => parseFloat(order.price) === offer.price ); 
             console.log(`We have ${orders.length} orders on price level ${offer.price}.`);
