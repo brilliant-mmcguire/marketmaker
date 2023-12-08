@@ -22,12 +22,12 @@ const { fetchPositions } = require('./fetchTrades');
 
 const symbol = 'USDCUSDT';
 const qty = 16.0;
-const sellPrcFloor = parseFloat('0.9998');
-const buyPrcCeiling = parseFloat('1.0002');
+const sellPrcFloor  = parseFloat('1.0000');
+const buyPrcCeiling = parseFloat('0.9999');
 //const maxBidsForPrice = 6;
 //const maxOffersForPrice = 6;
 
-const qtyQuantum = 2000000;  // Units of order book quantity on offer at  a price level. 
+const qtyQuantum = 1500000;  // Units of order book quantity on offer at  a price level. 
                             // Place orders in multiples of quanta. 
                             // max number of orders = (qty/quantum) OR 
                             // order qty = round (12*(qty/quantum))
@@ -36,7 +36,7 @@ async function makeBids(bestBidPrices, allOrders, position) {
  
     console.log(`Making bids for ${symbol} at ${new Date()}`);
     console.log(position);
-    
+
     for(let i = 0; i< bestBidPrices.length; i++) {
         let bid = bestBidPrices[i];
         let maxOrders = bid.qty / qtyQuantum; 
