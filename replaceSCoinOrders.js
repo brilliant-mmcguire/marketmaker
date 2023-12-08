@@ -23,12 +23,13 @@ const symbol = 'USDCUSDT';
 const qty = 16.0;
 const sellPrcFloor = parseFloat('0.9998');
 const buyPrcCeiling = parseFloat('1.0002');
-const maxBidsForPrice = 6;
-const maxOffersForPrice = 6;
+//const maxBidsForPrice = 6;
+//const maxOffersForPrice = 6;
 
-const qtyQuantum = 5000;  // Units of order book quantity on offer at  a price level. 
-                          // Place orders in multiples of quanta. 
-                          // number of orders = 12*(qty/quantum)
+const qtyQuantum = 2000000;  // Units of order book quantity on offer at  a price level. 
+                            // Place orders in multiples of quanta. 
+                            // max number of orders = (qty/quantum) OR 
+                            // order qty = round (12*(qty/quantum))
 
 async function makeBids(bestBidPrices, allOrders) {
  
@@ -36,12 +37,14 @@ async function makeBids(bestBidPrices, allOrders) {
     
     for(let i = 0; i< bestBidPrices.length; i++) {
         let bid = bestBidPrices[i];
-        if(bid.price>buyPrcCeiling || bid.qty < qtyQuantum) {
-            console.log(`Ignoring price level ${bid.price} | ${bid.qty}`);
+        let maxOrders = bid.qty / qtyQuantum; 
+
+        if(bid.price>buyPrcCeiling || maxOrders < 1) {
+            console.log(`Ignoring price level ${bid.price} - ${bid.qty}`);
         } else {
             let orders = allOrders.filter(order => parseFloat(order.price) === bid.price ); 
             console.log(`We have ${orders.length} orders on price level ${bid.price}.`);
-            if(orders.length <= maxBidsForPrice) {
+            if(orders.length <= maxOrders) {
                 console.log(`Placing buy order at price level ${bid.price}.`);
                 try {
                     joinBid = await placeOrder(
@@ -65,12 +68,14 @@ async function makeOffers(bestOffers, allOrders) {
     
     for(let i = 0; i< bestOffers.length; i++) {
         let offer = bestOffers[i];
-        if(offer.price<sellPrcFloor || offer.qty < qtyQuantum) {
-            console.log(`Ignoring price level ${offer.price} | ${offer.qty}`);
+        let maxOrders = offer.qty / qtyQuantum; 
+
+        if(offer.price<sellPrcFloor) {
+            console.log(`Ignoring price level ${offer.price} - ${offer.qty}`);
         } else {
             let orders = allOrders.filter(order => parseFloat(order.price) === offer.price ); 
             console.log(`We have ${orders.length} orders on price level ${offer.price}.`);
-            if(orders.length <= maxOffersForPrice) {
+            if(orders.length <= maxOrders) {
                 console.log(`Placing sell order at price level ${offer.price}.`);
                 try {
                     joinOffer = await placeOrder(
