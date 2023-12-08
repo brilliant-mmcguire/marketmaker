@@ -23,8 +23,12 @@ const symbol = 'USDCUSDT';
 const qty = 16.0;
 const sellPrcFloor = parseFloat('0.9998');
 const buyPrcCeiling = parseFloat('1.0002');
-const maxBidsForPrice = 4;
-const maxOffersForPrice = 2;
+const maxBidsForPrice = 6;
+const maxOffersForPrice = 6;
+
+const qtyQuantum = 5000;  // Units of order book quantity on offer at  a price level. 
+                          // Place orders in multiples of quanta. 
+                          // number of orders = 12*(qty/quantum)
 
 async function makeBids(bestBidPrices, allOrders) {
  
@@ -32,7 +36,7 @@ async function makeBids(bestBidPrices, allOrders) {
     
     for(let i = 0; i< bestBidPrices.length; i++) {
         let bid = bestBidPrices[i];
-        if(bid.price>buyPrcCeiling) {
+        if(bid.price>buyPrcCeiling || bid.qty < qtyQuantum) {
             console.log(`Ignoring price level ${bid.price}`);
         } else {
             let orders = allOrders.filter(order => parseFloat(order.price) === bid.price ); 
@@ -61,7 +65,7 @@ async function makeOffers(bestOffers, allOrders) {
     
     for(let i = 0; i< bestOffers.length; i++) {
         let offer = bestOffers[i];
-        if(offer.price<sellPrcFloor) {
+        if(offer.price<sellPrcFloor || offer.qty < qtyQuantum) {
             console.log(`Ignoring price level ${offer.price}`);
         } else {
             let orders = allOrders.filter(order => parseFloat(order.price) === offer.price ); 
