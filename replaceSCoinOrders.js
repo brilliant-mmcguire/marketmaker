@@ -18,6 +18,7 @@ If number or orders at the best bid < 3 then add and order at the offer.
 const { fetchOpenOrders } = require('./orderTxns');
 const { placeOrder } = require('./orderTxns');
 const { fetchPriceDepth } = require('./marketDataTxns');
+const { fetchPositions } = require('./fetchTrades');
 
 const symbol = 'USDCUSDT';
 const qty = 16.0;
@@ -31,9 +32,10 @@ const qtyQuantum = 2000000;  // Units of order book quantity on offer at  a pric
                             // max number of orders = (qty/quantum) OR 
                             // order qty = round (12*(qty/quantum))
 
-async function makeBids(bestBidPrices, allOrders) {
+async function makeBids(bestBidPrices, allOrders, position) {
  
     console.log(`Making bids for ${symbol} at ${new Date()}`);
+    console.log(position);
     
     for(let i = 0; i< bestBidPrices.length; i++) {
         let bid = bestBidPrices[i];
@@ -62,9 +64,10 @@ async function makeBids(bestBidPrices, allOrders) {
     };
 }
 
-async function makeOffers(bestOffers, allOrders) {
+async function makeOffers(bestOffers, allOrders, position) {
  
     console.log(`Making offers for ${symbol}  at ${new Date()}`);
+    console.log(position);
     
     for(let i = 0; i< bestOffers.length; i++) {
         let offer = bestOffers[i];
@@ -102,8 +105,9 @@ async function placeSCoinOrders() {
    console.log("Fetching open orders");
    try {
      const allOrders = await fetchOpenOrders(symbol);
-     makeBids(prcDepth.bids, allOrders);
-     makeOffers(prcDepth.asks, allOrders); 
+     const position = await fetchPositions(symbol);
+     makeBids(prcDepth.bids, allOrders, position);
+     makeOffers(prcDepth.asks, allOrders, position); 
    } catch (error) {
      console.error(error.message);
    }
