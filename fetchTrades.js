@@ -24,8 +24,8 @@ async function fetchMyTrades(symbol, limit) {
         timestamp: Date.now(),
         limit: limit,
         // startTime : new Date(ts.getFullYear(), ts.getMonth(), ts.getDate()-1).getTime(),
-       // endTime : ts.getTime(), // endTime can't be more that 24hrs ahead of startTime.
-       startTime : (new Date().getTime() - (24 * 60 * 60 * 1000))
+        // endTime : ts.getTime(), // endTime can't be more that 24hrs ahead of startTime.
+        startTime : (new Date().getTime() - (1 * 24 * 60 * 60 * 1000))
     };
     const query = qs.stringify(params);
     const signature = createSignature(query);
@@ -86,6 +86,7 @@ async function fetchPositions(symbol) {
         }
 
         console.log(position);
+        return position;
     } catch (error) {
         console.error(`Error fetching trades: ${error}`);
     }
@@ -96,8 +97,6 @@ async function main() {
     const symbol = process.argv[2];
     if(!symbol) throw 'Symbol not provided.'; 
     fetchPositions(symbol);
-    //fetchPositions('ETHUSDC');
-    //fetchPositions('USDCUSDT');
 }
 
-main();
+if (require.main === module) main();
