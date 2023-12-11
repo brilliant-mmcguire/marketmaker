@@ -22,8 +22,10 @@ const { fetchPositions } = require('./fetchTrades');
 
 const symbol = 'USDCUSDT';
 const qty = 16.0;
-const sellPrcFloor  = parseFloat('1.0000');
-const buyPrcCeiling = parseFloat('0.9999');
+const sellPrcFloor  = parseFloat('0.9997');
+const buyPrcCeiling = parseFloat('1.0001');
+const overSoldThreshold = -200;
+const overBoughtTreshold = +200;
 //const maxBidsForPrice = 6;
 //const maxOffersForPrice = 6;
 
@@ -33,15 +35,22 @@ const qtyQuantum = 1500000;  // Units of order book quantity on offer at  a pric
                             // order qty = round (12*(qty/quantum))
 
 async function makeBids(bestBidPrices, allOrders, position) {
- 
+    
     console.log(`Making bids for ${symbol} at ${new Date()}`);
-    console.log(position);
+   // console.log(position);
+
+   let x = buyPrcCeiling; 
+
+    if(position.qty>overBoughtTreshold) {
+        console.log(`Over bought at an average price of ${position.avgPrice}`);
+        let x = position.avgPrice;
+    }
 
     for(let i = 0; i< bestBidPrices.length; i++) {
         let bid = bestBidPrices[i];
         let maxOrders = bid.qty / qtyQuantum; 
-
-        if(bid.price>buyPrcCeiling || maxOrders < 1) {
+        
+        if(bid.price>x || maxOrders < 1) {
             console.log(`Ignoring price level ${bid.price} - ${bid.qty}`);
         } else {
             let orders = allOrders.filter(order => parseFloat(order.price) === bid.price ); 
@@ -67,13 +76,20 @@ async function makeBids(bestBidPrices, allOrders, position) {
 async function makeOffers(bestOffers, allOrders, position) {
  
     console.log(`Making offers for ${symbol}  at ${new Date()}`);
-    console.log(position);
-    
+    //console.log(position);
+    let x = sellPrcFloor; 
+
+    if(position.qty < overSoldThreshold) {
+        console.log(`Over sold at an average price of ${position.avgPrice}`);
+        // The average price sets a floor of sell price.
+        let x = position.avgPrice; 
+    }
+
     for(let i = 0; i< bestOffers.length; i++) {
         let offer = bestOffers[i];
         let maxOrders = offer.qty / qtyQuantum; 
 
-        if(offer.price<sellPrcFloor) {
+        if(offer.price < x || maxOrders < 1) {
             console.log(`Ignoring price level ${offer.price} - ${offer.qty}`);
         } else {
             let orders = allOrders.filter(order => parseFloat(order.price) === offer.price ); 
