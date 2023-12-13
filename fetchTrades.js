@@ -85,40 +85,42 @@ async function fetchPositions2(symbol) {
                     pos.qty += parseFloat(t.qty);
                     pos.quoteQty += parseFloat(t.quoteQty);    
                     pos.cost += parseFloat(t.qty)*parseFloat(t.price);
-                } else {  // closing trade on short position.
-                    if(parseFloat(t.qty)>pos.qty) {  // crosses zero position. 
-                        pos.qty += parseFloat(t.qty);
+                    pos.avgPrice =  pos.cost / pos.qty;
+                } else {  // closing buy trade on short position.
+                    pos.matchedQty += parseFloat(t.qty);
+                    if(parseFloat(t.qty)>Math.abs(pos.qty)) {  // crosses zero position. 
+                        pos.qty = +parseFloat(t.qty);
                         pos.quoteQty += parseFloat(t.quoteQty);
-                        pos.cost += pos.qty*avgPrice; // zero out cost.
-                        pos.realisedPL += (parseFloat(t.price) - pos.avgPrice)*pos.qty;         
+                        pos.cost -= pos.qty*pos.avgPrice; // zero out cost.
+                        pos.realisedPL -= (parseFloat(t.price) - pos.avgPrice)*pos.qty;         
                         pos.cost += (parseFloat(t.qty) - pos.qty)*parseFloat(t.price)
                     } else { 
                         pos.qty += parseFloat(t.qty);
                         pos.quoteQty += parseFloat(t.quoteQty);
-                        pos.cost += parseFloat(t.qty)*pos.avgPrice;
+                        pos.cost -= parseFloat(t.qty)*pos.avgPrice;
                         pos.realisedPL += (parseFloat(t.price) - pos.avgPrice)*parseFloat(t.qty); 
                     }
-                    pos.avgPrice = (pos.qty == 0.0) ?  0 : pos.cost / pos.qty;
                 }
             } else {  // seller. 
                 if(pos.qty <= 0) { // opening sell trade on short position. 
                     pos.qty -= parseFloat(t.qty);
                     pos.quoteQty -= parseFloat(t.quoteQty);    
                     pos.cost -= parseFloat(t.qty)*parseFloat(t.price);
+                    pos.avgPrice =  pos.cost / pos.qty;
                 } else {  // closing sell trade on long position.
-                    if(parseFloat(t.qty)>pos.qty) {  // crosses zero position. 
+                    pos.matchedQty += parseFloat(t.qty);
+                    if(parseFloat(t.qty)>Math.abs(pos.qty)) {  // crosses zero position. 
                         pos.qty -= parseFloat(t.qty);
                         pos.quoteQty -= parseFloat(t.quoteQty);
-                        pos.cost -= pos.qty*avgPrice; // zero out cost.
+                        pos.cost -= pos.qty*pos.avgPrice; // zero out cost.
                         pos.realisedPL += (parseFloat(t.price) - pos.avgPrice)*pos.qty;         
                         pos.cost -= (parseFloat(t.qty) - pos.qty)*parseFloat(t.price)
                     } else { 
-                        pos.qty -= parseFloat(t.qty);
-                        pos.quoteQty -= parseFloat(t.quoteQty);
+                        pos.qty += parseFloat(t.qty);
+                        pos.quoteQty += parseFloat(t.quoteQty);
                         pos.cost -= parseFloat(t.qty)*pos.avgPrice;
-                        pos.realisedPL -= (parseFloat(t.price) - pos.avgPrice)*parseFloat(t.qty); 
+                        pos.realisedPL += (parseFloat(t.price) - pos.avgPrice)*parseFloat(t.qty); 
                     }
-                    pos.avgPrice = (pos.qty == 0.0) ?  0 : pos.cost / pos.qty;
                 }
             }
         };
@@ -166,7 +168,7 @@ async function main() {
     if (require.main !== module) return;
     const symbol = process.argv[2];
     if(!symbol) throw 'Symbol not provided.'; 
-    fetchPositions2(symbol);
+    fetchPositions(symbol);
 }
 
 if (require.main === module) main();
