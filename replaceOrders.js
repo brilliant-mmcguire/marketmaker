@@ -30,7 +30,7 @@ function getOrderParameters(currentPrice, kLine) {
     const sellBasePrc = 0.5*(kLine.high+kLine.close);
     const buyBasePrice = 0.5*(kLine.low+kLine.close);
     return {
-        quantity : (Math.round((15.0 / currentPrice) * 10000)) / 10000,
+        quantity : (Math.round((16.0 / currentPrice) * 10000)) / 10000,
         sell : [
             Math.round((sellBasePrc * 1.0180) * 100) / 100,
             Math.round((sellBasePrc * 1.0160) * 100) / 100,
