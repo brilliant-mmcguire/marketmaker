@@ -5,6 +5,7 @@ https://binance-docs.github.io/apidocs/spot/en/#account-trade-list-user_data
 */
 const cfg = require('dotenv').config();
 const axios = require('axios');
+const { assert } = require('console');
 const crypto = require('crypto');
 const qs = require('qs');
 
@@ -26,7 +27,7 @@ async function fetchMyTrades(symbol, limit) {
         limit: limit,
         // startTime : new Date(ts.getFullYear(), ts.getMonth(), ts.getDate()-1).getTime(),
         // endTime : ts.getTime(), // endTime can't be more that 24hrs ahead of startTime.
-        startTime : (new Date().getTime() - (1 * 24 * 60 * 60 * 1000))
+        startTime : (new Date().getTime() - (2 * 24 * 60 * 60 * 1000))
     };
     const query = qs.stringify(params);
     const signature = createSignature(query);
@@ -79,47 +80,128 @@ async function fetchPositions2(symbol) {
         };
 
         for(let i = 0; i < trades.all.length; i++) {
-            let t = trades.all[i];
-            if(t.isBuyer) {  
-                if(pos.qty >= 0) { // opening trade on long position. 
-                    pos.qty += parseFloat(t.qty);
-                    pos.quoteQty += parseFloat(t.quoteQty);    
-                    pos.cost += parseFloat(t.qty)*parseFloat(t.price);
+            let r = trades.all[i];
+            let t = {
+                isBuyer : r.isBuyer, 
+                qty : 0.0, quoteQty : 0.0, 
+                price : parseFloat(r.price) 
+            };
+            if(t.isBuyer) {
+                t.qty = parseFloat(r.qty); 
+                t.quoteQty = parseFloat(r.quoteQty); 
+            } else {
+                t.qty = -1.0 * parseFloat(r.qty); 
+                t.quoteQty = -1.0 * parseFloat(r.quoteQty);
+            };
+            
+            if(t.isBuyer) {
+                if(pos.qty >= 0) { // opening buy trade on long position. 
+                    console.assert(t.qty>0,`t.qty is +ve ${t.qty}`);
+                    pos.qty += t.qty;
+                    pos.quoteQty += t.quoteQty;    
+                    pos.cost += t.qty*t.price;
                     pos.avgPrice =  pos.cost / pos.qty;
-                } else {  // closing buy trade on short position.
-                    pos.matchedQty += parseFloat(t.qty);
-                    if(parseFloat(t.qty)>Math.abs(pos.qty)) {  // crosses zero position. 
-                        pos.qty = +parseFloat(t.qty);
-                        pos.quoteQty += parseFloat(t.quoteQty);
-                        pos.cost -= pos.qty*pos.avgPrice; // zero out cost.
-                        pos.realisedPL -= (parseFloat(t.price) - pos.avgPrice)*pos.qty;         
-                        pos.cost += (parseFloat(t.qty) - pos.qty)*parseFloat(t.price)
-                    } else { 
-                        pos.qty += parseFloat(t.qty);
-                        pos.quoteQty += parseFloat(t.quoteQty);
-                        pos.cost -= parseFloat(t.qty)*pos.avgPrice;
-                        pos.realisedPL += (parseFloat(t.price) - pos.avgPrice)*parseFloat(t.qty); 
+                    // PL does not change.
+
+                } else {  // closing buy trade on a short position.
+                    if(Math.abs(t.qty)<=Math.abs(pos.qty)) { 
+
+                        console.assert(pos.cost<=0, `pos.cost is -ve ${pos.cost}`);
+                        console.assert(t.qty>0,`t.qty is +ve ${t.qty}`);
+                        pos.cost += t.qty * pos.avgPrice; 
+                        
+                        // PL delta is +ve if the buy price is lower than avg cost price.
+                        pos.realisedPL += t.qty * (pos.avgPrice - t.price); 
+                        
+                        // Matched qty increases by the quantity of the buy trade.
+                        pos.matchedQty += t.qty;
+
+                        pos.qty += t.qty;
+                        pos.quoteQty += t.quoteQty;
+
+                        // avgPrice doesn't change.
+
+                    } else { // crosses zero position. 
+                        
+                        //
+                        // first, the closing part of the trade.
+                        //
+
+                        // zero out cost.
+                        pos.cost -= pos.qty * pos.avgPrice; 
+                        console.assert(pos.qty<0    , `pos.qty is -ve ${pos.qty}}`);
+                        console.assert(pos.cost==0.0, `Zero pos.cost on flat position ${pos.cost}`); 
+
+                        // PL delta is +ve if the buy price is lower than avg cost price.
+                        pos.realisedPL -= pos.qty * (pos.avgPrice - t.price); 
+                        
+                        // Matched qty increases by the quantity of the buy trade.
+                        pos.matchedQty -= pos.qty;
+                        
+                        //
+                        // now, the opening part of the trade.
+                        //
+                        pos.cost += (t.qty + pos.qty) * t.price;
+                        
+                        pos.qty += t.qty;
+                        pos.quoteQty += t.quoteQty;
+                        pos.avgPrice =  pos.cost / pos.qty;
                     }
                 }
             } else {  // seller. 
+                
+                console.assert(t.qty<0 , `t.qty is -ve on sell trade ${t.qty}`);
+                        
                 if(pos.qty <= 0) { // opening sell trade on short position. 
-                    pos.qty -= parseFloat(t.qty);
-                    pos.quoteQty -= parseFloat(t.quoteQty);    
-                    pos.cost -= parseFloat(t.qty)*parseFloat(t.price);
+                    pos.qty += t.qty;
+                    pos.quoteQty += t.quoteQty;    
+                    pos.cost += t.qty*t.price;
                     pos.avgPrice =  pos.cost / pos.qty;
-                } else {  // closing sell trade on long position.
-                    pos.matchedQty += parseFloat(t.qty);
-                    if(parseFloat(t.qty)>Math.abs(pos.qty)) {  // crosses zero position. 
-                        pos.qty -= parseFloat(t.qty);
-                        pos.quoteQty -= parseFloat(t.quoteQty);
-                        pos.cost -= pos.qty*pos.avgPrice; // zero out cost.
-                        pos.realisedPL += (parseFloat(t.price) - pos.avgPrice)*pos.qty;         
-                        pos.cost -= (parseFloat(t.qty) - pos.qty)*parseFloat(t.price)
-                    } else { 
-                        pos.qty += parseFloat(t.qty);
-                        pos.quoteQty += parseFloat(t.quoteQty);
-                        pos.cost -= parseFloat(t.qty)*pos.avgPrice;
-                        pos.realisedPL += (parseFloat(t.price) - pos.avgPrice)*parseFloat(t.qty); 
+                    // PL does not change.
+
+                } else {  // closing sell trade on a long position.
+                    console.assert(pos.cost>=0 , `pos.cost is +ve on long position ${pos.cost}`);
+                    console.assert(pos.qty>0   , `pos.qty is +ve on long position ${pos.qty}`);
+
+                    if(Math.abs(t.qty)<=Math.abs(pos.qty)) {  
+ 
+                        pos.cost += t.qty * pos.avgPrice; 
+                        
+                        // PL delta is +ve if the sell price is lower than avg cost price.
+                        pos.realisedPL += t.qty * (pos.avgPrice - t.price); 
+                        
+                        // Matched qty increases by the quantity of the whole sell trade.
+                        pos.matchedQty -= t.qty;
+
+                        pos.qty += t.qty;
+                        pos.quoteQty += t.quoteQty;
+
+                        // avgPrice doesn't change.
+
+                    } else { // crosses zero position. 
+                        
+                        //
+                        // first, the closing part of the trade.
+                        //
+                        
+                        // zero out cost.
+                        pos.cost -= pos.qty * pos.avgPrice; 
+                        console.assert(pos.cost==0.0, `Zero pos.cost on flat position ${pos.cost}`); 
+                        
+                        // PL delta is +ve if the sell price is higher than avg cost price.
+                        pos.realisedPL += pos.qty * (t.price - pos.avgPrice); 
+                        
+                        // Matched qty increases by the quantity of the position being closed.
+                        pos.matchedQty += pos.qty;
+                        
+                        //
+                        // now, the opening part of the trade.
+                        //
+                        pos.cost += (t.qty + pos.qty) * t.price;
+                        
+                        pos.qty += t.qty;
+                        pos.quoteQty += t.quoteQty;
+                        pos.avgPrice =  pos.cost / pos.qty;
                     }
                 }
             }
@@ -168,7 +250,7 @@ async function main() {
     if (require.main !== module) return;
     const symbol = process.argv[2];
     if(!symbol) throw 'Symbol not provided.'; 
-    fetchPositions(symbol);
+    fetchPositions2(symbol);
 }
 
 if (require.main === module) main();
