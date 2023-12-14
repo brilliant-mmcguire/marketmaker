@@ -30,29 +30,30 @@ function getOrderParameters(currentPrice, kLine) {
     const sellBasePrc = 0.5*(kLine.high+kLine.close);
     const buyBasePrice = 0.5*(kLine.low+kLine.close);
     return {
-        quantity : (Math.round((15.0 / currentPrice) * 10000)) / 10000,
+        quantity : (Math.round((19.0 / currentPrice) * 10000)) / 10000,
         sell : [
-            Math.round((sellBasePrc * 1.0180) * 100) / 100,
-            Math.round((sellBasePrc * 1.0160) * 100) / 100,
-            Math.round((sellBasePrc * 1.0140) * 100) / 100,
+            Math.round((sellBasePrc * 1.0200) * 100) / 100,
+            Math.round((sellBasePrc * 1.0170) * 100) / 100,
+            Math.round((sellBasePrc * 1.0145) * 100) / 100,
             Math.round((sellBasePrc * 1.0120) * 100) / 100,
-            Math.round((sellBasePrc * 1.0100) * 100) / 100,
-            Math.round((sellBasePrc * 1.0080) * 100) / 100,
+            Math.round((sellBasePrc * 1.0095) * 100) / 100,
+            Math.round((sellBasePrc * 1.0075) * 100) / 100,
             Math.round((sellBasePrc * 1.0060) * 100) / 100,
-            Math.round((sellBasePrc * 1.0040) * 100) / 100,
-            Math.round((sellBasePrc * 1.0020) * 100) / 100
+            Math.round((sellBasePrc * 1.0045) * 100) / 100,
+            Math.round((sellBasePrc * 1.0030) * 100) / 100,
+            Math.round((sellBasePrc * 1.0015) * 100) / 100
         ],
         buy : [
             Math.round((buyBasePrice * 0.9800) * 100) / 100,
-            Math.round((buyBasePrice * 0.9820) * 100) / 100,
-            Math.round((buyBasePrice * 0.9840) * 100) / 100,
-            Math.round((buyBasePrice * 0.9860) * 100) / 100,
+            Math.round((buyBasePrice * 0.9830) * 100) / 100,
+            Math.round((buyBasePrice * 0.9855) * 100) / 100,
             Math.round((buyBasePrice * 0.9880) * 100) / 100,
-            Math.round((buyBasePrice * 0.9900) * 100) / 100,
-            Math.round((buyBasePrice * 0.9920) * 100) / 100,
+            Math.round((buyBasePrice * 0.9905) * 100) / 100,
+            Math.round((buyBasePrice * 0.9925) * 100) / 100,
             Math.round((buyBasePrice * 0.9940) * 100) / 100,
-            Math.round((buyBasePrice * 0.9960) * 100) / 100, 
-            Math.round((buyBasePrice * 0.9980) * 100) / 100
+            Math.round((buyBasePrice * 0.9955) * 100) / 100,
+            Math.round((buyBasePrice * 0.9970) * 100) / 100, 
+            Math.round((buyBasePrice * 0.9985) * 100) / 100
         ]
     }
 }
@@ -65,24 +66,30 @@ async function placeNewOrders(symbol) {
     console.log(`${symbol} current price ${spot.price} order quantity ${params.quantity} at ${dt.toLocaleString()}`);
     //console.log(`Placing limit orders ${params.buy} < ${spot.price} > ${params.sell}`);
     console.log(`Place orders at:`, params);
-    for (i = 0; i < params.buy.length; i++) {
-        const buyOrder = await placeOrder(
-            'BUY', 
-            params.quantity, 
-            symbol, 
-            params.buy[i]
-        );
-        console.log('Order placed:', buyOrder);
-    }
-    for (i = 0; i < params.sell.length; i++) {
-        const sellOrder = await placeOrder(
-            'SELL', 
-            params.quantity, 
-            symbol, 
-            params.sell[i]
-        );
-        console.log('Order placed:', sellOrder);
-    }
+    try {
+        for (i = 0; i < params.buy.length; i++) {
+            const buyOrder = await placeOrder(
+                'BUY', 
+                params.quantity, 
+                symbol, 
+                params.buy[i]
+            );
+            console.log('Order placed:', buyOrder);
+        }      
+    }catch (error) { }
+
+    try {
+        for (i = 0; i < params.sell.length; i++) {
+            const sellOrder = await placeOrder(
+                'SELL', 
+                params.quantity, 
+                symbol, 
+                params.sell[i]
+            );
+            console.log('Order placed:', sellOrder);
+        }
+    } catch (error) {}
+    
     return;
 }
 exports.cancelOpenOrders = cancelOpenOrders;
@@ -108,6 +115,7 @@ async function main() {
         await placeNewOrders(symbol);    
     } catch (error) {    
         console.error(`Error replacing orders: ${error}`);
+       // console.error(error);
     }
 }
 if (require.main === module) main();
