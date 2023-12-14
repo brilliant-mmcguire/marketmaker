@@ -5,7 +5,7 @@ https://binance-docs.github.io/apidocs/spot/en/#account-trade-list-user_data
 */
 const cfg = require('dotenv').config();
 const axios = require('axios');
-const { assert } = require('console');
+const { assert, Console } = require('console');
 const crypto = require('crypto');
 const qs = require('qs');
 
@@ -94,6 +94,59 @@ async function fetchPositions2(symbol) {
                 t.quoteQty = -1.0 * parseFloat(r.quoteQty);
             };
             
+
+
+            // Trade increases position.
+            let newPositionQty = pos.qty+t.qty;
+            let action = ''; 
+            if (Math.sign(pos.qty) == Math.sign(t.qty)) {
+                action = 'increasePosition';
+                pos.qty += t.qty;
+                pos.quoteQty += t.quoteQty;    
+                pos.cost += t.qty*t.price;
+                pos.avgPrice =  pos.cost / pos.qty;
+                // PL does not change.
+            
+            } else if(Math.sign(newPositionQty) == Math.sign(pos.qty)) {
+                action = 'reducePosition'
+                Console.assert(Math.abs(pos.qty+t.qty) < Math.abs(pos.qty), `Expect reduced position ${pos.qty} > ${newPositionQty}`);
+                
+                pos.cost += t.qty * pos.avgPrice; 
+                pos.realisedPL += t.qty * (pos.avgPrice - t.price); 
+                pos.matchedQty += Math.abs(t.qty);
+                pos.qty += t.qty;
+                pos.quoteQty += t.quoteQty;
+                // avgPrice doesn't change.
+            
+            } else {
+                action = `flipPosition`
+                Console.assert(Math.sign(newPositionQty)!= Math.sign(pos.qty), `Expect flipped position ${pos.qty} > ${newPositionQty}`);
+            
+                //
+                // first, the closing part of the trade.
+                //
+
+                // zero out cost.
+                pos.cost -= pos.qty * pos.avgPrice; 
+                console.assert(pos.cost==0.0, `Zero pos.cost on flat position ${pos.cost}`); 
+
+                pos.realisedPL -= pos.qty * (pos.avgPrice - t.price); 
+                pos.matchedQty += Math.abs(pos.qty);
+                
+                //
+                // now, the opening part of the trade.
+                //
+                pos.cost += (t.qty + pos.qty) * t.price;
+                
+                //
+                // finally, the general case computations. 
+                //
+                pos.qty += t.qty;
+                pos.quoteQty += t.quoteQty;
+                pos.avgPrice =  pos.cost / pos.qty;
+            }
+
+            /*
             if(t.isBuyer) {
                 if(pos.qty >= 0) { // opening buy trade on long position. 
                     console.assert(t.qty>0,`t.qty is +ve ${t.qty}`);
@@ -167,7 +220,7 @@ async function fetchPositions2(symbol) {
  
                         pos.cost += t.qty * pos.avgPrice; 
                         
-                        // PL delta is +ve if the sell price is lower than avg cost price.
+                        // PL delta is +ve if the sell price is lower than avg buy price.
                         pos.realisedPL += t.qty * (pos.avgPrice - t.price); 
                         
                         // Matched qty increases by the quantity of the whole sell trade.
@@ -205,8 +258,10 @@ async function fetchPositions2(symbol) {
                     }
                 }
             }
+        */
+
         };
-        
+       
         console.log(pos);
         return pos;
     } catch (error) {
