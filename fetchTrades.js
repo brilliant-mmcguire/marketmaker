@@ -27,7 +27,7 @@ async function fetchMyTrades(symbol, limit) {
         limit: limit,
         // startTime : new Date(ts.getFullYear(), ts.getMonth(), ts.getDate()-1).getTime(),
         // endTime : ts.getTime(), // endTime can't be more that 24hrs ahead of startTime.
-        startTime : (new Date().getTime() - (2 * 24 * 60 * 60 * 1000))
+        startTime : (new Date().getTime() - (1 * 24 * 60 * 60 * 1000))
     };
     const query = qs.stringify(params);
     const signature = createSignature(query);
@@ -75,7 +75,7 @@ async function fetchPositions2(symbol) {
             cost: 0.0,
             matchedQty : 0.0,
             realisedPL : 0.0,
-            sold : computePosition(trades.sells),
+            sold    : computePosition(trades.sells),
             bought  : computePosition(trades.buys)
         };
 
@@ -104,12 +104,12 @@ async function fetchPositions2(symbol) {
                 pos.qty += t.qty;
                 pos.quoteQty += t.quoteQty;    
                 pos.cost += t.qty*t.price;
-                pos.avgPrice =  pos.cost / pos.qty;
+                pos.avgPrice =  Math.abs(pos.qty) >= 0.00000001 ? pos.cost / pos.qty : 0.0;
                 // PL does not change.
             
             } else if(Math.sign(newPositionQty) == Math.sign(pos.qty)) {
                 action = 'reducePosition'
-                Console.assert(Math.abs(pos.qty+t.qty) < Math.abs(pos.qty), `Expect reduced position ${pos.qty} > ${newPositionQty}`);
+                console.assert(Math.abs(pos.qty+t.qty) < Math.abs(pos.qty), `Expect reduced position ${pos.qty} > ${newPositionQty}`);
                 
                 pos.cost += t.qty * pos.avgPrice; 
                 pos.realisedPL += t.qty * (pos.avgPrice - t.price); 
@@ -120,7 +120,7 @@ async function fetchPositions2(symbol) {
             
             } else {
                 action = `flipPosition`
-                Console.assert(Math.sign(newPositionQty)!= Math.sign(pos.qty), `Expect flipped position ${pos.qty} > ${newPositionQty}`);
+                console.assert(Math.sign(newPositionQty)!= Math.sign(pos.qty), `Expect flipped position ${pos.qty} > ${newPositionQty}`);
             
                 //
                 // first, the closing part of the trade.
@@ -143,7 +143,9 @@ async function fetchPositions2(symbol) {
                 //
                 pos.qty += t.qty;
                 pos.quoteQty += t.quoteQty;
-                pos.avgPrice =  pos.cost / pos.qty;
+                pos.avgPrice =  Math.abs(pos.qty) >= 0.00000001 ? pos.cost / pos.qty : 0.0;
+               
+               // pos.avgPrice =  pos.cost / pos.qty;
             }
 
             /*
