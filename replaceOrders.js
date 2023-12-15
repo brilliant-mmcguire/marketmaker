@@ -27,14 +27,17 @@ function priceLevel(spot,bps){
 */
 
 function getOrderParameters(currentPrice, kLine) {
+
+    // Base prices: midway between current price (close) and the high or low. 
     const sellBasePrc = 0.5*(kLine.high+kLine.close);
     const buyBasePrice = 0.5*(kLine.low+kLine.close);
+    
     return {
         quantity : (Math.round((19.0 / currentPrice) * 10000)) / 10000,
         sell : [
-            Math.round((sellBasePrc * 1.0200) * 100) / 100,
-            Math.round((sellBasePrc * 1.0170) * 100) / 100,
-            Math.round((sellBasePrc * 1.0145) * 100) / 100,
+            Math.round((sellBasePrc * 1.0220) * 100) / 100,
+            Math.round((sellBasePrc * 1.0180) * 100) / 100,
+            Math.round((sellBasePrc * 1.0150) * 100) / 100,
             Math.round((sellBasePrc * 1.0120) * 100) / 100,
             Math.round((sellBasePrc * 1.0095) * 100) / 100,
             Math.round((sellBasePrc * 1.0075) * 100) / 100,
@@ -44,9 +47,9 @@ function getOrderParameters(currentPrice, kLine) {
             Math.round((sellBasePrc * 1.0015) * 100) / 100
         ],
         buy : [
-            Math.round((buyBasePrice * 0.9800) * 100) / 100,
-            Math.round((buyBasePrice * 0.9830) * 100) / 100,
-            Math.round((buyBasePrice * 0.9855) * 100) / 100,
+            Math.round((buyBasePrice * 0.9780) * 100) / 100,
+            Math.round((buyBasePrice * 0.9820) * 100) / 100,
+            Math.round((buyBasePrice * 0.9850) * 100) / 100,
             Math.round((buyBasePrice * 0.9880) * 100) / 100,
             Math.round((buyBasePrice * 0.9905) * 100) / 100,
             Math.round((buyBasePrice * 0.9925) * 100) / 100,
@@ -58,7 +61,7 @@ function getOrderParameters(currentPrice, kLine) {
     }
 }
 exports.placeNewOrders = placeNewOrders;
-async function placeNewOrders(symbol) {
+async function placeNewOrders(symbol, position) {
     const spot = await fetchAvgPrice(symbol);
     const kLines = await fetchKLines(symbol, '4h', 1);
     const params = getOrderParameters(spot.price, kLines[0]);
@@ -66,30 +69,57 @@ async function placeNewOrders(symbol) {
     console.log(`${symbol} current price ${spot.price} order quantity ${params.quantity} at ${dt.toLocaleString()}`);
     //console.log(`Placing limit orders ${params.buy} < ${spot.price} > ${params.sell}`);
     console.log(`Place orders at:`, params);
-    try {
-        for (i = 0; i < params.buy.length; i++) {
-            const buyOrder = await placeOrder(
-                'BUY', 
-                params.quantity, 
-                symbol, 
-                params.buy[i]
-            );
-            console.log('Order placed:', buyOrder);
-        }      
-    }catch (error) { }
-
-    try {
-        for (i = 0; i < params.sell.length; i++) {
-            const sellOrder = await placeOrder(
-                'SELL', 
-                params.quantity, 
-                symbol, 
-                params.sell[i]
-            );
-            console.log('Order placed:', sellOrder);
-        }
-    } catch (error) {}
+   
     
+   
+    for (let i = 0; i < params.buy.length; i++) {
+        
+        if((position.cost > 250.0) && params.buy[i] >  (0.999 * position.avgPrice)) {
+            console.log(
+                `over bought so we don't want to buy unless we are improving our avg price.`, 
+                params.buy[i]);
+            break;
+        }
+
+        if((position.cost < 100.0) && params.buy[i] > (0.999 * position.avgPrice)) {
+            console.log(
+                `short position and we do not want to buy at more than cost price.`, 
+                params.buy[i]);
+            break;
+        }
+
+        const buyOrder = await placeOrder(
+            'BUY', 
+            params.quantity, 
+            symbol, 
+            params.buy[i]
+        );
+        console.log('Order placed:', buyOrder);
+    }
+    for (let i = 0; i < params.sell.length; i++) {
+
+        if(position.cost < 250.0 && params.sell[i] <  (1.001 * position.avgPrice)) {
+            console.log(
+                `over sold so we don't want to sell unless we are improving our avg price.` , 
+                params.sell[i]);
+            break;
+        }
+
+        if(position.cost > 100.0 && params.sell[i] < 1.001*position.avgPrice) {
+            console.log(
+                `long position and we do not want to sell at less than cost price.`, 
+                params.sell[i]);
+            break;
+        }
+
+        const sellOrder = await placeOrder(
+            'SELL', 
+            params.quantity, 
+            symbol, 
+            params.sell[i]
+        );
+        console.log('Order placed:', sellOrder);
+    }
     return;
 }
 exports.cancelOpenOrders = cancelOpenOrders;
@@ -111,8 +141,8 @@ async function main() {
     if(!symbol) throw 'Symbol not provided.'; 
     try {
         await cancelOpenOrders(symbol);
-        await fetchPositions(symbol);
-        await placeNewOrders(symbol);    
+        const position = await fetchPositions(symbol);
+        await placeNewOrders(symbol, position);    
     } catch (error) {    
         console.error(`Error replacing orders: ${error}`);
        // console.error(error);
