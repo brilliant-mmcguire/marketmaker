@@ -64,7 +64,8 @@ function computePosition(trades) {
     };
 }
 
-async function fetchPositions2(symbol) {
+exports.fetchPositions = fetchPositions;
+async function fetchPositions(symbol) {
     try {
         const trades = await fetchMyTrades(symbol, 1000);
         const pos = {
@@ -157,6 +158,7 @@ async function fetchPositions2(symbol) {
     }
 }
 
+/*
 exports.fetchPositions = fetchPositions;
 async function fetchPositions(symbol) {
     try {
@@ -188,12 +190,13 @@ async function fetchPositions(symbol) {
         console.error(`Error fetching trades: ${error}`);
     }
 }
+*/
 
 async function main() {
     if (require.main !== module) return;
     const symbol = process.argv[2];
     if(!symbol) throw 'Symbol not provided.'; 
-    fetchPositions2(symbol);
+    fetchPositions(symbol);
 }
 
 if (require.main === module) main();
