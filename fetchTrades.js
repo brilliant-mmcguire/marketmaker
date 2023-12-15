@@ -5,10 +5,10 @@ https://binance-docs.github.io/apidocs/spot/en/#account-trade-list-user_data
 */
 const cfg = require('dotenv').config();
 const axios = require('axios');
-const { assert, Console } = require('console');
+const { Console } = require('console');
 const crypto = require('crypto');
 const qs = require('qs');
-
+ 
 const API_KEY = process.env.API_KEY;
 const API_SECRET = process.env.API_SECRET;
 const BASE_URL = 'https://api.binance.com';
@@ -27,7 +27,7 @@ async function fetchMyTrades(symbol, limit) {
         limit: limit,
         // startTime : new Date(ts.getFullYear(), ts.getMonth(), ts.getDate()-1).getTime(),
         // endTime : ts.getTime(), // endTime can't be more that 24hrs ahead of startTime.
-        startTime : (new Date().getTime() - (1 * 24 * 60 * 60 * 1000))
+        startTime : (new Date().getTime() - (1.5 * 24 * 60 * 60 * 1000))
     };
     const query = qs.stringify(params);
     const signature = createSignature(query);
@@ -107,7 +107,9 @@ async function fetchPositions2(symbol) {
             
             } else if(Math.sign(newPositionQty) == Math.sign(pos.qty)) {
                 // Reduce position
-                console.assert(Math.abs(pos.qty+t.qty) < Math.abs(pos.qty), `Expect reduced position ${pos.qty} :> ${newPositionQty}`);
+                console.assert(
+                    Math.abs(pos.qty+t.qty) < Math.abs(pos.qty), 
+                    `Expect reduced position ${pos.qty} :> ${newPositionQty}`);
                 
                 pos.cost += t.qty * pos.avgPrice; 
                 pos.realisedPL += t.qty * (pos.avgPrice - t.price); 
@@ -118,7 +120,9 @@ async function fetchPositions2(symbol) {
             
             } else {
                 // Flip position
-                console.assert(Math.sign(newPositionQty)!= Math.sign(pos.qty), `Expect flipped position ${pos.qty} :> ${newPositionQty}`);
+                console.assert(
+                    Math.sign(newPositionQty)!= Math.sign(pos.qty), 
+                    `Expect flipped position ${pos.qty} :> ${newPositionQty}`);
             
                 //
                 // first, the closing part of the trade.
@@ -126,7 +130,9 @@ async function fetchPositions2(symbol) {
 
                 // zero out cost.
                 pos.cost -= pos.qty * pos.avgPrice; 
-                console.assert(Math.abs(pos.cost<=0.00000001), `Expect zero pos.cost on flat position ${pos.cost}`); 
+                console.assert(
+                    Math.abs(pos.cost<=0.00000001), 
+                    `Expect zero pos.cost on flat position ${pos.cost}`); 
 
                 pos.realisedPL -= pos.qty * (pos.avgPrice - t.price); 
                 pos.matchedQty += Math.abs(pos.qty);
