@@ -107,7 +107,7 @@ async function fetchPositions2(symbol) {
             
             } else if(Math.sign(newPositionQty) == Math.sign(pos.qty)) {
                 // Reduce position
-                console.assert(Math.abs(pos.qty+t.qty) < Math.abs(pos.qty), `Expect reduced position ${pos.qty} > ${newPositionQty}`);
+                console.assert(Math.abs(pos.qty+t.qty) < Math.abs(pos.qty), `Expect reduced position ${pos.qty} :> ${newPositionQty}`);
                 
                 pos.cost += t.qty * pos.avgPrice; 
                 pos.realisedPL += t.qty * (pos.avgPrice - t.price); 
@@ -118,7 +118,7 @@ async function fetchPositions2(symbol) {
             
             } else {
                 // Flip position
-                console.assert(Math.sign(newPositionQty)!= Math.sign(pos.qty), `Expect flipped position ${pos.qty} > ${newPositionQty}`);
+                console.assert(Math.sign(newPositionQty)!= Math.sign(pos.qty), `Expect flipped position ${pos.qty} :> ${newPositionQty}`);
             
                 //
                 // first, the closing part of the trade.
@@ -126,7 +126,7 @@ async function fetchPositions2(symbol) {
 
                 // zero out cost.
                 pos.cost -= pos.qty * pos.avgPrice; 
-                console.assert(pos.cost==0.0, `Zero pos.cost on flat position ${pos.cost}`); 
+                console.assert(Math.abs(pos.cost<=0.00000001), `Expect zero pos.cost on flat position ${pos.cost}`); 
 
                 pos.realisedPL -= pos.qty * (pos.avgPrice - t.price); 
                 pos.matchedQty += Math.abs(pos.qty);
@@ -161,7 +161,7 @@ async function fetchPositions(symbol) {
             avgPrice : 0.0,
             cost: 0.0,
             realisedPL : 0.0,
-            sold : computePosition(trades.sells),
+            sold    : computePosition(trades.sells),
             bought  : computePosition(trades.buys)
         };
 

@@ -27,32 +27,36 @@ function priceLevel(spot,bps){
 */
 
 function getOrderParameters(currentPrice, kLine) {
+
+    // Base prices: midway between current price (close) and the high or low. 
     const sellBasePrc = 0.5*(kLine.high+kLine.close);
     const buyBasePrice = 0.5*(kLine.low+kLine.close);
+    
     return {
         quantity : (Math.round((16.0 / currentPrice) * 10000)) / 10000,
         sell : [
+            Math.round((sellBasePrc * 1.0200) * 100) / 100,
             Math.round((sellBasePrc * 1.0180) * 100) / 100,
-            Math.round((sellBasePrc * 1.0160) * 100) / 100,
-            Math.round((sellBasePrc * 1.0140) * 100) / 100,
+            Math.round((sellBasePrc * 1.0150) * 100) / 100,
             Math.round((sellBasePrc * 1.0120) * 100) / 100,
             Math.round((sellBasePrc * 1.0100) * 100) / 100,
             Math.round((sellBasePrc * 1.0080) * 100) / 100,
             Math.round((sellBasePrc * 1.0060) * 100) / 100,
-            Math.round((sellBasePrc * 1.0040) * 100) / 100,
-            Math.round((sellBasePrc * 1.0020) * 100) / 100
+            Math.round((sellBasePrc * 1.0045) * 100) / 100,
+            Math.round((sellBasePrc * 1.0030) * 100) / 100,
+            Math.round((sellBasePrc * 1.0015) * 100) / 100
         ],
         buy : [
             Math.round((buyBasePrice * 0.9800) * 100) / 100,
             Math.round((buyBasePrice * 0.9820) * 100) / 100,
-            Math.round((buyBasePrice * 0.9840) * 100) / 100,
-            Math.round((buyBasePrice * 0.9860) * 100) / 100,
+            Math.round((buyBasePrice * 0.9850) * 100) / 100,
             Math.round((buyBasePrice * 0.9880) * 100) / 100,
-            Math.round((buyBasePrice * 0.9900) * 100) / 100,
+            Math.round((buyBasePrice * 0.9990) * 100) / 100,
             Math.round((buyBasePrice * 0.9920) * 100) / 100,
             Math.round((buyBasePrice * 0.9940) * 100) / 100,
-            Math.round((buyBasePrice * 0.9960) * 100) / 100, 
-            Math.round((buyBasePrice * 0.9980) * 100) / 100
+            Math.round((buyBasePrice * 0.9955) * 100) / 100,
+            Math.round((buyBasePrice * 0.9970) * 100) / 100, 
+            Math.round((buyBasePrice * 0.9985) * 100) / 100
         ]
     }
 }
