@@ -21,36 +21,33 @@ const { fetchPriceDepth } = require('./marketDataTxns');
 const { fetchPositions } = require('./fetchTrades');
 
 const symbol = 'USDCUSDT';
-const qty = 16.0;
-const sellPrcFloor  = parseFloat('0.9997');
-const buyPrcCeiling = parseFloat('1.0001');
+const qty = 14.0;
+const sellPrcFloor  = parseFloat('0.9995');  // hard limits, just in case prices run away.
+const buyPrcCeiling = parseFloat('1.0005');
 const overSoldThreshold = -200;
 const overBoughtTreshold = +200;
-//const maxBidsForPrice = 6;
-//const maxOffersForPrice = 6;
 
-const qtyQuantum = 1500000;  // Units of order book quantity on offer at  a price level. 
-                            // Place orders in multiples of quanta. 
-                            // max number of orders = (qty/quantum) OR 
-                            // order qty = round (12*(qty/quantum))
+const qtyQuantum = 1200000;  // Units of order book quantity on offer at  a price level. 
+                             // Place orders in multiples of quanta. 
+                             // max number of orders = (qty/quantum) OR 
+                             // order qty = round (12*(qty/quantum))
 
 async function makeBids(bestBidPrices, allOrders, position) {
     
     console.log(`Making bids for ${symbol} at ${new Date()}`);
-   // console.log(position);
-
-   let x = buyPrcCeiling; 
+   
+    let x = buyPrcCeiling; 
 
     if(position.qty>overBoughtTreshold) {
         console.log(`Over bought at an average price of ${position.avgPrice}`);
         // Avoid buying unless we can improve our average price.
-        let x = position.avgPrice;
+        x = position.avgPrice - 0.0001;
     }
 
     if(position.qty < overSoldThreshold) {
         console.log(`Over sold at an average price of ${position.avgPrice}`);
         // Avoid selling at a loss.
-        let x = position.avgPrice; 
+        x = position.avgPrice; 
     }
     
     for(let i = 0; i< bestBidPrices.length; i++) {
@@ -89,13 +86,13 @@ async function makeOffers(bestOffers, allOrders, position) {
     if(position.qty < overSoldThreshold) {
         console.log(`Over sold at an average price of ${position.avgPrice}`);
         // Avoid selling unless we can improve on our average price.
-        let x = position.avgPrice; 
+        x = position.avgPrice + 0.0001; 
     }
 
     if(position.qty > overBoughtTreshold) {
         console.log(`Overbought at average price of ${position.avgPrice}`)
         // avoild selling at less than the average price at which we have bought.
-        let x = position.avgPrice;
+        x = position.avgPrice;
     }
 
     for(let i = 0; i< bestOffers.length; i++) {
@@ -104,6 +101,7 @@ async function makeOffers(bestOffers, allOrders, position) {
 
         if(offer.price < x || maxOrders < 1) {
             console.log(`Ignoring price level ${offer.price} - ${offer.qty}`);
+
         } else {
             let orders = allOrders.filter(order => parseFloat(order.price) === offer.price ); 
             console.log(`We have ${orders.length} orders on price level ${offer.price}, maxOrders ${maxOrders}`);
