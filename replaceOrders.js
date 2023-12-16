@@ -63,7 +63,7 @@ function getOrderParameters(currentPrice, kLine) {
 exports.placeNewOrders = placeNewOrders;
 async function placeNewOrders(symbol, position) {
     const spot = await fetchAvgPrice(symbol);
-    const kLines = await fetchKLines(symbol, '4h', 1);
+    const kLines = await fetchKLines(symbol, '1h', 1);
     const params = getOrderParameters(spot.price, kLines[0]);
     const dt = new Date();
     console.log(`${symbol} current price ${spot.price} order quantity ${params.quantity} at ${dt.toLocaleString()}`);
@@ -72,18 +72,18 @@ async function placeNewOrders(symbol, position) {
    
     try {  // Make bids.
         for (let i = 0; i < params.buy.length; i++) {
-            if((position.cost > 250.0) && params.buy[i] >  (0.999 * position.avgPrice)) {
+            if((position.cost > 100.0) && params.buy[i] >  (0.999 * position.avgPrice)) {
                 console.log(
-                    `over bought so we don't want to buy unless we are improving our avg price.`, 
+                    `long position so we don't want to buy unless we are improving our avg price.`, 
                     params.buy[i]);
-                break;
+                continue;
             }
 
             if((position.cost < 100.0) && params.buy[i] > (0.999 * position.avgPrice)) {
                 console.log(
                     `short position and we do not want to buy at more than cost price.`, 
                     params.buy[i]);
-                break;
+                continue;
             }
 
             const buyOrder = await placeOrder(
@@ -101,18 +101,18 @@ async function placeNewOrders(symbol, position) {
     try { // Make offers.
         for (let i = 0; i < params.sell.length; i++) {
 
-            if(position.cost < 250.0 && params.sell[i] <  (1.001 * position.avgPrice)) {
+            if(position.cost < 100.0 && params.sell[i] <  (1.001 * position.avgPrice)) {
                 console.log(
-                    `over sold so we don't want to sell unless we are improving our avg price.` , 
+                    `short position so we don't want to sell unless we are improving our avg price.` , 
                     params.sell[i]);
-                break;
+                continue;
             }
 
             if(position.cost > 100.0 && params.sell[i] < 1.001*position.avgPrice) {
                 console.log(
                     `long position and we do not want to sell at less than cost price.`, 
                     params.sell[i]);
-                break;
+                continue;
             }
 
             const sellOrder = await placeOrder(
@@ -151,7 +151,6 @@ async function main() {
         await placeNewOrders(symbol, position);    
     } catch (error) {    
         console.error(`Error replacing orders: ${error}`);
-       // console.error(error);
     }
 }
 if (require.main === module) main();

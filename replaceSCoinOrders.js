@@ -46,7 +46,7 @@ async function makeBids(bestBidPrices, allOrders, position) {
 
     if(position.qty < overSoldThreshold) {
         console.log(`Over sold at an average price of ${position.avgPrice}`);
-        // Avoid selling at a loss.
+        // Avoid buying back at a loss.
         x = position.avgPrice; 
     }
     
