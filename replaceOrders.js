@@ -70,55 +70,61 @@ async function placeNewOrders(symbol, position) {
     //console.log(`Placing limit orders ${params.buy} < ${spot.price} > ${params.sell}`);
     console.log(`Place orders at:`, params);
    
-    
-   
-    for (let i = 0; i < params.buy.length; i++) {
-        
-        if((position.cost > 250.0) && params.buy[i] >  (0.999 * position.avgPrice)) {
-            console.log(
-                `over bought so we don't want to buy unless we are improving our avg price.`, 
-                params.buy[i]);
-            break;
-        }
+    try {  // Make bids.
+        for (let i = 0; i < params.buy.length; i++) {
+            if((position.cost > 250.0) && params.buy[i] >  (0.999 * position.avgPrice)) {
+                console.log(
+                    `over bought so we don't want to buy unless we are improving our avg price.`, 
+                    params.buy[i]);
+                break;
+            }
 
-        if((position.cost < 100.0) && params.buy[i] > (0.999 * position.avgPrice)) {
-            console.log(
-                `short position and we do not want to buy at more than cost price.`, 
-                params.buy[i]);
-            break;
-        }
+            if((position.cost < 100.0) && params.buy[i] > (0.999 * position.avgPrice)) {
+                console.log(
+                    `short position and we do not want to buy at more than cost price.`, 
+                    params.buy[i]);
+                break;
+            }
 
-        const buyOrder = await placeOrder(
-            'BUY', 
-            params.quantity, 
-            symbol, 
-            params.buy[i]
-        );
-        console.log('Order placed:', buyOrder);
+            const buyOrder = await placeOrder(
+                'BUY', 
+                params.quantity, 
+                symbol, 
+                params.buy[i]
+            );
+            console.log('Order placed:', buyOrder);
+        }
+    } catch (error) {
+        console.log(`Error thrown placing buy order ${error}`);
     }
-    for (let i = 0; i < params.sell.length; i++) {
 
-        if(position.cost < 250.0 && params.sell[i] <  (1.001 * position.avgPrice)) {
-            console.log(
-                `over sold so we don't want to sell unless we are improving our avg price.` , 
-                params.sell[i]);
-            break;
+    try { // Make offers.
+        for (let i = 0; i < params.sell.length; i++) {
+
+            if(position.cost < 250.0 && params.sell[i] <  (1.001 * position.avgPrice)) {
+                console.log(
+                    `over sold so we don't want to sell unless we are improving our avg price.` , 
+                    params.sell[i]);
+                break;
+            }
+
+            if(position.cost > 100.0 && params.sell[i] < 1.001*position.avgPrice) {
+                console.log(
+                    `long position and we do not want to sell at less than cost price.`, 
+                    params.sell[i]);
+                break;
+            }
+
+            const sellOrder = await placeOrder(
+                'SELL', 
+                params.quantity, 
+                symbol, 
+                params.sell[i]
+            );
+            console.log('Order placed:', sellOrder);
         }
-
-        if(position.cost > 100.0 && params.sell[i] < 1.001*position.avgPrice) {
-            console.log(
-                `long position and we do not want to sell at less than cost price.`, 
-                params.sell[i]);
-            break;
-        }
-
-        const sellOrder = await placeOrder(
-            'SELL', 
-            params.quantity, 
-            symbol, 
-            params.sell[i]
-        );
-        console.log('Order placed:', sellOrder);
+    } catch (error) {
+        console.log(`Error thrown placing sell order ${error}`);
     }
     return;
 }
@@ -132,7 +138,7 @@ async function cancelOpenOrders(symbol) {
     console.log(`Cancelling orders: ${orders}`);
     orders.forEach(order => {
         cancelOrder(order.symbol, order.orderId).then(response => {
-            console.log(`Cancelled order ${order.orderId}:`, response);
+            console.log(`Cancelled order ${order.orderId}`);
         });
     });    
 }  
