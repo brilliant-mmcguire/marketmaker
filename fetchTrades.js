@@ -1,7 +1,7 @@
 /*
 Fetch Trades to compute trading position and statistics. 
 
-https://binance-docs.github.io/apidocs/spot/en/#account-trade-list-user_data
+
 */
 const cfg = require('dotenv').config();
 const axios = require('axios');
@@ -17,7 +17,7 @@ function createSignature(query) {
     return crypto.createHmac('sha256', API_SECRET).update(query).digest('hex');
 }
 
-async function fetchMyTrades(symbol, limit) {
+async function fetchMyTrades(symbol, limit = 1000, days=1.5) {
     const endpoint = '/api/v3/myTrades';
     const ts = new Date();
     
@@ -27,7 +27,7 @@ async function fetchMyTrades(symbol, limit) {
         limit: limit,
         // startTime : new Date(ts.getFullYear(), ts.getMonth(), ts.getDate()-1).getTime(),
         // endTime : ts.getTime(), // endTime can't be more that 24hrs ahead of startTime.
-        startTime : (new Date().getTime() - (1.5 * 24 * 60 * 60 * 1000))
+        startTime : (new Date().getTime() - (days * 24 * 60 * 60 * 1000))
     };
     const query = qs.stringify(params);
     const signature = createSignature(query);
@@ -97,7 +97,7 @@ async function fetchPositions(symbol) {
             
             // Trade increases position.
             let newPositionQty = pos.qty+t.qty;
-            let action = ''; 
+       
             if (Math.sign(pos.qty) == Math.sign(t.qty)) {
                 // Increase position
                 pos.qty += t.qty;
@@ -157,40 +157,6 @@ async function fetchPositions(symbol) {
         console.error(`Error fetching trades: ${error}`);
     }
 }
-
-/*
-exports.fetchPositions = fetchPositions;
-async function fetchPositions(symbol) {
-    try {
-        const trades = await fetchMyTrades(symbol, 1000);
-        const position = {
-            symbol : symbol,
-            qty : 0.0,
-            avgPrice : 0.0,
-            cost: 0.0,
-            realisedPL : 0.0,
-            sold    : computePosition(trades.sells),
-            bought  : computePosition(trades.buys)
-        };
-
-        position.qty = position.bought.qty - position.sold.qty;
-        position.cost = position.bought.consideration -  position.sold.consideration;
-        const matchedQty = Math.min(position.bought.qty,position.sold.qty);
-        position.realisedPL = matchedQty*(position.sold.avgPrice-position.bought.avgPrice);
-
-        if(position.qty>=0){
-            position.avgPrice = position.bought.avgPrice;
-        } else {
-            position.avgPrice = position.sold.avgPrice;
-        }
-
-        console.log(position);
-        return position;
-    } catch (error) {
-        console.error(`Error fetching trades: ${error}`);
-    }
-}
-*/
 
 async function main() {
     if (require.main !== module) return;
