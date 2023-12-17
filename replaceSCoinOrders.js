@@ -22,10 +22,10 @@ const { fetchPositions } = require('./fetchTrades');
 
 const symbol = 'USDCUSDT';
 const qty = 14.0;
-const sellPrcFloor  = parseFloat('0.9995');  // hard limits, just in case prices run away.
-const buyPrcCeiling = parseFloat('1.0005');
-const overSoldThreshold = -200;
-const overBoughtTreshold = +200;
+const sellPrcFloor  = parseFloat('0.9990');  // hard limits, just in case prices run away.
+const buyPrcCeiling = parseFloat('1.0010');
+const overSoldThreshold  = -260;
+const overBoughtTreshold = +260;
 
 const qtyQuantum = 1200000;  // Units of order book quantity on offer at  a price level. 
                              // Place orders in multiples of quanta. 
@@ -37,19 +37,25 @@ async function makeBids(bestBidPrices, allOrders, position) {
     console.log(`Making bids for ${symbol} at ${new Date()}`);
    
     let x = buyPrcCeiling; 
-
-    if(position.qty>overBoughtTreshold) {
-        console.log(`Over bought at an average price of ${position.avgPrice}`);
+    if(position.qty > overBoughtTreshold) {
+        console.log(`Overbought at an avg cost price of ${position.avgPrice}`);
+        // We can be more demading on price.
+        x = position.avgPrice - 0.0003;
+    } else if(position.qty > 60) {
+        console.log(`Long posn at an avg cost price of ${position.avgPrice}`);
         // Avoid buying unless we can improve our average price.
         x = position.avgPrice - 0.0001;
     }
-
     if(position.qty < overSoldThreshold) {
         console.log(`Over sold at an average price of ${position.avgPrice}`);
-        // Avoid buying back at a loss.
+        // We may need to buy at a loss as we are severely over-sold and running out of USDC.
+        x = position.avgPrice + 0.0003; 
+    } else if(position.qty < 100) {
+        console.log(`Short posn at an average price of ${position.avgPrice}`);
+        // Avoid buying back at a loss. 
         x = position.avgPrice; 
     }
-    
+
     for(let i = 0; i< bestBidPrices.length; i++) {
         let bid = bestBidPrices[i];
         let maxOrders = bid.qty / qtyQuantum; 
@@ -80,19 +86,25 @@ async function makeBids(bestBidPrices, allOrders, position) {
 async function makeOffers(bestOffers, allOrders, position) {
  
     console.log(`Making offers for ${symbol}  at ${new Date()}`);
-    //console.log(position);
+   
     let x = sellPrcFloor; 
-
     if(position.qty < overSoldThreshold) {
-        console.log(`Over sold at an average price of ${position.avgPrice}`);
-        // Avoid selling unless we can improve on our average price.
-        x = position.avgPrice + 0.0001; 
+        console.log(`Oversold at an avg cost price of ${position.avgPrice}`);
+        // We can be more demading on price.
+        x = position.avgPrice + 0.0003;
+    } else if(position.qty < 60) {
+        console.log(`Short posn at an avg cost price of ${position.avgPrice}`);
+        // Avoid selling unless we can improve our average price.
+        x = position.avgPrice + 0.0001;
     }
-
     if(position.qty > overBoughtTreshold) {
-        console.log(`Overbought at average price of ${position.avgPrice}`)
-        // avoild selling at less than the average price at which we have bought.
-        x = position.avgPrice;
+        console.log(`Over bought at an average price of ${position.avgPrice}`);
+        // We may need to sell at a loss as we are severely over-bought and running out of USDT.
+        x = position.avgPrice - 0.0003; 
+    } else if(position.qty < 100) {
+        console.log(`Short posn at an average price of ${position.avgPrice}`);
+        // Avoid selling back at a loss. 
+        x = position.avgPrice; 
     }
 
     for(let i = 0; i< bestOffers.length; i++) {
