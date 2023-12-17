@@ -35,8 +35,8 @@ function getOrderParameters(currentPrice, kLine) {
     return {
         quantity : (Math.round((19.0 / currentPrice) * 10000)) / 10000,
         sell : [
-            Math.round((sellBasePrc * 1.0220) * 100) / 100,
-            Math.round((sellBasePrc * 1.0180) * 100) / 100,
+           // Math.round((sellBasePrc * 1.0220) * 100) / 100,
+           // Math.round((sellBasePrc * 1.0180) * 100) / 100,
             Math.round((sellBasePrc * 1.0150) * 100) / 100,
             Math.round((sellBasePrc * 1.0120) * 100) / 100,
             Math.round((sellBasePrc * 1.0095) * 100) / 100,
@@ -44,11 +44,12 @@ function getOrderParameters(currentPrice, kLine) {
             Math.round((sellBasePrc * 1.0060) * 100) / 100,
             Math.round((sellBasePrc * 1.0045) * 100) / 100,
             Math.round((sellBasePrc * 1.0030) * 100) / 100,
-            Math.round((sellBasePrc * 1.0015) * 100) / 100
+            Math.round((sellBasePrc * 1.0015) * 100) / 100,
+            Math.round((sellBasePrc * 1.0005) * 100) / 100
         ],
         buy : [
-            Math.round((buyBasePrice * 0.9780) * 100) / 100,
-            Math.round((buyBasePrice * 0.9820) * 100) / 100,
+         //   Math.round((buyBasePrice * 0.9780) * 100) / 100,
+         //   Math.round((buyBasePrice * 0.9820) * 100) / 100,
             Math.round((buyBasePrice * 0.9850) * 100) / 100,
             Math.round((buyBasePrice * 0.9880) * 100) / 100,
             Math.round((buyBasePrice * 0.9905) * 100) / 100,
@@ -56,7 +57,8 @@ function getOrderParameters(currentPrice, kLine) {
             Math.round((buyBasePrice * 0.9940) * 100) / 100,
             Math.round((buyBasePrice * 0.9955) * 100) / 100,
             Math.round((buyBasePrice * 0.9970) * 100) / 100, 
-            Math.round((buyBasePrice * 0.9985) * 100) / 100
+            Math.round((buyBasePrice * 0.9985) * 100) / 100, 
+            Math.round((buyBasePrice * 0.9995) * 100) / 100
         ]
     }
 }
@@ -135,7 +137,7 @@ async function cancelOpenOrders(symbol) {
         console.log(`No orders to cancel.`);
         return;
     }
-    console.log(`Cancelling orders: ${orders}`);
+    console.log(`Cancelling ${orders.length} orders.`);
     orders.forEach(order => {
         cancelOrder(order.symbol, order.orderId).then(response => {
             console.log(`Cancelled order ${order.orderId}`);
