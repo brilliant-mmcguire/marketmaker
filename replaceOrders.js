@@ -81,7 +81,7 @@ async function placeNewOrders(symbol, position) {
                 continue;
             }
 
-            if((position.cost < 100.0) && params.buy[i] > (0.999 * position.avgPrice)) {
+            if((position.cost < -100.0) && params.buy[i] > (0.999 * position.avgPrice)) {
                 console.log(
                     `short position and we do not want to buy at more than cost price.`, 
                     params.buy[i]);
@@ -103,7 +103,7 @@ async function placeNewOrders(symbol, position) {
     try { // Make offers.
         for (let i = 0; i < params.sell.length; i++) {
 
-            if(position.cost < 100.0 && params.sell[i] <  (1.001 * position.avgPrice)) {
+            if(position.cost < -100.0 && params.sell[i] <  (1.001 * position.avgPrice)) {
                 console.log(
                     `short position so we don't want to sell unless we are improving our avg price.` , 
                     params.sell[i]);
