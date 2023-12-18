@@ -27,7 +27,7 @@ const buyPrcCeiling = parseFloat('1.0010');
 const overSoldThreshold  = -260;
 const overBoughtTreshold = +260;
 
-const qtyQuantum = 1200000;  // Units of order book quantity on offer at  a price level. 
+const qtyQuantum = 1000000;  // Units of order book quantity on offer at  a price level. 
                              // Place orders in multiples of quanta. 
                              // max number of orders = (qty/quantum) OR 
                              // order qty = round (12*(qty/quantum))
