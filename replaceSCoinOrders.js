@@ -50,7 +50,7 @@ async function makeBids(bestBidPrices, allOrders, position) {
         console.log(`Over sold at an average price of ${position.avgPrice}`);
         // We may need to buy at a loss as we are severely over-sold and running out of USDC.
         x = position.avgPrice + 0.0003; 
-    } else if(position.qty < 100) {
+    } else if(position.qty < -100) {
         console.log(`Short posn at an average price of ${position.avgPrice}`);
         // Avoid buying back at a loss. 
         x = position.avgPrice; 
@@ -92,7 +92,7 @@ async function makeOffers(bestOffers, allOrders, position) {
         console.log(`Oversold at an avg cost price of ${position.avgPrice}`);
         // We can be more demading on price.
         x = position.avgPrice + 0.0003;
-    } else if(position.qty < 60) {
+    } else if(position.qty < -60) {
         console.log(`Short posn at an avg cost price of ${position.avgPrice}`);
         // Avoid selling unless we can improve our average price.
         x = position.avgPrice + 0.0001;
@@ -101,8 +101,8 @@ async function makeOffers(bestOffers, allOrders, position) {
         console.log(`Over bought at an average price of ${position.avgPrice}`);
         // We may need to sell at a loss as we are severely over-bought and running out of USDT.
         x = position.avgPrice - 0.0003; 
-    } else if(position.qty < 100) {
-        console.log(`Short posn at an average price of ${position.avgPrice}`);
+    } else if(position.qty > 100) {
+        console.log(`Long posn at an average price of ${position.avgPrice}`);
         // Avoid selling back at a loss. 
         x = position.avgPrice; 
     }
