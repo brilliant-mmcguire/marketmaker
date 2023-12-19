@@ -37,12 +37,12 @@ function getOrderParameters(currentPrice, kLine) {
         sell : [
            // Math.round((sellBasePrc * 1.0220) * 100) / 100,
            // Math.round((sellBasePrc * 1.0180) * 100) / 100,
-            Math.round((sellBasePrc * 1.0150) * 100) / 100,
-            Math.round((sellBasePrc * 1.0120) * 100) / 100,
-            Math.round((sellBasePrc * 1.0095) * 100) / 100,
-            Math.round((sellBasePrc * 1.0075) * 100) / 100,
-            Math.round((sellBasePrc * 1.0060) * 100) / 100,
-            Math.round((sellBasePrc * 1.0045) * 100) / 100,
+           // Math.round((sellBasePrc * 1.0150) * 100) / 100,
+           // Math.round((sellBasePrc * 1.0120) * 100) / 100,
+           // Math.round((sellBasePrc * 1.0100) * 100) / 100,
+           // Math.round((sellBasePrc * 1.0080) * 100) / 100,
+            Math.round((sellBasePrc * 1.0070) * 100) / 100,
+            Math.round((sellBasePrc * 1.0050) * 100) / 100,
             Math.round((sellBasePrc * 1.0030) * 100) / 100,
             Math.round((sellBasePrc * 1.0015) * 100) / 100,
             Math.round((sellBasePrc * 1.0005) * 100) / 100
@@ -50,12 +50,12 @@ function getOrderParameters(currentPrice, kLine) {
         buy : [
          //   Math.round((buyBasePrice * 0.9780) * 100) / 100,
          //   Math.round((buyBasePrice * 0.9820) * 100) / 100,
-            Math.round((buyBasePrice * 0.9850) * 100) / 100,
-            Math.round((buyBasePrice * 0.9880) * 100) / 100,
-            Math.round((buyBasePrice * 0.9905) * 100) / 100,
-            Math.round((buyBasePrice * 0.9925) * 100) / 100,
-            Math.round((buyBasePrice * 0.9940) * 100) / 100,
-            Math.round((buyBasePrice * 0.9955) * 100) / 100,
+         //   Math.round((buyBasePrice * 0.9850) * 100) / 100,
+         //   Math.round((buyBasePrice * 0.9880) * 100) / 100,
+         //   Math.round((buyBasePrice * 0.9900) * 100) / 100,
+         //   Math.round((buyBasePrice * 0.9920) * 100) / 100,
+            Math.round((buyBasePrice * 0.9930) * 100) / 100,
+            Math.round((buyBasePrice * 0.9950) * 100) / 100,
             Math.round((buyBasePrice * 0.9970) * 100) / 100, 
             Math.round((buyBasePrice * 0.9985) * 100) / 100, 
             Math.round((buyBasePrice * 0.9995) * 100) / 100
@@ -74,14 +74,25 @@ async function placeNewOrders(symbol, position) {
    
     try {  // Make bids.
         for (let i = 0; i < params.buy.length; i++) {
-            if((position.cost > 100.0) && params.buy[i] >  (0.999 * position.avgPrice)) {
+            if((position.cost > 250.0) && params.buy[i] >  (0.990 * position.avgPrice)) {
+                console.log(
+                    `overbought so avoid buying unless we are improving our avg price lot.`, 
+                    params.buy[i]);
+                continue;
+            }
+            else if((position.cost > 100.0) && params.buy[i] >  (0.999 * position.avgPrice)) {
                 console.log(
                     `long position so we don't want to buy unless we are improving our avg price.`, 
                     params.buy[i]);
                 continue;
             }
 
-            if((position.cost < -100.0) && params.buy[i] > (0.999 * position.avgPrice)) {
+            if((position.cost < -250.0) && params.buy[i] > (1.002 * position.avgPrice)) {
+                console.log(
+                    `oversold so may need to buy back at a loss.`, 
+                    params.buy[i]);
+                continue;
+            } else if((position.cost < -100.0) && params.buy[i] > (0.999 * position.avgPrice)) {
                 console.log(
                     `short position and we do not want to buy at more than cost price.`, 
                     params.buy[i]);
@@ -103,6 +114,12 @@ async function placeNewOrders(symbol, position) {
     try { // Make offers.
         for (let i = 0; i < params.sell.length; i++) {
 
+            if(position.cost < -250.0 && params.sell[i] <  (1.010 * position.avgPrice)) {
+                console.log(
+                    `Oversold so we don't want to sell unless we are improving our avg price a lot.` , 
+                    params.sell[i]);
+                continue;
+            } else
             if(position.cost < -100.0 && params.sell[i] <  (1.001 * position.avgPrice)) {
                 console.log(
                     `short position so we don't want to sell unless we are improving our avg price.` , 
@@ -110,6 +127,12 @@ async function placeNewOrders(symbol, position) {
                 continue;
             }
 
+            if(position.cost > 250.0 && params.sell[i] < 0.998*position.avgPrice) {
+                console.log(
+                    `Overbought so we may may need to sell back at a loss.`, 
+                    params.sell[i]);
+                continue;
+            } else
             if(position.cost > 100.0 && params.sell[i] < 1.001*position.avgPrice) {
                 console.log(
                     `long position and we do not want to sell at less than cost price.`, 
