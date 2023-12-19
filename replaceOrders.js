@@ -87,11 +87,11 @@ async function placeNewOrders(symbol, position) {
                 continue;
             }
 
-            if((position.cost < -250.0) && params.buy[i] > (1.002 * position.avgPrice)) {
+            if(position.cost < -250.0 && params.buy[i] < 1.01 * position.avgPrice) {
                 console.log(
                     `oversold so may need to buy back at a loss.`, 
                     params.buy[i]);
-                continue;
+              //  continue;
             } else if((position.cost < -100.0) && params.buy[i] > (0.999 * position.avgPrice)) {
                 console.log(
                     `short position and we do not want to buy at more than cost price.`, 
@@ -127,11 +127,11 @@ async function placeNewOrders(symbol, position) {
                 continue;
             }
 
-            if(position.cost > 250.0 && params.sell[i] < 0.998*position.avgPrice) {
+            if(position.cost > 250.0 && params.sell[i] > 0.99*position.avgPrice) {
                 console.log(
                     `Overbought so we may may need to sell back at a loss.`, 
                     params.sell[i]);
-                continue;
+               // continue;
             } else
             if(position.cost > 100.0 && params.sell[i] < 1.001*position.avgPrice) {
                 console.log(
