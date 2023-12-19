@@ -62,8 +62,8 @@ async function makeBids(bestBidPrices, allOrders, position) {
 
     for(let i = 0; i< bestBidPrices.length; i++) {
         let bid = bestBidPrices[i];
-        let maxOrders = Math.max(5,bid.qty / qtyQuantum); 
-        
+        let maxOrders = Math.min(5,bid.qty / qtyQuantum); 
+
         if(bid.price>x || maxOrders < 1) {
             console.log(`Ignoring price level ${bid.price} - ${bid.qty}`);
         } else {
@@ -115,7 +115,7 @@ async function makeOffers(bestOffers, allOrders, position) {
 
     for(let i = 0; i< bestOffers.length; i++) {
         let offer = bestOffers[i];
-        let maxOrders = Math.max(5,offer.qty / qtyQuantum); 
+        let maxOrders = Math.min(5,offer.qty / qtyQuantum); 
        
         if(offer.price < x || maxOrders < 1) {
             console.log(`Ignoring price level ${offer.price} - ${offer.qty}`);
