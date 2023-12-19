@@ -29,7 +29,7 @@ const longPosn = 60;
 const overSoldThreshold  = -260;
 const overBoughtTreshold = +260;
 
-const qtyQuantum = 1000000;  // Units of order book quantity on offer at  a price level. 
+const qtyQuantum = 500000;  // Units of order book quantity on offer at  a price level. 
                              // Place orders in multiples of quanta. 
                              // max number of orders = (qty/quantum) OR 
                              // order qty = round (12*(qty/quantum))
@@ -62,8 +62,8 @@ async function makeBids(bestBidPrices, allOrders, position) {
 
     for(let i = 0; i< bestBidPrices.length; i++) {
         let bid = bestBidPrices[i];
-        let maxOrders = bid.qty / qtyQuantum; 
-
+        let maxOrders = Math.max(5,bid.qty / qtyQuantum); 
+        
         if(bid.price>x || maxOrders < 1) {
             console.log(`Ignoring price level ${bid.price} - ${bid.qty}`);
         } else {
@@ -115,8 +115,8 @@ async function makeOffers(bestOffers, allOrders, position) {
 
     for(let i = 0; i< bestOffers.length; i++) {
         let offer = bestOffers[i];
-        let maxOrders = offer.qty / qtyQuantum; 
-
+        let maxOrders = Math.max(5,offer.qty / qtyQuantum); 
+       
         if(offer.price < x || maxOrders < 1) {
             console.log(`Ignoring price level ${offer.price} - ${offer.qty}`);
 
