@@ -21,13 +21,15 @@ const { fetchPriceDepth } = require('./marketDataTxns');
 const { fetchPositions } = require('./fetchTrades');
 
 const symbol = 'USDCUSDT';
-const qty = 14.0;
+const qty = 12.0;
 const sellPrcFloor  = parseFloat('0.9990');  // hard limits, just in case prices run away.
 const buyPrcCeiling = parseFloat('1.0010');
 const shortPosn = -100; 
 const longPosn = 60;
 const overSoldThreshold  = -260;
 const overBoughtTreshold = +260;
+const maxBuyOrderLimit = 7; // at given price level
+const maxSellOrderLimit = 7;
 
 const qtyQuantum = 500000;  // Units of order book quantity on offer at  a price level. 
                              // Place orders in multiples of quanta. 
@@ -62,7 +64,7 @@ async function makeBids(bestBidPrices, allOrders, position) {
 
     for(let i = 0; i< bestBidPrices.length; i++) {
         let bid = bestBidPrices[i];
-        let maxOrders = Math.min(5,bid.qty / qtyQuantum); 
+        let maxOrders = Math.min(maxBuyOrderLimit,bid.qty / qtyQuantum); 
 
         if(bid.price>x || maxOrders < 1) {
             console.log(`Ignoring price level ${bid.price} - ${bid.qty}`);
@@ -115,7 +117,7 @@ async function makeOffers(bestOffers, allOrders, position) {
 
     for(let i = 0; i< bestOffers.length; i++) {
         let offer = bestOffers[i];
-        let maxOrders = Math.min(5,offer.qty / qtyQuantum); 
+        let maxOrders = Math.min(maxSellOrderLimit,offer.qty / qtyQuantum); 
        
         if(offer.price < x || maxOrders < 1) {
             console.log(`Ignoring price level ${offer.price} - ${offer.qty}`);
