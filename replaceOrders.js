@@ -172,7 +172,7 @@ async function main() {
     if(!symbol) throw 'Symbol not provided.'; 
     try {
         await cancelOpenOrders(symbol);
-        const position = await fetchPositions(symbol);
+        const position = await fetchPositions(symbol, 3.5);
         await placeNewOrders(symbol, position);    
     } catch (error) {    
         console.error(`Error replacing orders: ${error}`);
