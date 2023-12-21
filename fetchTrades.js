@@ -74,6 +74,8 @@ async function fetchPositions(symbol, days=1.5) {
             quoteQty : 0.0,
             avgPrice : 0.0,
             cost: 0.0,
+            costHigh : 0.0,
+            costLow : 0.0,
             matchedQty : 0.0,
             realisedPL : 0.0,
             sold    : computePosition(trades.sells),
@@ -150,6 +152,9 @@ async function fetchPositions(symbol, days=1.5) {
                 pos.quoteQty += t.quoteQty;
                 pos.avgPrice =  Math.abs(pos.qty) >= 0.00000001 ? pos.cost / pos.qty : 0.0;
             }
+            pos.costHigh = Math.max(pos.costHigh, pos.cost);
+            pos.costLow = Math.min(pos.costLow, pos.cost);
+            
         };
         console.log(pos);
         return pos;
