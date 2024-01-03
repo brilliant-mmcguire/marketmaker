@@ -47,11 +47,11 @@ async function fetchPriceDepth(symbol) {
         const bids = response.data.bids;
         const asks = response.data.asks;
         const priceDepth = {
-            bids : bids.slice(0, 3).map(bid => ({
+            bids : bids.slice(0, 2).map(bid => ({
                 price: parseFloat(bid[0]),
                 qty: parseFloat(bid[1])
             })), 
-            asks : asks.slice(0, 3).map(ask => ({
+            asks : asks.slice(0, 2).map(ask => ({
                 price: parseFloat(ask[0]),
                 qty: parseFloat(ask[1])
             }))
