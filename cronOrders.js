@@ -13,7 +13,7 @@ const jobB = cron.schedule('47 */1 * * *', async () => {
     console.log('Invoking hourly task at ' + new Date().toLocaleString());
     try {
         await cancelOpenOrders(symbol);
-        const position = await fetchPositions(symbol, 3.5);
+        const position = await fetchPositions(symbol, 5);
         await placeNewOrders(symbol, position);   
     } catch (error) {    
         console.error(`Error replacing orders: ${error}`);
