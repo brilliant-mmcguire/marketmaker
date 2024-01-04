@@ -53,7 +53,7 @@ async function makeBids(bestBidPrices, allOrders, position) {
     if(position.qty < overSoldThreshold) {
         console.log(`Over sold at an average price of ${position.avgPrice}`);
         // We may need to buy at a loss as we are severely over-sold and running out of USDC.
-        x = position.avgPrice + 0.0003; 
+        x = position.avgPrice + 0.0002; 
     } else if(position.qty < shortPosn) {
         console.log(`Short posn at an average price of ${position.avgPrice}`);
         // Avoid buying back at a loss. 
@@ -106,7 +106,7 @@ async function makeOffers(bestOffers, allOrders, position) {
     if(position.qty > overBoughtTreshold) {
         console.log(`Over bought at an average price of ${position.avgPrice}`);
         // We may need to sell at a loss as we are severely over-bought and running out of USDT.
-        x = position.avgPrice - 0.0003; 
+        x = position.avgPrice - 0.0002; 
     } else if(position.qty > longPosn) {
         console.log(`Long posn at an average price of ${position.avgPrice}`);
         // Avoid selling back at a loss. 
