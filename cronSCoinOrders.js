@@ -4,7 +4,7 @@ const { cancelStaleOrders } = require('./replaceOrders');
 
 console.log("Starting cron: placing StableCoin orders for USDCUSCT."); 
 
-const jobCancelOrders = cron.schedule('13 */3 * * *', async () => {
+const jobCancelOrders = cron.schedule('13 * * * *', async () => {
     console.log('Invoking task at ' + new Date().toLocaleString());
     try {
         await cancelStaleOrders('USDCUSDT');   
@@ -12,7 +12,6 @@ const jobCancelOrders = cron.schedule('13 */3 * * *', async () => {
         console.error(`Error placing orders: ${error}`);
     }
 });
-
 jobCancelOrders.now();
 
 // Schedule the task to run every hour at 13 minutes past the hour.
