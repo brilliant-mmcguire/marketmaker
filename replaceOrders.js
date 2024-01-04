@@ -158,6 +158,23 @@ async function cancelOpenOrders(symbol) {
             console.log(`Cancelled order ${order.orderId}`);
         });
     });    
+} 
+exports.cancelStaleOrders = cancelStaleOrders;
+async function cancelStaleOrders(symbol) {
+    const orders = await fetchOpenOrders(symbol);
+    const oneHourAgo = Date.now() - (60 * 60 * 1000); // Current time minus one hour
+    const oldOrders = orders.filter(order => order.time < oneHourAgo);
+    
+    if(oldOrders.length==0) {
+        console.log(`No orders to cancel.`);
+        return;
+    }
+    console.log(`Cancelling ${oldOrders.length} old orders.`);
+    oldOrders.forEach(order => {
+        cancelOrder(order.symbol, order.orderId).then(response => {
+            console.log(`Cancelled order ${order.orderId}`);
+        });
+    });    
 }  
 async function main() {
     const symbol = process.argv[2];
