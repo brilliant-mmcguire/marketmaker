@@ -75,6 +75,7 @@ async function fetchOpenOrders(symbol) {
     });
     return response.data.map(d => ({
         orderId: d.orderId,
+        time: d.time,
         side: d.side,
         origQty: d.origQty,
         symbol: d.symbol,
