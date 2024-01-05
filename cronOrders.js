@@ -1,5 +1,5 @@
 const cron = require('node-cron');
-const { cancelOpenOrders } = require('./replaceOrders');
+const { cancelOpenOrders } = require('./orderTxns');
 const { placeNewOrders } = require('./replaceOrders');
 const { fetchPositions } = require('./fetchTrades');
 
