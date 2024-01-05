@@ -17,6 +17,7 @@ function createSignature(query) {
 Cancel an order for a given order ID.
 https://binance-docs.github.io/apidocs/spot/en/#cancel-order-trade
 */
+exports.cancelOrder = cancelOrder;
 async function cancelOrder(symbol, orderId) {
     const timestamp = Date.now();
     const query = `symbol=${symbol}&orderId=${orderId}&timestamp=${timestamp}`;
@@ -41,6 +42,7 @@ async function cancelOrder(symbol, orderId) {
 Place a new order for the specified parameters.
 https://binance-docs.github.io/apidocs/spot/en/#new-order-trade
 */
+exports.placeOrder = placeOrder;
 async function placeOrder(side, quantity, symbol, price, test=false) {
     const timestamp = Date.now();
     const query = `symbol=${symbol}&side=${side}&type=LIMIT&timeInForce=GTC&quantity=${quantity}&price=${price.toFixed(4)}&timestamp=${timestamp}`;
@@ -61,6 +63,7 @@ async function placeOrder(side, quantity, symbol, price, test=false) {
 Fetch all open orders for a given symbol.
 https://binance-docs.github.io/apidocs/spot/en/#current-open-orders-user_data
 */
+exports.fetchOpenOrders = fetchOpenOrders;
 async function fetchOpenOrders(symbol) {
     const endpoint = '/api/v3/openOrders';
     const timestamp = Date.now();
@@ -82,6 +85,36 @@ async function fetchOpenOrders(symbol) {
         price: d.price
     }));
 }
-exports.cancelOrder = cancelOrder;
-exports.placeOrder = placeOrder;
-exports.fetchOpenOrders = fetchOpenOrders;
+
+exports.cancelOpenOrders = cancelOpenOrders;
+async function cancelOpenOrders(symbol) {
+    const orders = await fetchOpenOrders(symbol);
+    if(orders.length==0) {
+        console.log(`No orders to cancel.`);
+        return;
+    }
+    console.log(`Cancelling ${orders.length} orders.`);
+    orders.forEach(order => {
+        cancelOrder(order.symbol, order.orderId).then(response => {
+            console.log(`Cancelled order ${order.orderId}`);
+        });
+    });    
+} 
+
+exports.cancelStaleOrders = cancelStaleOrders;
+async function cancelStaleOrders(symbol) {
+    const orders = await fetchOpenOrders(symbol);
+    const oneHourAgo = Date.now() - (60 * 60 * 1000); // Current time minus one hour
+    const oldOrders = orders.filter(order => order.time < oneHourAgo);
+    
+    if(oldOrders.length==0) {
+        console.log(`No orders to cancel.`);
+        return;
+    }
+    console.log(`Cancelling ${oldOrders.length} old orders.`);
+    oldOrders.forEach(order => {
+        cancelOrder(order.symbol, order.orderId).then(response => {
+            console.log(`Cancelled order ${order.orderId}`);
+        });
+    });    
+}  

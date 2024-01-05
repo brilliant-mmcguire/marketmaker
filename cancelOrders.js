@@ -2,6 +2,8 @@
 We can cancel orders for a given symbol to clear them out before placing new orders.
 */
 const { cancelOrder } = require('./orderTxns');
+const { cancelStaleOrders } = require('./orderTxns');
+const { cancelOpenOrders } = require('./orderTxns');
 const { fetchOpenOrders } = require('./orderTxns');
 
 async function cancelOpenOrders(symbol) {

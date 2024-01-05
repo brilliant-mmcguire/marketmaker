@@ -13,6 +13,8 @@ const { fetchLastPrice } = require('./marketDataTxns');
 const { fetchAvgPrice } = require('./marketDataTxns');
 const { fetchPositions } = require('./fetchTrades');
 const { fetchKLines } = require('./marketDataTxns');
+const { cancelStaleOrders } = require('./orderTxns');
+const { cancelOpenOrders } = require('./orderTxns');
 
 /*
 bps
@@ -145,37 +147,7 @@ async function placeNewOrders(symbol, position) {
     }
     return;
 }
-exports.cancelOpenOrders = cancelOpenOrders;
-async function cancelOpenOrders(symbol) {
-    const orders = await fetchOpenOrders(symbol);
-    if(orders.length==0) {
-        console.log(`No orders to cancel.`);
-        return;
-    }
-    console.log(`Cancelling ${orders.length} orders.`);
-    orders.forEach(order => {
-        cancelOrder(order.symbol, order.orderId).then(response => {
-            console.log(`Cancelled order ${order.orderId}`);
-        });
-    });    
-} 
-exports.cancelStaleOrders = cancelStaleOrders;
-async function cancelStaleOrders(symbol) {
-    const orders = await fetchOpenOrders(symbol);
-    const oneHourAgo = Date.now() - (60 * 60 * 1000); // Current time minus one hour
-    const oldOrders = orders.filter(order => order.time < oneHourAgo);
-    
-    if(oldOrders.length==0) {
-        console.log(`No orders to cancel.`);
-        return;
-    }
-    console.log(`Cancelling ${oldOrders.length} old orders.`);
-    oldOrders.forEach(order => {
-        cancelOrder(order.symbol, order.orderId).then(response => {
-            console.log(`Cancelled order ${order.orderId}`);
-        });
-    });    
-}  
+
 async function main() {
     const symbol = process.argv[2];
     if(!symbol) throw 'Symbol not provided.'; 
