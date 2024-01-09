@@ -15,10 +15,11 @@ Get open orders.
 If number or orders at the best bid < 3 then add and order at the offer. 
 */
 
-const { fetchOpenOrders } = require('./orderTxns');
+const { fetchOpenOrders, cancelOrder } = require('./orderTxns');
 const { placeOrder } = require('./orderTxns');
 const { fetchPriceDepth } = require('./marketDataTxns');
 const { fetchPositions } = require('./fetchTrades');
+const { cancelOrders } = require('./orderTxns');
 
 const symbol = 'USDCUSDT';
 const qty = 12.0;
@@ -28,10 +29,10 @@ const shortPosn = -100;
 const longPosn = 100;
 const overSoldThreshold  = -260;
 const overBoughtTreshold = +260;
-const maxBuyOrderLimit = 7; // at given price level
-const maxSellOrderLimit = 7;
+const maxBuyOrderLimit = 11; // at given price level
+const maxSellOrderLimit = 11;
 
-const qtyQuantum = 500000;  // Units of order book quantity on offer at  a price level. 
+const qtyQuantum = 400000;  // Units of order book quantity on offer at  a price level. 
                              // Place orders in multiples of quanta. 
                              // max number of orders = (qty/quantum) OR 
                              // order qty = round (12*(qty/quantum))
@@ -40,6 +41,10 @@ async function makeBids(bestBidPrices, allOrders, position) {
     
     console.log(`Making bids for ${symbol} at ${new Date()}`);
    
+    //console.log(bestBidPrices);
+    //console.log(allOrders);
+    //return; 
+
     let x = buyPrcCeiling; 
     if(position.qty > overBoughtTreshold) {
         console.log(`Overbought at an avg cost price of ${position.avgPrice}`);
@@ -62,6 +67,13 @@ async function makeBids(bestBidPrices, allOrders, position) {
 
     console.log(`Buy price ceiling: ${x}`);
 
+    //cancel any open orders exceeding the price ceiling. 
+    let staleOrders = allOrders.filter(order => ((parseFloat(order.price)>x)));
+    if(staleOrders.length>0) {
+         console.log(`Cancel orders above price ceiling`);
+         await cancelOrders(staleOrders);
+    }
+    
     for(let i = 0; i< bestBidPrices.length; i++) {
         let bid = bestBidPrices[i];
         let maxOrders = Math.min(maxBuyOrderLimit,bid.qty / qtyQuantum); 
@@ -84,6 +96,10 @@ async function makeBids(bestBidPrices, allOrders, position) {
                 } catch (error) {
                     console.error(error.message);
                 }
+            } else {
+              //  TO-DO: Cancel surplus orers at active price level. 
+              //  const useByTime = Date.now() - (1 * 60 * 60 * 1000); // Current time minus x hours
+              //  await cancelOrders(orders.filter(o => o.time < useByTime ))
             }
         }  
     };
@@ -91,6 +107,7 @@ async function makeBids(bestBidPrices, allOrders, position) {
 
 async function makeOffers(bestOffers, allOrders, position) {
  
+    return;
     console.log(`Making offers for ${symbol}  at ${new Date()}`);
    
     let x = sellPrcFloor; 
@@ -115,6 +132,13 @@ async function makeOffers(bestOffers, allOrders, position) {
 
     console.log(`Sell price floor: ${x}`)
 
+    //cancel any open orders below the price floor. 
+    let staleOrders = allOrders.filter(order => ((parseFloat(order.price)<x)));
+    if(staleOrders.length>0) {
+         console.log(`Cancel orders above price ceiling`);
+         await cancelOrders(staleOrders);
+    }
+    
     for(let i = 0; i< bestOffers.length; i++) {
         let offer = bestOffers[i];
         let maxOrders = Math.min(maxSellOrderLimit,offer.qty / qtyQuantum); 
@@ -138,10 +162,15 @@ async function makeOffers(bestOffers, allOrders, position) {
                 } catch (error) {
                     console.error(error.message);
                 }
+            } else {  // trim back stale orders at this level. 
+                //  TO-DO: Cancel surplus orers at active price level. 
+                //const useByTime = Date.now() - (1 * 60 * 60 * 1000); // Current time minus x hours
+                //await cancelOrders(orders.filter(o => o.time < useByTime ))
             }
         }  
     };
 }
+
 
 exports.placeSCoinOrders = placeSCoinOrders;
 async function placeSCoinOrders() {
@@ -153,8 +182,14 @@ async function placeSCoinOrders() {
    try {
      const allOrders = await fetchOpenOrders(symbol);
      const position = await fetchPositions(symbol);
-     makeBids(prcDepth.bids, allOrders, position);
-     makeOffers(prcDepth.asks, allOrders, position); 
+     makeBids(
+        prcDepth.bids, 
+        allOrders.filter(order => (order.side==='BUY')), 
+        position);
+     makeOffers(
+        prcDepth.asks, 
+        allOrders.filter(order => (order.side==='SELL')), 
+        position); 
    } catch (error) {
      console.error(error.message);
    }
