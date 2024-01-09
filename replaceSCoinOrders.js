@@ -106,8 +106,7 @@ async function makeBids(bestBidPrices, allOrders, position) {
 }
 
 async function makeOffers(bestOffers, allOrders, position) {
- 
-    return;
+
     console.log(`Making offers for ${symbol}  at ${new Date()}`);
    
     let x = sellPrcFloor; 
@@ -135,7 +134,7 @@ async function makeOffers(bestOffers, allOrders, position) {
     //cancel any open orders below the price floor. 
     let staleOrders = allOrders.filter(order => ((parseFloat(order.price)<x)));
     if(staleOrders.length>0) {
-         console.log(`Cancel orders above price ceiling`);
+         console.log(`Cancel orders below price floor`);
          await cancelOrders(staleOrders);
     }
     
