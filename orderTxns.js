@@ -104,8 +104,8 @@ async function cancelOpenOrders(symbol) {
 exports.cancelStaleOrders = cancelStaleOrders;
 async function cancelStaleOrders(symbol) {
     const orders = await fetchOpenOrders(symbol);
-    const oneHourAgo = Date.now() - (60 * 60 * 1000); // Current time minus one hour
-    const oldOrders = orders.filter(order => order.time < oneHourAgo);
+    const useByTime = Date.now() - (2 * 60 * 60 * 1000); // Current time minus x hours
+    const oldOrders = orders.filter(order => order.time < useByTime);
     
     if(oldOrders.length==0) {
         console.log(`No orders to cancel.`);
@@ -116,5 +116,15 @@ async function cancelStaleOrders(symbol) {
         cancelOrder(order.symbol, order.orderId).then(response => {
             console.log(`Cancelled order ${order.orderId}`);
         });
-    });    
-}  
+    });
+}
+
+exports.cancelOrders = cancelOrders;
+async function cancelOrders(orders) {
+    console.log(`Cancelling ${orders.length} orders.`);
+    orders.forEach(order => {
+        cancelOrder(order.symbol, order.orderId).then(response => {
+            console.log(`Cancelled order ${order.orderId}`);
+        });
+    });  
+}
