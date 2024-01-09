@@ -72,12 +72,12 @@ async function fetchPositions(symbol, days=1.5) {
             symbol : symbol,
             qty : 0.0,
             quoteQty : 0.0,
+            matchedQty : 0.0,
             avgPrice : 0.0,
+            realisedPL : 0.0,
             cost: 0.0,
             costHigh : 0.0,
             costLow : 0.0,
-            matchedQty : 0.0,
-            realisedPL : 0.0,
             sold    : computePosition(trades.sells),
             bought  : computePosition(trades.buys)
         };
