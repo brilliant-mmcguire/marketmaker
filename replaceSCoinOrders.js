@@ -64,11 +64,13 @@ async function makeBids(bestBidPrices, allOrders, position) {
         // Avoid buying back at a loss. 
         x = position.avgPrice; 
     }
-
-    console.log(`Buy price ceiling: ${x}`);
-
-    //cancel any open orders exceeding the price ceiling. 
-    let staleOrders = allOrders.filter(order => ((parseFloat(order.price)>x)));
+    
+    let floor = bestBidPrices[1].price - 0.0001;
+    
+    console.log(`Buy price ceiling: ${x} and floor: ${floor}`);
+    
+    //cancel any open orders exceeding the price ceiling and fallen under the price floor. 
+    let staleOrders = allOrders.filter(order => ((parseFloat(order.price)>x) || (parseFloat(order.price)<floor)));
     if(staleOrders.length>0) {
          console.log(`Cancel orders above price ceiling`);
          await cancelOrders(staleOrders);
@@ -108,7 +110,7 @@ async function makeBids(bestBidPrices, allOrders, position) {
 async function makeOffers(bestOffers, allOrders, position) {
 
     console.log(`Making offers for ${symbol}  at ${new Date()}`);
-   
+
     let x = sellPrcFloor; 
     if(position.qty < overSoldThreshold) {
         console.log(`Oversold at an avg cost price of ${position.avgPrice}`);
@@ -129,14 +131,16 @@ async function makeOffers(bestOffers, allOrders, position) {
         x = position.avgPrice; 
     }
 
-    console.log(`Sell price floor: ${x}`)
-
-    //cancel any open orders below the price floor. 
-    let staleOrders = allOrders.filter(order => ((parseFloat(order.price)<x)));
+    let ceiling = bestOffers[1].price + 0.0001;
+    console.log(`Sell price floor: ${x} and ceiling: ${ceiling}`)
+    
+    //cancel any open orders exceeding the price ceiling or fallen under the price floor. 
+    let staleOrders = allOrders.filter(order => ((parseFloat(order.price)<x) || (parseFloat(order.price)>ceiling)));
+    
     if(staleOrders.length>0) {
          console.log(`Cancel orders below price floor`);
          await cancelOrders(staleOrders);
-    }
+    }    
     
     for(let i = 0; i< bestOffers.length; i++) {
         let offer = bestOffers[i];
