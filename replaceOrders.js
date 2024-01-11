@@ -37,29 +37,29 @@ function getOrderParameters(currentPrice, kLine) {
     return {
         quantity : (Math.round((17.0 / currentPrice) * 10000)) / 10000,
         sell : [
-            Math.round((sellBasePrc * 1.0170) * 100) / 100,
-            Math.round((sellBasePrc * 1.0120) * 100) / 100,
-            Math.round((sellBasePrc * 1.0080) * 100) / 100,
-            Math.round((sellBasePrc * 1.0050) * 100) / 100,
-            Math.round((sellBasePrc * 1.0030) * 100) / 100,
-            Math.round((sellBasePrc * 1.0015) * 100) / 100,
-            Math.round((sellBasePrc * 1.0005) * 100) / 100
+            Math.round((sellBasePrc * 1.0210) * 100) / 100,
+            Math.round((sellBasePrc * 1.0160) * 100) / 100,
+            Math.round((sellBasePrc * 1.0110) * 100) / 100,
+            Math.round((sellBasePrc * 1.0070) * 100) / 100,
+            Math.round((sellBasePrc * 1.0040) * 100) / 100,
+            Math.round((sellBasePrc * 1.0020) * 100) / 100,
+            Math.round((sellBasePrc * 1.0010) * 100) / 100
         ],
         buy : [
-            Math.round((buyBasePrice * 0.9830) * 100) / 100,
-            Math.round((buyBasePrice * 0.9880) * 100) / 100,
-            Math.round((buyBasePrice * 0.9920) * 100) / 100,
-            Math.round((buyBasePrice * 0.9950) * 100) / 100,
-            Math.round((buyBasePrice * 0.9970) * 100) / 100, 
-            Math.round((buyBasePrice * 0.9985) * 100) / 100, 
-            Math.round((buyBasePrice * 0.9995) * 100) / 100
+            Math.round((buyBasePrice * 0.9790) * 100) / 100,
+            Math.round((buyBasePrice * 0.9840) * 100) / 100,
+            Math.round((buyBasePrice * 0.9890) * 100) / 100,
+            Math.round((buyBasePrice * 0.9930) * 100) / 100,
+            Math.round((buyBasePrice * 0.9960) * 100) / 100, 
+            Math.round((buyBasePrice * 0.9980) * 100) / 100, 
+            Math.round((buyBasePrice * 0.9990) * 100) / 100
         ]
     }
 }
 exports.placeNewOrders = placeNewOrders;
 async function placeNewOrders(symbol, position) {
     const spot = await fetchAvgPrice(symbol);
-    const kLines = await fetchKLines(symbol, '1h', 1);
+    const kLines = await fetchKLines(symbol, '2h', 1);
     const params = getOrderParameters(spot.price, kLines[0]);
     const dt = new Date();
     console.log(`${symbol} current price ${spot.price} order quantity ${params.quantity} at ${dt.toLocaleString()}`);
