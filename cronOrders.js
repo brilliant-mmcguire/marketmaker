@@ -6,11 +6,11 @@ const { fetchPositions } = require('./fetchTrades');
 const symbol = process.argv[2];
 if(!symbol) throw "Symbol not provided.";
 
-console.log("Starting cron: replacing orders for ${symbol}"); 
+console.log(`Starting cron: replacing orders for ${symbol}`); 
 
 // Schedule the task to run every hour at 13 minutes past the hour.
-const jobB = cron.schedule('47 */1 * * *', async () => {
-    console.log('Invoking hourly task at ' + new Date().toLocaleString());
+const jobB = cron.schedule('27,43,57 * * * *', async () => {
+    console.log('Invoking cron task at ' + new Date().toLocaleString());
     try {
         await cancelOpenOrders(symbol);
         const position = await fetchPositions(symbol, 5);
