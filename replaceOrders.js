@@ -35,23 +35,23 @@ function getOrderParameters(currentPrice, kLine) {
     const buyBasePrice = 0.5*(kLine.low+kLine.close);
     
     return {
-        quantity : (Math.round((19.0 / currentPrice) * 10000)) / 10000,
+        quantity : (Math.round((17.0 / currentPrice) * 10000)) / 10000,
         sell : [
-            Math.round((sellBasePrc * 1.0100) * 100) / 100,
-            Math.round((sellBasePrc * 1.0065) * 100) / 100,
-            Math.round((sellBasePrc * 1.0040) * 100) / 100,
-            Math.round((sellBasePrc * 1.0025) * 100) / 100,
+            Math.round((sellBasePrc * 1.0170) * 100) / 100,
+            Math.round((sellBasePrc * 1.0120) * 100) / 100,
+            Math.round((sellBasePrc * 1.0080) * 100) / 100,
+            Math.round((sellBasePrc * 1.0050) * 100) / 100,
+            Math.round((sellBasePrc * 1.0030) * 100) / 100,
             Math.round((sellBasePrc * 1.0015) * 100) / 100,
-            Math.round((sellBasePrc * 1.0010) * 100) / 100,
             Math.round((sellBasePrc * 1.0005) * 100) / 100
         ],
         buy : [
-            Math.round((buyBasePrice * 0.9900) * 100) / 100,
-            Math.round((buyBasePrice * 0.9935) * 100) / 100,
-            Math.round((buyBasePrice * 0.9960) * 100) / 100,
-            Math.round((buyBasePrice * 0.9975) * 100) / 100,
+            Math.round((buyBasePrice * 0.9830) * 100) / 100,
+            Math.round((buyBasePrice * 0.9880) * 100) / 100,
+            Math.round((buyBasePrice * 0.9920) * 100) / 100,
+            Math.round((buyBasePrice * 0.9950) * 100) / 100,
+            Math.round((buyBasePrice * 0.9970) * 100) / 100, 
             Math.round((buyBasePrice * 0.9985) * 100) / 100, 
-            Math.round((buyBasePrice * 0.9990) * 100) / 100, 
             Math.round((buyBasePrice * 0.9995) * 100) / 100
         ]
     }
