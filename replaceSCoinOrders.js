@@ -22,7 +22,7 @@ const { fetchPositions } = require('./fetchTrades');
 const { cancelOrders } = require('./orderTxns');
 
 const symbol = 'USDCUSDT';
-const qty = 12.0;
+const qty = 15.0;
 const sellPrcFloor  = parseFloat('0.9990');  // hard limits, just in case prices run away.
 const buyPrcCeiling = parseFloat('1.0010');
 const shortPosn = -100; 
