@@ -29,8 +29,8 @@ const shortPosn = -100;
 const longPosn = 100;
 const overSoldThreshold  = -260;
 const overBoughtTreshold = +260;
-const maxBuyOrderLimit = 11; // at given price level
-const maxSellOrderLimit = 11;
+const maxBuyOrderLimit = 9; // at given price level
+const maxSellOrderLimit = 9;
 
 const qtyQuantum = 400000;  // Units of order book quantity on offer at  a price level. 
                              // Place orders in multiples of quanta. 
@@ -76,7 +76,7 @@ async function makeBids(bestBidPrices, allOrders, position) {
          await cancelOrders(staleOrders);
     }
     
-    for(let i = 0; i< bestBidPrices.length; i++) {
+    for(let i = 0; i< 1 /*bestBidPrices.length*/; i++) {
         let bid = bestBidPrices[i];
         let maxOrders = Math.min(maxBuyOrderLimit,bid.qty / qtyQuantum); 
 
@@ -142,7 +142,7 @@ async function makeOffers(bestOffers, allOrders, position) {
          await cancelOrders(staleOrders);
     }    
     
-    for(let i = 0; i< bestOffers.length; i++) {
+    for(let i = 0; i< 1 /*bestOffers.length*/; i++) {
         let offer = bestOffers[i];
         let maxOrders = Math.min(maxSellOrderLimit,offer.qty / qtyQuantum); 
        
