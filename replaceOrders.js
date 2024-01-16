@@ -42,20 +42,20 @@ function getOrderParameters(currentPrice, priceStats) {
         sell : [
             //Math.round((sellBasePrc * 1.0210) * 100) / 100,
             //Math.round((sellBasePrc * 1.0160) * 100) / 100,
-            Math.round((sellBasePrc * 1.0110) * 100) / 100,
+            //Math.round((sellBasePrc * 1.0110) * 100) / 100,
             Math.round((sellBasePrc * 1.0070) * 100) / 100,
             Math.round((sellBasePrc * 1.0040) * 100) / 100,
-            Math.round((sellBasePrc * 1.0020) * 100) / 100
-            //Math.round((sellBasePrc * 1.0010) * 100) / 100
+            Math.round((sellBasePrc * 1.0020) * 100) / 100,
+            Math.round((sellBasePrc * 1.0010) * 100) / 100
         ],
         buy : [
             //Math.round((buyBasePrice * 0.9790) * 100) / 100,
             //Math.round((buyBasePrice * 0.9840) * 100) / 100,
-            Math.round((buyBasePrice * 0.9890) * 100) / 100,
+            //Math.round((buyBasePrice * 0.9890) * 100) / 100,
             Math.round((buyBasePrice * 0.9930) * 100) / 100,
             Math.round((buyBasePrice * 0.9960) * 100) / 100, 
-            Math.round((buyBasePrice * 0.9980) * 100) / 100 
-            //Math.round((buyBasePrice * 0.9990) * 100) / 100
+            Math.round((buyBasePrice * 0.9980) * 100) / 100, 
+            Math.round((buyBasePrice * 0.9990) * 100) / 100
         ]
     }
 }
