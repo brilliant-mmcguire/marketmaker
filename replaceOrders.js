@@ -13,6 +13,7 @@ const { fetchLastPrice } = require('./marketDataTxns');
 const { fetchAvgPrice } = require('./marketDataTxns');
 const { fetchPositions } = require('./fetchTrades');
 const { fetchKLines } = require('./marketDataTxns');
+const { fetchPriceStats } = require('./marketDataTxns');
 const { cancelStaleOrders } = require('./orderTxns');
 const { cancelOpenOrders } = require('./orderTxns');
 
@@ -28,12 +29,14 @@ function priceLevel(spot,bps){
 }
 */
 
-function getOrderParameters(currentPrice, kLine) {
+function getOrderParameters(currentPrice, priceStats) {
 
     // Base prices: midway between current price (close) and the high or low. 
-    const sellBasePrc = 0.5*(kLine.high+kLine.close);
-    const buyBasePrice = 0.5*(kLine.low+kLine.close);
-    
+    //const sellBasePrc = 0.5*(kLine.high+kLine.close);
+    //const buyBasePrice = 0.5*(kLine.low+kLine.close);
+    const sellBasePrc = 0.5*(priceStats.lastPrice + priceStats.highPrice); 
+    const buyBasePrice = 0.5*(priceStats.lastPrice + priceStats.lowPrice);
+
     return {
         quantity : (Math.round((17.0 / currentPrice) * 10000)) / 10000,
         sell : [
@@ -59,8 +62,9 @@ function getOrderParameters(currentPrice, kLine) {
 exports.placeNewOrders = placeNewOrders;
 async function placeNewOrders(symbol, position) {
     const spot = await fetchAvgPrice(symbol);
-    const kLines = await fetchKLines(symbol, '2h', 1);
-    const params = getOrderParameters(spot.price, kLines[0]);
+    //const kLines = await fetchKLines(symbol, '2h', 1);
+    const priceStats  = await fetchPriceStats(symbol, '2h');
+    const params = getOrderParameters(spot.price, priceStats);
     const dt = new Date();
     console.log(`${symbol} current price ${spot.price} order quantity ${params.quantity} at ${dt.toLocaleString()}`);
     //console.log(`Placing limit orders ${params.buy} < ${spot.price} > ${params.sell}`);
@@ -153,7 +157,7 @@ async function main() {
     if(!symbol) throw 'Symbol not provided.'; 
     try {
         await cancelOpenOrders(symbol);
-        const position = await fetchPositions(symbol, 3.5);
+        const position = await fetchPositions(symbol, 3);
         await placeNewOrders(symbol, position);    
     } catch (error) {    
         console.error(`Error replacing orders: ${error}`);
