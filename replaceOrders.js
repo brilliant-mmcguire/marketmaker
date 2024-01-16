@@ -152,13 +152,19 @@ async function placeNewOrders(symbol, position) {
     return;
 }
 
+exports.replaceOrders = replaceOrders;
+async function replaceOrders(symbol) 
+{
+    await cancelOpenOrders(symbol);
+    const position = await fetchPositions(symbol, 3);
+    await placeNewOrders(symbol, position); 
+}
+
 async function main() {
     const symbol = process.argv[2];
     if(!symbol) throw 'Symbol not provided.'; 
     try {
-        await cancelOpenOrders(symbol);
-        const position = await fetchPositions(symbol, 3);
-        await placeNewOrders(symbol, position);    
+        await replaceOrders(symbol);
     } catch (error) {    
         console.error(`Error replacing orders: ${error}`);
     }

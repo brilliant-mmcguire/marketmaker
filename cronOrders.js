@@ -1,7 +1,5 @@
 const cron = require('node-cron');
-const { cancelOpenOrders } = require('./orderTxns');
-const { placeNewOrders } = require('./replaceOrders');
-const { fetchPositions } = require('./fetchTrades');
+const { replaceOrders } = require('./replaceOrders');
 
 const symbol = process.argv[2];
 if(!symbol) throw "Symbol not provided.";
@@ -9,12 +7,10 @@ if(!symbol) throw "Symbol not provided.";
 console.log(`Starting cron: replacing orders for ${symbol}`); 
 
 // Schedule the task to run every hour at 13 minutes past the hour.
-const jobB = cron.schedule('27,57 * * * *', async () => {
+const jobB = cron.schedule('17,37,57 * * * *', async () => {
     console.log('Invoking cron task at ' + new Date().toLocaleString());
     try {
-        await cancelOpenOrders(symbol);
-        const position = await fetchPositions(symbol, 3);
-        await placeNewOrders(symbol, position);   
+       await replaceOrders(symbol);
     } catch (error) {    
         console.error(`Error replacing orders: ${error}`);
     }
