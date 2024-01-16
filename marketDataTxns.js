@@ -4,9 +4,12 @@ https://binance-docs.github.io/apidocs/spot/en/#kline-candlestick-data
 https://binance-docs.github.io/apidocs/spot/en/#symbol-price-ticker
 
 https://binance-docs.github.io/apidocs/spot/en/#current-average-price
+
+https://binance-docs.github.io/apidocs/spot/en/#rolling-window-price-change-statistics
 */
 
 const axios = require("axios");
+const { parse } = require("dotenv");
 //const crypto = require('crypto');
 //const qs = require('qs');
 
@@ -112,5 +115,27 @@ async function fetchKLines(symbol, interval, limit) {
         close: parseFloat(d[4])
     }));
 }
-
-
+exports.fetchPriceStats = fetchPriceStats;
+async function fetchPriceStats(symbol, windowSize='2h') {
+    try {
+        const response = await axios.get('https://api.binance.com/api/v3/ticker', {
+            params: {
+                symbol: symbol,
+                windowSize: windowSize,
+            }
+        });
+        let d = response.data;
+        return {
+            symbol    : symbol, 
+            openTime  : new Date(d.openTime),
+            closeTime : new Date(d.closeTime),
+            highPrice : parseFloat(d.highPrice),
+            lowPrice  : parseFloat(d.lowPrice),
+            lastPrice : parseFloat(d.lastPrice),
+            weightedAvgPrice : parseFloat(d.weightedAvgPrice)
+        };
+    } catch (error) {
+        console.error(`Failed to fetch price for ${symbol}:`, error.message);
+        return null;
+    }
+}
