@@ -63,7 +63,7 @@ exports.placeNewOrders = placeNewOrders;
 async function placeNewOrders(symbol, position) {
     const spot = await fetchAvgPrice(symbol);
     //const kLines = await fetchKLines(symbol, '2h', 1);
-    const priceStats  = await fetchPriceStats(symbol, '2h');
+    const priceStats  = await fetchPriceStats(symbol, '1h');
     const params = getOrderParameters(spot.price, priceStats);
     const dt = new Date();
     console.log(`${symbol} current price ${spot.price} order quantity ${params.quantity} at ${dt.toLocaleString()}`);
