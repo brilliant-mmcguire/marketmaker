@@ -206,7 +206,7 @@ async function placeSCoinOrders() {
     
      console.log("Fetching open orders and position");
      const allOrders = await fetchOpenOrders(symbol);
-     const position = await fetchPositions(symbol);
+     const position = await fetchPositions(symbol, 1);
 
      makeBids(
         prcDepth.bids, 
