@@ -12,17 +12,19 @@ const API_SECRET = process.env.API_SECRET;
 
 const { fetchAccountInfo } = require('./accountTxns');
 
-function filterBalances(accountInfo){
-    return accountInfo.balances.filter(
-        balance => (balance.free>0 || balance.locked>0)
-    );
-}
 async function main() {
     try {
-        const accountInfo =  await fetchAccountInfo();
-        const noneZeroBalances = filterBalances(accountInfo);
-        console.log(`Balances for uid ${accountInfo.uid} @ `, new Date());
+        const noneZeroBalances =  await fetchAccountInfo();
+
+        let balances = {
+           usdc : noneZeroBalances.balances.filter(balance => (balance.asset=='USDC'))[0],
+           usdt : noneZeroBalances.balances.filter(balance => (balance.asset=='USDT'))[0]
+        }
+
+        console.log(`Balances for uid ${noneZeroBalances.uid} @ `, new Date());
         console.log(noneZeroBalances);    
+        console.log(balances);
+
     } catch (error) {
         console.error(`Error fetching Account Info ${error}`);
     }
