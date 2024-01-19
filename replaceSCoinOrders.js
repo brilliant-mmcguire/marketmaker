@@ -27,8 +27,8 @@ const qty = 12.0;
 const sellPrcFloor  = parseFloat('0.9990');  // hard limits, just in case prices run away.
 const buyPrcCeiling = parseFloat('1.0010');
 
-const maxBuyOrderLimit = 5; // at given price level
-const maxSellOrderLimit = 5;
+const maxBuyOrderLimit = 3; // at given price level
+const maxSellOrderLimit = 3;
 
 const threshold = { 
     overSold : 200, 
