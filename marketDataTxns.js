@@ -47,14 +47,23 @@ async function fetchPriceDepth(symbol) {
         const response = await axios.get('https://api.binance.com/api/v3/depth', {
             params: { symbol: symbol, limit: 5 }
         });
-        const bids = response.data.bids;
-        const asks = response.data.asks;
+        
+        const { bids, asks } = response.data;
+    
+        // Verify sorting (optional, usually API ensures correct sorting)
+        const bidsSorted = bids.every((bid, i, arr) => i === 0 || parseFloat(bid[0]) <= parseFloat(arr[i - 1][0]));
+        const asksSorted = asks.every((ask, i, arr) => i === 0 || parseFloat(ask[0]) >= parseFloat(arr[i - 1][0]));
+
+        if (!bidsSorted || !asksSorted) {
+            throw new Error('Order book not sorted correctly');
+        }
+
         const priceDepth = {
-            bids : bids.slice(0, 2).map(bid => ({
+            bids : bids.map(bid => ({
                 price: parseFloat(bid[0]),
                 qty: parseFloat(bid[1])
             })), 
-            asks : asks.slice(0, 2).map(ask => ({
+            asks : asks.map(ask => ({
                 price: parseFloat(ask[0]),
                 qty: parseFloat(ask[1])
             }))
