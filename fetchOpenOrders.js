@@ -19,4 +19,5 @@ async function main(){
         console.error(`Error cancelling orders: ${error}`);
     }
 }
-main();
+
+if (require.main === module) main();
