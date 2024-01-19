@@ -73,6 +73,8 @@ async function fetchPositions(symbol, days=1.5) {
             qty : 0.0,
             quoteQty : 0.0,
             avgPrice : 0.0,
+            mAvgBuyPrice : trades.buys[0].price,
+            mAvgSellPrice : trades.sells[0].price,
             matchedQty : 0.0,
             realisedPL : 0.0,
             cost: 0.0,
@@ -92,9 +94,11 @@ async function fetchPositions(symbol, days=1.5) {
             if(t.isBuyer) {
                 t.qty = parseFloat(r.qty); 
                 t.quoteQty = parseFloat(r.quoteQty); 
+                pos.mAvgBuyPrice = pos.mAvgBuyPrice*0.95 + t.price*0.05;
             } else {
                 t.qty = -1.0 * parseFloat(r.qty); 
                 t.quoteQty = -1.0 * parseFloat(r.quoteQty);
+                pos.mAvgSellPrice = pos.mAvgSellPrice*0.95 + t.price*0.05;
             };
             
             // Trade increases position.
