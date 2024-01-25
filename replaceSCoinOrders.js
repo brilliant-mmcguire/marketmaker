@@ -52,21 +52,25 @@ async function makeBids(bestBidPrices, allOrders, position, balances) {
     if(usdcTotal > threshold.overBought) {
         console.log(`Overbought at an avg cost price of ${position.avgPrice}`);
         // We can be more demading on price.
-        x = position.avgPrice - 0.0003;
+       //x = position.avgPrice - 0.0003;
+        x = position.mAvgBuylPrice - 0.0002; 
     } else if(usdcTotal > threshold.long) {
         console.log(`Long posn at an avg cost price of ${position.avgPrice}`);
         // Avoid buying unless we can improve our average price.
-        x = position.avgPrice - 0.0001;
+        // x = position.avgPrice - 0.0001;
+        x = position.mAvgBuyPrice - 0.0001;
     }
 
     if(usdcTotal < threshold.overSold) {
         console.log(`Over sold at an average price of ${position.avgPrice}`);
         // We may need to buy at a loss as we are severely over-sold and running out of USDC.
-        x = position.avgPrice + 0.0002; 
+        //x = position.avgPrice + 0.0002; 
+        x = mAvgSellPrice + 0.0002;
     } else if(usdcTotal < threshold.short) {
         console.log(`Short posn at an average price of ${position.avgPrice}`);
         // Avoid buying back at a loss. 
-        x = position.avgPrice; 
+        //x = position.avgPrice; 
+        x = mAvgSellPrice;
     }
     
     let floor = bestBidPrices[2].price;
