@@ -23,7 +23,7 @@ const { cancelOrders } = require('./orderTxns');
 const { fetchAccountInfo } = require('./accountTxns');
 
 const symbol = 'USDCUSDT';
-const qty = 12.0;
+const qty = 20.0;
 const sellPrcFloor  = parseFloat('0.9990');  // hard limits, just in case prices run away.
 const buyPrcCeiling = parseFloat('1.0010');
 
