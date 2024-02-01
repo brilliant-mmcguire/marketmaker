@@ -46,7 +46,6 @@ function getOrderParameters(priceStats) {
 }
 exports.placeNewOrders = placeNewOrders;
 async function placeNewOrders(symbol, position) {
-   // const spot = await fetchAvgPrice(symbol);
     const priceStats  = await fetchPriceStats(symbol, '1h');
     const params = getOrderParameters(priceStats);
 
