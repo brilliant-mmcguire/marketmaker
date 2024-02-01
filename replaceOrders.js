@@ -4,16 +4,17 @@ Cancel all open orders and then place new orders
 in a small grid around the current spot price. 
 Orders are priced so that they are within the expected hourly highs and lows.
 */
-const { cancelOrder } = require('./orderTxns');
 const { placeOrder } = require('./orderTxns');
-const { fetchOpenOrders } = require('./orderTxns');
-const { fetchLastPrice } = require('./marketDataTxns');
-const { fetchAvgPrice } = require('./marketDataTxns');
 const { fetchPositions } = require('./fetchTrades');
-const { fetchKLines } = require('./marketDataTxns');
 const { fetchPriceStats } = require('./marketDataTxns');
-const { cancelStaleOrders } = require('./orderTxns');
 const { cancelOpenOrders } = require('./orderTxns');
+
+const threshold = { 
+    overSold : -250.0, 
+    short : -100.0, 
+    long : 100.0,
+    overBought : 250.0 
+};
 
 function getOrderParameters(priceStats) {
 
@@ -59,7 +60,7 @@ async function placeNewOrders(symbol, position) {
                 console.log(
                     `overbought so avoid buying unless we are improving our avg price lot.`, 
                     params.buy[i]);
-                continue;
+                continue; 
             }
             else if((position.cost > 100.0) && params.buy[i] >  (0.999 * position.avgPrice)) {
                 console.log(
@@ -95,26 +96,26 @@ async function placeNewOrders(symbol, position) {
     try { // Make offers.
         for (let i = 0; i < params.sell.length; i++) {
 
-            if(position.cost < -250.0 && params.sell[i] <  (1.010 * position.avgPrice)) {
+            if(position.cost < threshold.overSold && params.sell[i] <  (1.010 * position.avgPrice)) {
                 console.log(
                     `Oversold so we don't want to sell unless we are improving our avg price a lot.` , 
                     params.sell[i]);
                 continue;
             } else
-            if(position.cost < -100.0 && params.sell[i] <  (1.001 * position.avgPrice)) {
+            if(position.cost < threshold.short && params.sell[i] <  (1.001 * position.avgPrice)) {
                 console.log(
                     `short position so we don't want to sell unless we are improving our avg price.` , 
                     params.sell[i]);
                 continue;
             }
 
-            if(position.cost > 250.0 && params.sell[i] > 0.99*position.avgPrice) {
+            if(position.cost > threshold.overBought && params.sell[i] > 0.99*position.avgPrice) {
                 console.log(
                     `Overbought so we may may need to sell back at a loss.`, 
                     params.sell[i]);
                // continue;
             } else
-            if(position.cost > 100.0 && params.sell[i] < 1.001*position.avgPrice) {
+            if(position.cost > threshold.long && params.sell[i] < 1.001*position.avgPrice) {
                 console.log(
                     `long position and we do not want to sell at less than cost price.`, 
                     params.sell[i]);
