@@ -10,6 +10,7 @@ const { fetchPriceStats } = require('./marketDataTxns');
 const { cancelOpenOrders } = require('./orderTxns');
 
 const threshold = { 
+    orderCount : 2,
     overSold : -250.0, 
     short : -100.0, 
     long : 100.0,
@@ -54,6 +55,7 @@ async function placeNewOrders(symbol, position) {
     console.log(`Place orders at:`, params);
    
     try {  // Make bids.
+        let orderCount=0; 
         for (let i = 0; i < params.buy.length; i++) {
             if((position.cost > threshold.overBought) && params.buy[i] >  (0.990 * position.avgPrice)) {
                 console.log(
@@ -87,12 +89,14 @@ async function placeNewOrders(symbol, position) {
                 params.buy[i]
             );
             console.log('Order placed:', buyOrder);
+            if(orderCount++>=threshold.orderCount) break;
         }
     } catch (error) {
         console.log(`Error thrown placing buy order ${error}`);
     }
 
     try { // Make offers.
+        let orderCount=0; 
         for (let i = 0; i < params.sell.length; i++) {
 
             if(position.cost < threshold.overSold && params.sell[i] <  (1.010 * position.avgPrice)) {
@@ -128,6 +132,7 @@ async function placeNewOrders(symbol, position) {
                 params.sell[i]
             );
             console.log('Order placed:', sellOrder);
+            if(orderCount++>=threshold.orderCount) break;
         }
     } catch (error) {
         console.log(`Error thrown placing sell order ${error}`);
