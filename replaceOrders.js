@@ -15,14 +15,14 @@ const { fetchPriceStats } = require('./marketDataTxns');
 const { cancelStaleOrders } = require('./orderTxns');
 const { cancelOpenOrders } = require('./orderTxns');
 
-function getOrderParameters(currentPrice, priceStats) {
+function getOrderParameters(priceStats) {
 
     // Base prices: midway between current price (close) and the high or low. 
     const sellBasePrc = 0.5*(priceStats.lastPrice + priceStats.highPrice); 
     const buyBasePrice = 0.5*(priceStats.lastPrice + priceStats.lowPrice);
 
     return {
-        quantity : (Math.round((17.0 / currentPrice) * 10000)) / 10000,
+        quantity : (Math.round((17.0 / priceStats.weightedAvgPrice) * 10000)) / 10000,
         sell : [
             //Math.round((sellBasePrc * 1.0210) * 100) / 100,
             //Math.round((sellBasePrc * 1.0160) * 100) / 100,
@@ -47,7 +47,8 @@ exports.placeNewOrders = placeNewOrders;
 async function placeNewOrders(symbol, position) {
     const spot = await fetchAvgPrice(symbol);
     const priceStats  = await fetchPriceStats(symbol, '1h');
-    const params = getOrderParameters(spot.price, priceStats);
+    const params = getOrderParameters(priceStats);
+
     const dt = new Date();
     console.log(`${symbol} current price ${spot.price} order quantity ${params.quantity} at ${dt.toLocaleString()}`);
     console.log(`Place orders at:`, params);
@@ -71,7 +72,7 @@ async function placeNewOrders(symbol, position) {
                 console.log(
                     `oversold so may need to buy back at a loss.`, 
                     params.buy[i]);
-              //  continue;
+                // continue;
             } else if((position.cost < -100.0) && params.buy[i] > (0.999 * position.avgPrice)) {
                 console.log(
                     `short position and we do not want to buy at more than cost price.`, 
