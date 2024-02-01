@@ -26,20 +26,20 @@ function getOrderParameters(priceStats) {
     return {
         quantity : (Math.round((17.0 / priceStats.weightedAvgPrice) * 10000)) / 10000,
         sell : [
-            //Math.round((sellBasePrc * 1.0210) * 100) / 100,
-            //Math.round((sellBasePrc * 1.0160) * 100) / 100,
-            //Math.round((sellBasePrc * 1.0110) * 100) / 100,
-            //Math.round((sellBasePrc * 1.0070) * 100) / 100,
-            //Math.round((sellBasePrc * 1.0040) * 100) / 100,
+            Math.round((sellBasePrc * 1.0210) * 100) / 100,
+            Math.round((sellBasePrc * 1.0160) * 100) / 100,
+            Math.round((sellBasePrc * 1.0110) * 100) / 100,
+            Math.round((sellBasePrc * 1.0070) * 100) / 100,
+            Math.round((sellBasePrc * 1.0050) * 100) / 100,
             Math.round((sellBasePrc * 1.0030) * 100) / 100,
             Math.round((sellBasePrc * 1.0010) * 100) / 100
         ],
         buy : [
-            //Math.round((buyBasePrice * 0.9790) * 100) / 100,
-            //Math.round((buyBasePrice * 0.9840) * 100) / 100,
-            //Math.round((buyBasePrice * 0.9890) * 100) / 100,
-            //Math.round((buyBasePrice * 0.9930) * 100) / 100,
-            //Math.round((buyBasePrice * 0.9960) * 100) / 100, 
+            Math.round((buyBasePrice * 0.9790) * 100) / 100,
+            Math.round((buyBasePrice * 0.9840) * 100) / 100,
+            Math.round((buyBasePrice * 0.9890) * 100) / 100,
+            Math.round((buyBasePrice * 0.9930) * 100) / 100,
+            Math.round((buyBasePrice * 0.9950) * 100) / 100, 
             Math.round((buyBasePrice * 0.9970) * 100) / 100, 
             Math.round((buyBasePrice * 0.9990) * 100) / 100
         ]
@@ -56,7 +56,7 @@ async function placeNewOrders(symbol, position) {
    
     try {  // Make bids.
         let orderCount=0; 
-        for (let i = 0; i < params.buy.length; i++) {
+        for (let i = params.buy.length-1; i > 0;  i--) {
             if((position.cost > threshold.overBought) && params.buy[i] >  (0.990 * position.avgPrice)) {
                 console.log(
                     `overbought so avoid buying unless we are improving our avg price lot.`, 
@@ -89,7 +89,7 @@ async function placeNewOrders(symbol, position) {
                 params.buy[i]
             );
             console.log('Order placed:', buyOrder);
-            if(orderCount++>=threshold.orderCount) break;
+            if(++orderCount >= threshold.orderCount) break;
         }
     } catch (error) {
         console.log(`Error thrown placing buy order ${error}`);
@@ -97,8 +97,7 @@ async function placeNewOrders(symbol, position) {
 
     try { // Make offers.
         let orderCount=0; 
-        for (let i = 0; i < params.sell.length; i++) {
-
+        for (let i = params.sell.length-1; i > 0;  i--) {
             if(position.cost < threshold.overSold && params.sell[i] <  (1.010 * position.avgPrice)) {
                 console.log(
                     `Oversold so we don't want to sell unless we are improving our avg price a lot.` , 
@@ -132,7 +131,7 @@ async function placeNewOrders(symbol, position) {
                 params.sell[i]
             );
             console.log('Order placed:', sellOrder);
-            if(orderCount++>=threshold.orderCount) break;
+            if(++orderCount>=threshold.orderCount) break;
         }
     } catch (error) {
         console.log(`Error thrown placing sell order ${error}`);
