@@ -76,7 +76,6 @@ function accumulateMoreTrades(netAcc, acc) {
 
 function makeSession(params, bought, sold) { 
 
-    
     let matchedQty = Math.min(bought.qty, Math.abs(sold.qty));
     let surplusQty = bought.qty + sold.qty;
 
@@ -94,6 +93,8 @@ function makeSession(params, bought, sold) {
         surplusQty: surplusQty,
         surplusCost: surplusQty*(surplusQty > 0 ? bought.costPrice : sold.costPrice), 
         surplusCostPrice: surplusQty >=0 ? bought.costPrice : sold.costPrice,
+
+        commision : bought.commission + sold.commission,
 
         bought: bought,
         sold: sold
