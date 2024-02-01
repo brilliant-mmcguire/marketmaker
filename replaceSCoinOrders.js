@@ -65,12 +65,12 @@ async function makeBids(bestBidPrices, allOrders, position, balances) {
         console.log(`Over sold at an average price of ${position.avgPrice}`);
         // We may need to buy at a loss as we are severely over-sold and running out of USDC.
         //x = position.avgPrice + 0.0002; 
-        x = mAvgSellPrice + 0.0002;
+        x = position.mAvgSellPrice + 0.0002;
     } else if(usdcTotal < threshold.short) {
         console.log(`Short posn at an average price of ${position.avgPrice}`);
         // Avoid buying back at a loss. 
         //x = position.avgPrice; 
-        x = mAvgSellPrice;
+        x = position.mAvgSellPrice;
     }
     
     let floor = bestBidPrices[2].price;
