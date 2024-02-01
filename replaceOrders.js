@@ -55,25 +55,25 @@ async function placeNewOrders(symbol, position) {
    
     try {  // Make bids.
         for (let i = 0; i < params.buy.length; i++) {
-            if((position.cost > 250.0) && params.buy[i] >  (0.990 * position.avgPrice)) {
+            if((position.cost > threshold.overBought) && params.buy[i] >  (0.990 * position.avgPrice)) {
                 console.log(
                     `overbought so avoid buying unless we are improving our avg price lot.`, 
                     params.buy[i]);
                 continue; 
             }
-            else if((position.cost > 100.0) && params.buy[i] >  (0.999 * position.avgPrice)) {
+            else if((position.cost > threshold.long) && params.buy[i] >  (0.999 * position.avgPrice)) {
                 console.log(
                     `long position so we don't want to buy unless we are improving our avg price.`, 
                     params.buy[i]);
                 continue;
             }
 
-            if(position.cost < -250.0 && params.buy[i] < 1.025 * position.avgPrice) {
+            if(position.cost < threshold.overSold && params.buy[i] < 1.025 * position.avgPrice) {
                 console.log(
                     `oversold so may need to buy back at a loss.`, 
                     params.buy[i]);
                 // continue;
-            } else if((position.cost < -100.0) && params.buy[i] > (0.999 * position.avgPrice)) {
+            } else if((position.cost < threshold.short) && params.buy[i] > (0.999 * position.avgPrice)) {
                 console.log(
                     `short position and we do not want to buy at more than cost price.`, 
                     params.buy[i]);
