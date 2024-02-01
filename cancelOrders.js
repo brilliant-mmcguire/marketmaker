@@ -6,9 +6,8 @@ const { cancelOrders } = require('./orderTxns');
 const { cancelOpenOrders } = require('./orderTxns');
 const { fetchOpenOrders } = require('./orderTxns');
 
-async function cancelStaleOrders(symbol){    
+async function showStaleOrders(orders){    
     try{
-        const orders = await fetchOpenOrders(symbol);
         const useByTime = Date.now() - (1.5 * 60 * 60 * 1000); // Current time minus x hours
         
         const sells = orders.filter(order => order.side=='SELL' );
@@ -33,7 +32,8 @@ async function main(){
     try {
         //cancelOpenOrders(symbol);
         const orders = await fetchOpenOrders(symbol);
-        cancelOrders(orders);
+        showStaleOrders(orders);
+        //cancelOrders(orders);
         //cancelStaleOrders(symbol);
     } catch (error) {    
         console.error(error.message);
