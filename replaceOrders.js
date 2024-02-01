@@ -45,12 +45,12 @@ function getOrderParameters(priceStats) {
 }
 exports.placeNewOrders = placeNewOrders;
 async function placeNewOrders(symbol, position) {
-    const spot = await fetchAvgPrice(symbol);
+   // const spot = await fetchAvgPrice(symbol);
     const priceStats  = await fetchPriceStats(symbol, '1h');
     const params = getOrderParameters(priceStats);
 
     const dt = new Date();
-    console.log(`${symbol} current price ${spot.price} order quantity ${params.quantity} at ${dt.toLocaleString()}`);
+    console.log(`${symbol} current price ${priceStats.lastPrice} order quantity ${params.quantity} at ${dt.toLocaleString()}`);
     console.log(`Place orders at:`, params);
    
     try {  // Make bids.
