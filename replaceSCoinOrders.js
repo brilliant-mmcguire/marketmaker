@@ -37,10 +37,12 @@ const threshold = {
     overbought : 500 
 };
 
-const qtyQuantum = 400000;  // Units of order book quantity on offer at  a price level. 
-                             // Place orders in multiples of quanta. 
-                             // max number of orders = (qty/quantum) OR 
-                             // order qty = round (12*(qty/quantum))
+/* 
+Quntity Quantum is used to place orders in proportion to the volume of orders at a given price level.
+This is the help regulate the rate of exection of our orders. 
+The more orders are in queue ahead of us, the more orders we need to keep in the queue. 
+*/
+const qtyQuantum = 400000;  
 
 async function makeBids(bestBidPrices, allOrders, position, balances) {
     
