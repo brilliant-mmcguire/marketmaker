@@ -57,25 +57,25 @@ async function placeNewOrders(symbol, position) {
     try {  // Make bids.
         let orderCount=0; 
         for (let i = params.buy.length-1; i > 0;  i--) {
-            if((position.cost > threshold.overBought) && params.buy[i] >  (0.990 * position.avgPrice)) {
+            if((position.cost > threshold.overBought) && params.buy[i] >  (0.990 * position.costPrice)) {
                 console.log(
                     `overbought so avoid buying unless we are improving our avg price lot.`, 
                     params.buy[i]);
                 continue; 
             }
-            else if((position.cost > threshold.long) && params.buy[i] >  (0.999 * position.avgPrice)) {
+            else if((position.cost > threshold.long) && params.buy[i] >  (0.999 * position.costPrice)) {
                 console.log(
-                    `long position so we don't want to buy unless we are improving our avg price.`, 
+                    `long position so we don't want to buy unless we are improving our avg cost price.`, 
                     params.buy[i]);
                 continue;
             }
 
-            if(position.cost < threshold.overSold && params.buy[i] < 1.025 * position.avgPrice) {
+            if(position.cost < threshold.overSold && params.buy[i] < 1.025 * position.costPrice) {
                 console.log(
                     `oversold so may need to buy back at a loss.`, 
                     params.buy[i]);
                 // continue;
-            } else if((position.cost < threshold.short) && params.buy[i] > (0.999 * position.avgPrice)) {
+            } else if((position.cost < threshold.short) && params.buy[i] > (0.999 * position.costPrice)) {
                 console.log(
                     `short position and we do not want to buy at more than cost price.`, 
                     params.buy[i]);
@@ -98,26 +98,26 @@ async function placeNewOrders(symbol, position) {
     try { // Make offers.
         let orderCount=0; 
         for (let i = params.sell.length-1; i > 0;  i--) {
-            if(position.cost < threshold.overSold && params.sell[i] <  (1.010 * position.avgPrice)) {
+            if(position.cost < threshold.overSold && params.sell[i] <  (1.010 * position.costPrice)) {
                 console.log(
                     `Oversold so we don't want to sell unless we are improving our avg price a lot.` , 
                     params.sell[i]);
                 continue;
             } else
-            if(position.cost < threshold.short && params.sell[i] <  (1.001 * position.avgPrice)) {
+            if(position.cost < threshold.short && params.sell[i] <  (1.001 * position.costPrice)) {
                 console.log(
-                    `short position so we don't want to sell unless we are improving our avg price.` , 
+                    `short position so we don't want to sell unless we are improving our avg cost price.` , 
                     params.sell[i]);
                 continue;
             }
 
-            if(position.cost > threshold.overBought && params.sell[i] > 0.99*position.avgPrice) {
+            if(position.cost > threshold.overBought && params.sell[i] > 0.99*position.costPrice) {
                 console.log(
                     `Overbought so we may may need to sell back at a loss.`, 
                     params.sell[i]);
                // continue;
             } else
-            if(position.cost > threshold.long && params.sell[i] < 1.001*position.avgPrice) {
+            if(position.cost > threshold.long && params.sell[i] < 1.001*position.costPrice) {
                 console.log(
                     `long position and we do not want to sell at less than cost price.`, 
                     params.sell[i]);

@@ -60,7 +60,7 @@ function computePosition(trades) {
         quoteQty: totalQuoteQty,
         consideration: totalValue,
         commission: totalCommision,
-        avgPrice: totalValue / totalQty
+        costPrice: totalValue / totalQty
     };
 }
 
@@ -72,7 +72,7 @@ async function fetchPositions(symbol, days=1.5) {
             symbol : symbol,
             qty : 0.0,
             quoteQty : 0.0,
-            avgPrice : 0.0,
+            costPrice : 0.0,
             mAvgBuyPrice : trades.buys[0].price,
             mAvgSellPrice : trades.sells[0].price,
             matchedQty : 0.0,
@@ -109,7 +109,7 @@ async function fetchPositions(symbol, days=1.5) {
                 pos.qty += t.qty;
                 pos.quoteQty += t.quoteQty;    
                 pos.cost += t.qty*t.price;
-                pos.avgPrice =  Math.abs(pos.qty) >= 0.00000001 ? pos.cost / pos.qty : 0.0;
+                pos.costPrice =  Math.abs(pos.qty) >= 0.00000001 ? pos.cost / pos.qty : 0.0;
                 // PL does not change.
             
             } else if(Math.sign(newPositionQty) == Math.sign(pos.qty)) {
@@ -118,12 +118,12 @@ async function fetchPositions(symbol, days=1.5) {
                     Math.abs(pos.qty+t.qty) < Math.abs(pos.qty), 
                     `Expect reduced position ${pos.qty} :> ${newPositionQty}`);
                 
-                pos.cost += t.qty * pos.avgPrice; 
-                pos.realisedPL += t.qty * (pos.avgPrice - t.price); 
+                pos.cost += t.qty * pos.costPrice; 
+                pos.realisedPL += t.qty * (pos.costPrice - t.price); 
                 pos.matchedQty += Math.abs(t.qty);
                 pos.qty += t.qty;
                 pos.quoteQty += t.quoteQty;
-                // avgPrice doesn't change.
+                // costPrice doesn't change.
             
             } else {
                 // Flip position
@@ -136,12 +136,12 @@ async function fetchPositions(symbol, days=1.5) {
                 //
 
                 // zero out cost.
-                pos.cost -= pos.qty * pos.avgPrice; 
+                pos.cost -= pos.qty * pos.costPrice; 
                 console.assert(
                     Math.abs(pos.cost<=0.00000001), 
                     `Expect zero pos.cost on flat position ${pos.cost}`); 
 
-                pos.realisedPL -= pos.qty * (pos.avgPrice - t.price); 
+                pos.realisedPL -= pos.qty * (pos.costPrice - t.price); 
                 pos.matchedQty += Math.abs(pos.qty);
                 
                 //
@@ -154,7 +154,7 @@ async function fetchPositions(symbol, days=1.5) {
                 //
                 pos.qty += t.qty;
                 pos.quoteQty += t.quoteQty;
-                pos.avgPrice =  Math.abs(pos.qty) >= 0.00000001 ? pos.cost / pos.qty : 0.0;
+                pos.costPrice =  Math.abs(pos.qty) >= 0.00000001 ? pos.cost / pos.qty : 0.0;
             }
             pos.costHigh = Math.max(pos.costHigh, pos.cost);
             pos.costLow = Math.min(pos.costLow, pos.cost);
