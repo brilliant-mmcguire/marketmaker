@@ -32,9 +32,9 @@ const maxSellOrderLimit = 3;
 
 const threshold = { 
     overSold : 200, 
-    short : 300, 
-    long : 400,
-    overBought : 500 
+    short : 350, 
+    long : 500,
+    overBought : 650 
 };
 
 /* 
