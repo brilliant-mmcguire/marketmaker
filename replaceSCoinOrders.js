@@ -34,7 +34,7 @@ const threshold = {
     overSold : 200, 
     short : 300, 
     long : 400,
-    overbought : 500 
+    overBought : 500 
 };
 
 /* 
