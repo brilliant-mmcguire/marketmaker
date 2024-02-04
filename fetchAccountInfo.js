@@ -22,7 +22,7 @@ async function main() {
         }
 
         console.log(`Balances for uid ${noneZeroBalances.uid} @ `, new Date());
-        console.log(noneZeroBalances);    
+        //console.log(noneZeroBalances);    
         console.log(balances);
 
     } catch (error) {
