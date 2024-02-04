@@ -91,7 +91,7 @@ async function makeBids(bestBidPrices, allOrders, position, balances) {
         } else {
             let orders = allOrders.filter(order => parseFloat(order.price) === bid.price ); 
             console.log(`We have ${orders.length} orders on price level ${bid.price}, maxOrders ${maxOrders}`);
-            if(orders.length <= maxOrders) {
+            if(orders.length < maxOrders) {
                 console.log(`Placing buy order at price level ${bid.price}.`);
                 try {
                     joinBid = await placeOrder(
@@ -162,7 +162,7 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
         } else {
             let orders = allOrders.filter(order => parseFloat(order.price) === offer.price ); 
             console.log(`We have ${orders.length} orders on price level ${offer.price}, maxOrders ${maxOrders}`);
-            if(orders.length <= maxOrders) {
+            if(orders.length < maxOrders) {
                 console.log(`Placing sell order at price level ${offer.price}.`);
                 try {
                     joinOffer = await placeOrder(
