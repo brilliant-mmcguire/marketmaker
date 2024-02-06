@@ -1,7 +1,5 @@
 /*
 Refresh orders for USDCUSDT trading pair.
-Min sell price : 0.9998 
-Max buy price  : 0.9995 
 
 The objective is to keep a certain number of orders on the bid and offer, 
 within the min-max bounds.
@@ -9,10 +7,10 @@ within the min-max bounds.
 Let's say we keep 3 orders active at each price level.  
 Don't want to cancel orders becase we'd lose our position in the order book. 
 
-Step one: sell orders only. 
-Get current offer price.
-Get open orders. 
-If number or orders at the best bid < 3 then add and order at the offer. 
+Use expontnetial moving average of our recent trades to control bid/offer prices.
+There is a risk of this getting stuck at high or low prices outside the current price range. 
+TODO - analyse and test this 'getting stuck' scenario. 
+
 */
 
 const { fetchOpenOrders, cancelOrder } = require('./orderTxns');
@@ -24,8 +22,6 @@ const { fetchAccountInfo } = require('./accountTxns');
 
 const symbol = 'USDCUSDT';
 const qty = 20.0;
-const sellPrcFloor  = parseFloat('0.9990');  // hard limits, just in case prices run away.
-const buyPrcCeiling = parseFloat('1.0010');
 
 const maxBuyOrderLimit = 3; // at given price level
 const maxSellOrderLimit = 3;
@@ -50,7 +46,8 @@ async function makeBids(bestBidPrices, allOrders, position, balances) {
 
     let usdcTotal = balances.usdc.total;
 
-    let x = buyPrcCeiling; 
+    let x = position.mAvgSellPrice; // Avoid buying back at a loss. 
+
     if(usdcTotal > threshold.overBought) {
         console.log(`Overbought at an avg cost price of ${position.costPrice}`);
         // We can be more demading on price and lower our buy ceiling. 
@@ -68,7 +65,7 @@ async function makeBids(bestBidPrices, allOrders, position, balances) {
     } else if(usdcTotal < threshold.short) {
         console.log(`Short posn at an average price of ${position.costPrice}`);
         // Avoid buying back at a loss. 
-        x = position.mAvgSellPrice;
+        x = position.mAvgSellPrice + 0.0001;
     }
     
     let floor = bestBidPrices[2].price;
@@ -120,7 +117,8 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
 
     let usdcTotal = balances.usdc.total;
 
-    let x = sellPrcFloor; 
+    let x = position.mAvgBuyPrice - 0.0001; // Avoid selling at a loss. 
+
     if(usdcTotal < threshold.overSold) {
         console.log(`Oversold at an avg cost price of ${position.costPrice}`);
         // We can be more demading on price and raise our price floor.
@@ -129,7 +127,7 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
     } else if(usdcTotal < threshold.short) {
         console.log(`Short posn at an avg cost price of ${position.costPrice}`);
         // Avoid selling unless we can improve our average price.
-        x = position.mAvgSellPrice;
+        x = position.mAvgSellPrice + 0.0001;
     }
     if(usdcTotal > threshold.overBought) {
         console.log(`Over bought at an average price of ${position.costPrice}`);
