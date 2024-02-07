@@ -46,12 +46,12 @@ async function makeBids(bestBidPrices, allOrders, position, balances) {
 
     let usdcTotal = balances.usdc.total;
 
-    let x = position.mAvgSellPrice; // Avoid buying back at a loss. 
+    let x = position.mAvgSellPrice; // Avoid buying back at a loss relative to our recent trades. 
 
     if(usdcTotal > threshold.overBought) {
         console.log(`Overbought at an avg cost price of ${position.costPrice}`);
         // We can be more demading on price and lower our buy ceiling. 
-        x = position.mAvgBuylPrice - 0.0002; 
+        x = position.mAvgBuyPrice - 0.0002; 
     } else if(usdcTotal > threshold.long) {
         console.log(`Long posn at an avg cost price of ${position.costPrice}`);
         // Avoid buying unless we can improve our average price.
@@ -83,7 +83,7 @@ async function makeBids(bestBidPrices, allOrders, position, balances) {
         let bid = bestBidPrices[i];
         let maxOrders = Math.min(maxBuyOrderLimit,bid.qty / qtyQuantum); 
 
-        if(bid.price>x || bid.price < floor ||  maxOrders < 1) {
+        if(bid.price > x || bid.price < floor ||  maxOrders < 1) {
             console.log(`Ignoring price level ${bid.price} - ${bid.qty}`);
         } else {
             let orders = allOrders.filter(order => parseFloat(order.price) === bid.price ); 
