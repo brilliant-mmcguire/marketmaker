@@ -21,7 +21,9 @@ const { cancelOrders } = require('./orderTxns');
 const { fetchAccountInfo } = require('./accountTxns');
 
 const symbol = 'USDCUSDT';
-const qty = 20.0;
+//const qty = 20.0;
+
+const qtyLadder = [19, 17, 15, 13, 11];
 
 const maxBuyOrderLimit = 3; // at given price level
 const maxSellOrderLimit = 3;
@@ -81,6 +83,7 @@ async function makeBids(bestBidPrices, allOrders, position, balances) {
     
     for(let i = 0; i< bestBidPrices.length; i++) {
         let bid = bestBidPrices[i];
+        let qty = qtyLadder[i];
         let maxOrders = Math.min(maxBuyOrderLimit,bid.qty / qtyQuantum); 
 
         if(bid.price > x || bid.price < floor ||  maxOrders < 1) {
@@ -107,7 +110,7 @@ async function makeBids(bestBidPrices, allOrders, position, balances) {
               //  const useByTime = Date.now() - (1 * 60 * 60 * 1000); // Current time minus x hours
               //  await cancelOrders(orders.filter(o => o.time < useByTime ))
             }
-        }  
+        }
     };
 }
 
@@ -152,6 +155,8 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
     
     for(let i = 0; i< bestOffers.length; i++) {
         let offer = bestOffers[i];
+        let qty = qtyLadder[i];
+
         let maxOrders = Math.min(maxSellOrderLimit,offer.qty / qtyQuantum); 
        
         if(offer.price < x || offer.price > ceiling || maxOrders < 1) {
