@@ -51,7 +51,7 @@ async function makeBids(bestBidPrices, allOrders, position, balances) {
     if(usdcTotal > threshold.overBought) {
         console.log(`Overbought at an avg cost price of ${position.costPrice}`);
         // We can be more demading on price and lower our buy ceiling. 
-        x = position.mAvgBuyPrice - 0.0002; 
+        x = position.mAvgBuyPrice - 0.00025; 
     } else if(usdcTotal > threshold.long) {
         console.log(`Long posn at an avg cost price of ${position.costPrice}`);
         // Avoid buying unless we can improve our average price.
