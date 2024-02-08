@@ -20,7 +20,6 @@ const { cancelOrders } = require('./orderTxns');
 const { fetchAccountInfo } = require('./accountTxns');
 
 const symbol = 'USDCUSDT';
-//const qty = 20.0;
 
 /*
 Use a quantity ladder to place smaller orders away from the current touch price. 
@@ -37,17 +36,12 @@ const threshold = {
     overBought : 650 
 };
 
-//const maxBuyOrderLimit = 3; // at given price level
-//const maxSellOrderLimit = 3;
-
 /* 
 Quntity Quantum is used to place orders in proportion to the volume of orders at a given price level.
 This is the help regulate the rate of exection of our orders. 
 The more orders are in queue ahead of us, the more orders we need to keep in the queue.
 The goal is to maintin a steady rate of execution and to baclance to rate of buy and sell trades. 
 */
-
-const qtyQuantum = 400000;  
 const qtyQuanta = [400000, 10000000, 2500000, 7500000, 15000000];
 
 async function makeBids(bestBidPrices, allOrders, position, balances) {
