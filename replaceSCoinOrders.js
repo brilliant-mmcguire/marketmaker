@@ -10,7 +10,6 @@ Don't want to cancel orders becase we'd lose our position in the order book.
 Use expontnetial moving average of our recent trades to control bid/offer prices.
 There is a risk of this getting stuck at high or low prices outside the current price range. 
 TODO - analyse and test this 'getting stuck' scenario. 
-
 */
 
 const { fetchOpenOrders, cancelOrder } = require('./orderTxns');
@@ -23,10 +22,13 @@ const { fetchAccountInfo } = require('./accountTxns');
 const symbol = 'USDCUSDT';
 //const qty = 20.0;
 
-const qtyLadder = [19, 17, 15, 13, 11];
-
-const maxBuyOrderLimit = 3; // at given price level
-const maxSellOrderLimit = 3;
+/*
+Use a quantity ladder to place smaller orders away from the current touch price. 
+This is to reduce the impact of sharp price moves where the proce shoots through and 
+remains at high/low levels for some period of time.  In this scenario we become 
+oversold/overbought too quickly. 
+*/
+const qtyLadder = [19, 17, 15, 13, 11];  
 
 const threshold = { 
     overSold : 200, 
@@ -35,12 +37,18 @@ const threshold = {
     overBought : 650 
 };
 
+//const maxBuyOrderLimit = 3; // at given price level
+//const maxSellOrderLimit = 3;
+
 /* 
 Quntity Quantum is used to place orders in proportion to the volume of orders at a given price level.
 This is the help regulate the rate of exection of our orders. 
-The more orders are in queue ahead of us, the more orders we need to keep in the queue. 
+The more orders are in queue ahead of us, the more orders we need to keep in the queue.
+The goal is to maintin a steady rate of execution and to baclance to rate of buy and sell trades. 
 */
+
 const qtyQuantum = 400000;  
+const qtyQuanta = [400000, 10000000, 2500000, 7500000, 15000000];
 
 async function makeBids(bestBidPrices, allOrders, position, balances) {
     
@@ -84,31 +92,27 @@ async function makeBids(bestBidPrices, allOrders, position, balances) {
     for(let i = 0; i< bestBidPrices.length; i++) {
         let bid = bestBidPrices[i];
         let qty = qtyLadder[i];
-        let maxOrders = Math.min(maxBuyOrderLimit,bid.qty / qtyQuantum); 
+        
+        let orders = allOrders.filter(order => parseFloat(order.price) === bid.price ); 
+        let quotaFull = (bid.qty < qtyQuanta[orders.length]);
 
-        if(bid.price > x || bid.price < floor ||  maxOrders < 1) {
+        console.log(`We have ${orders.length} orders on price level ${bid.price} with volume ${bid.qty}. quotaFull: ${quotaFull}`);
+            
+        if(bid.price > x || bid.price < floor || quotaFull) {
             console.log(`Ignoring price level ${bid.price} - ${bid.qty}`);
         } else {
-            let orders = allOrders.filter(order => parseFloat(order.price) === bid.price ); 
-            console.log(`We have ${orders.length} orders on price level ${bid.price}, maxOrders ${maxOrders}`);
-            if(orders.length < maxOrders) {
-                console.log(`Placing buy order at price level ${bid.price}.`);
-                try {
-                    joinBid = await placeOrder(
-                        'BUY', 
-                        qty, 
-                        symbol, 
-                        bid.price
-                    );
-                    console.log(`Buy order placed:`, joinBid);
-                    break;  // Throttle to only one order at a time.   
-                } catch (error) {
-                    console.error(error.message);
-                }
-            } else {
-              //  TO-DO: Cancel surplus orers at active price level. 
-              //  const useByTime = Date.now() - (1 * 60 * 60 * 1000); // Current time minus x hours
-              //  await cancelOrders(orders.filter(o => o.time < useByTime ))
+            console.log(`Placing buy order at price level ${bid.price}.`);
+            try {
+                joinBid = await placeOrder(
+                    'BUY', 
+                    qty, 
+                    symbol, 
+                    bid.price
+                );
+                console.log(`Buy order placed:`, joinBid);   
+                break;  // Throttle to only one order at a time.   
+            } catch (error) {
+                console.error(error.message);
             }
         }
     };
@@ -147,7 +151,7 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
     
     //cancel any open orders exceeding the price ceiling or fallen under the price floor. 
     let staleOrders = allOrders.filter(order => ((parseFloat(order.price)<x) || (parseFloat(order.price)>ceiling)));
-    
+
     if(staleOrders.length>0) {
          console.log(`Cancel orders below price floor`);
          await cancelOrders(staleOrders);
@@ -157,32 +161,26 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
         let offer = bestOffers[i];
         let qty = qtyLadder[i];
 
-        let maxOrders = Math.min(maxSellOrderLimit,offer.qty / qtyQuantum); 
-       
-        if(offer.price < x || offer.price > ceiling || maxOrders < 1) {
-            console.log(`Ignoring price level ${offer.price} - ${offer.qty}`);
+        let orders = allOrders.filter(order => parseFloat(order.price) === offer.price ); 
+        let quotaFull = (offer.qty < qtyQuanta[orders.length]);
 
+        console.log(`We have ${orders.length} orders on price level ${offer.price} with volume ${offer.qty}. quotaFull: ${quotaFull}`);
+               
+        if(offer.price < x || offer.price > ceiling || quotaFull) {
+            console.log(`Ignoring price level ${offer.price} - ${offer.qty}`);
         } else {
-            let orders = allOrders.filter(order => parseFloat(order.price) === offer.price ); 
-            console.log(`We have ${orders.length} orders on price level ${offer.price}, maxOrders ${maxOrders}`);
-            if(orders.length < maxOrders) {
-                console.log(`Placing sell order at price level ${offer.price}.`);
-                try {
-                    joinOffer = await placeOrder(
-                        'SELL', 
-                        qty, 
-                        symbol, 
-                        offer.price
-                    );
-                    console.log(`Sell order placed:`, joinOffer);   
-                    break;  // Throttle to only one order at a time.   
-                } catch (error) {
-                    console.error(error.message);
-                }
-            } else {  // trim back stale orders at this level. 
-                //  TO-DO: Cancel surplus orers at active price level. 
-                //const useByTime = Date.now() - (1 * 60 * 60 * 1000); // Current time minus x hours
-                //await cancelOrders(orders.filter(o => o.time < useByTime ))
+            console.log(`Placing sell order at price level ${offer.price}.`);
+            try {
+                joinOffer = await placeOrder(
+                    'SELL', 
+                    qty, 
+                    symbol, 
+                    offer.price
+                );
+                console.log(`Sell order placed:`, joinOffer);   
+                break;  // Throttle to only one order at a time.   
+            } catch (error) {
+                console.error(error.message);
             }
         }  
     };
