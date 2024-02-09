@@ -1,20 +1,29 @@
 /*
 Implement a sweep of a trading strategy. 
-Cancel all open orders and then place new orders 
-in a small grid around the current spot price. 
+Cancel all open orders and then place new orders in a small grid around the current spot price. 
 Orders are priced so that they are within the expected hourly highs and lows.
+
+Problem to solve: In steady, strong moves up (or down) are over selling asset and running out.  
+Need to be more demanding on price to reduce over selling / buying. 
 */
 const { placeOrder } = require('./orderTxns');
 const { fetchPositions } = require('./fetchTrades');
 const { fetchPriceStats } = require('./marketDataTxns');
 const { cancelOpenOrders } = require('./orderTxns');
+const { fetchAccountInfo } = require('./accountTxns');
 
 const threshold = { 
     orderCount : 2,
-    overSold : -250.0, 
-    short : -100.0, 
-    long : 100.0,
-    overBought : 250.0 
+
+    overSold : 220.0, 
+    short : 400.0, 
+    long : 500.0,
+    overBought : 700.0,
+
+    overSoldPct : 1.03,  // temporary large value because very oversold right now. 
+    shortPct : 1.000,  
+    longPct : 1.000, 
+    overBoughtPct : 0.990
 };
 
 function getOrderParameters(priceStats) {
@@ -46,39 +55,42 @@ function getOrderParameters(priceStats) {
     }
 }
 exports.placeNewOrders = placeNewOrders;
-async function placeNewOrders(symbol, position) {
-    const priceStats  = await fetchPriceStats(symbol, '1h');
+async function placeNewOrders(symbol, position, balance, priceStats) {
     const params = getOrderParameters(priceStats);
+
+    assetTotal = balance.total * priceStats.weightedAvgPrice;  
+
+    console.log(assetTotal); 
 
     const dt = new Date();
     console.log(`${symbol} current price ${priceStats.lastPrice} order quantity ${params.quantity} at ${dt.toLocaleString()}`);
+    
     console.log(`Place orders at:`, params);
    
     try {  // Make bids.
         let orderCount=0; 
-        for (let i = params.buy.length-1; i > 0;  i--) {
-            if((position.cost > threshold.overBought) && params.buy[i] >  (0.990 * position.costPrice)) {
+        for (let i = params.buy.length-1; i > 0; i--) {
+           
+            if((assetTotal > threshold.overBought) && params.buy[i] >  (threshold.overBoughtPct * position.mAvgBuyPrice)) {
                 console.log(
-                    `overbought so avoid buying unless we are improving our avg price lot.`, 
-                    params.buy[i]);
+                    `overbought so avoid buying unless we are improving our avg cost price by a lot.`, 
+                    params.buy[i]); 
                 continue; 
             }
-            else if((position.cost > threshold.long) && params.buy[i] >  (0.999 * position.costPrice)) {
+            else if((assetTotal > threshold.long) && params.buy[i] >  (threshold.longPct * position.mAvgBuyPrice)) {
                 console.log(
                     `long position so we don't want to buy unless we are improving our avg cost price.`, 
                     params.buy[i]);
                 continue;
             }
 
-            if(position.cost < threshold.overSold && params.buy[i] < 1.025 * position.costPrice) {
+            if(assetTotal < threshold.overSold && params.buy[i] < threshold.overSoldPct * position.mAvgSellPrice) {
                 console.log(
-                    `oversold so may need to buy back at a loss.`, 
-                    params.buy[i]);
-                // continue;
-            } else if((position.cost < threshold.short) && params.buy[i] > (0.999 * position.costPrice)) {
+                    `oversold so buy back at ${params.buy[i]} to realise a loss.`);
+                //continue;
+            } else if((position.cost < threshold.short) && params.buy[i] > (threshold.shortPct * position.mAvgSellPrice)) {
                 console.log(
-                    `short position and we do not want to buy at more than cost price.`, 
-                    params.buy[i]);
+                    `short position and we do not want to buy at ${params.buy[i]}, which is more than cost price.`);
                 continue;
             }
 
@@ -98,26 +110,26 @@ async function placeNewOrders(symbol, position) {
     try { // Make offers.
         let orderCount=0; 
         for (let i = params.sell.length-1; i > 0;  i--) {
-            if(position.cost < threshold.overSold && params.sell[i] <  (1.010 * position.costPrice)) {
+            if(position.cost < threshold.overSold && params.sell[i] <  (1.0 * position.mAvgSellPrice)) {
                 console.log(
                     `Oversold so we don't want to sell unless we are improving our avg price a lot.` , 
                     params.sell[i]);
                 continue;
             } else
-            if(position.cost < threshold.short && params.sell[i] <  (1.001 * position.costPrice)) {
+            if(position.cost < threshold.short && params.sell[i] <  (1.001 * position.mAvgSellPrice)) {
                 console.log(
                     `short position so we don't want to sell unless we are improving our avg cost price.` , 
                     params.sell[i]);
                 continue;
             }
 
-            if(position.cost > threshold.overBought && params.sell[i] > 0.99*position.costPrice) {
+            if(position.cost > threshold.overBought && params.sell[i] > 0.99*position.mAvgBuyPrice) {
                 console.log(
                     `Overbought so we may may need to sell back at a loss.`, 
                     params.sell[i]);
                // continue;
             } else
-            if(position.cost > threshold.long && params.sell[i] < 1.001*position.costPrice) {
+            if(position.cost > threshold.long && params.sell[i] < 1.001*position.mAvgBuyPrice) {
                 console.log(
                     `long position and we do not want to sell at less than cost price.`, 
                     params.sell[i]);
@@ -144,7 +156,17 @@ async function replaceOrders(symbol)
 {
     await cancelOpenOrders(symbol);
     const position = await fetchPositions(symbol, 3);
-    await placeNewOrders(symbol, position); 
+    const priceStats  = await fetchPriceStats(symbol, '1h');
+    const noneZeroBalances =  await fetchAccountInfo();
+
+    let balance = {};
+    if(symbol.startsWith("BTC")) 
+        balance = noneZeroBalances.balances.filter(balance => (balance.asset=='BTC'))[0];
+
+    if(symbol.startsWith("ETH")) 
+        balance = noneZeroBalances.balances.filter(balance => (balance.asset=='ETH'))[0];
+
+    await placeNewOrders(symbol, position, balance, priceStats); 
 }
 
 async function main() {
