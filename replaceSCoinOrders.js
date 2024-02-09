@@ -52,6 +52,7 @@ async function makeBids(bestBidPrices, allOrders, position, balances) {
 
     let x = position.mAvgSellPrice; // Avoid buying back at a loss relative to our recent trades. 
 
+    // Order price ceiling adjustments.
     if(usdcTotal > threshold.overBought) {
         console.log(`Overbought at an avg cost price of ${position.costPrice}`);
         // We can be more demading on price and lower our buy ceiling. 
@@ -61,7 +62,6 @@ async function makeBids(bestBidPrices, allOrders, position, balances) {
         // Avoid buying unless we can improve our average price.
         x = position.mAvgBuyPrice - 0.0001;
     }
-
     if(usdcTotal < threshold.overSold) {
         console.log(`Over sold at an average price of ${position.costPrice}`);
         // We may need to buy at a loss as we are severely over-sold and running out of USDC.
@@ -118,12 +118,13 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
 
     let usdcTotal = balances.usdc.total;
 
-    let x = position.mAvgBuyPrice - 0.0001; // Avoid selling at a loss. 
+    let x = position.mAvgBuyPrice; // Avoid selling back at a loss relative to our recent trades.
 
+    // Order price floor adjustments.
     if(usdcTotal < threshold.overSold) {
         console.log(`Oversold at an avg cost price of ${position.costPrice}`);
         // We can be more demading on price and raise our price floor.
-        x = position.mAvgSellPrice + 0.0002; 
+        x = position.mAvgSellPrice + 0.00025; 
 
     } else if(usdcTotal < threshold.short) {
         console.log(`Short posn at an avg cost price of ${position.costPrice}`);
