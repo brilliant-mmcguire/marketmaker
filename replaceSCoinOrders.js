@@ -50,34 +50,36 @@ async function makeBids(bestBidPrices, allOrders, position, balances) {
 
     let usdcTotal = balances.usdc.total;
 
-    let x = position.mAvgSellPrice; // Avoid buying back at a loss relative to our recent trades. 
+    let prcCeiling = position.mAvgSellPrice; // Avoid buying back at a loss relative to our recent trades. 
 
     // Order price ceiling adjustments.
     if(usdcTotal > threshold.overBought) {
         console.log(`Overbought at an avg cost price of ${position.costPrice}`);
         // We can be more demading on price and lower our buy ceiling. 
-        x = position.mAvgBuyPrice - 0.00025; 
+        prcCeiling = position.mAvgBuyPrice - 0.00025; 
     } else if(usdcTotal > threshold.long) {
         console.log(`Long posn at an avg cost price of ${position.costPrice}`);
         // Avoid buying unless we can improve our average price.
-        x = position.mAvgBuyPrice - 0.0001;
+        prcCeiling = position.mAvgBuyPrice - 0.0001;
     }
     if(usdcTotal < threshold.overSold) {
         console.log(`Over sold at an average price of ${position.costPrice}`);
         // We may need to buy at a loss as we are severely over-sold and running out of USDC.
-        x = position.mAvgSellPrice + 0.0002;
+        prcCeiling = position.mAvgSellPrice + 0.0002;
     } else if(usdcTotal < threshold.short) {
         console.log(`Short posn at an average price of ${position.costPrice}`);
         // Avoid buying back at a loss. 
-        x = position.mAvgSellPrice + 0.0001;
+        prcCeiling = position.mAvgSellPrice + 0.0001;
     }
     
     let floor = bestBidPrices[2].price;
     
-    console.log(`Buy price ceiling: ${x} and floor: ${floor}`);
+    console.log(`Buy price ceiling: ${prcCeiling} and floor: ${floor}`);
     
     //cancel any open orders exceeding the price ceiling and fallen under the price floor. 
-    let staleOrders = allOrders.filter(order => ((parseFloat(order.price)>x) || (parseFloat(order.price)<floor)));
+    let staleOrders = allOrders.filter(order => (
+        (parseFloat(order.price)>prcCeiling) || (parseFloat(order.price)<floor)
+        ));
     if(staleOrders.length>0) {
          console.log(`Cancel orders above price ceiling`);
          await cancelOrders(staleOrders);
@@ -92,7 +94,7 @@ async function makeBids(bestBidPrices, allOrders, position, balances) {
 
         console.log(`We have ${orders.length} orders on price level ${bid.price} with volume ${bid.qty}. quotaFull: ${quotaFull}`);
             
-        if(bid.price > x || bid.price < floor || quotaFull) {
+        if(bid.price > prcCeiling || bid.price < floor || quotaFull) {
             console.log(`Ignoring price level ${bid.price} - ${bid.qty}`);
         } else {
             console.log(`Placing buy order at price level ${bid.price}.`);
@@ -118,34 +120,36 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
 
     let usdcTotal = balances.usdc.total;
 
-    let x = position.mAvgBuyPrice; // Avoid selling back at a loss relative to our recent trades.
+    let prcFloor = position.mAvgBuyPrice; // Avoid selling back at a loss relative to our recent trades.
 
     // Order price floor adjustments.
     if(usdcTotal < threshold.overSold) {
         console.log(`Oversold at an avg cost price of ${position.costPrice}`);
         // We can be more demading on price and raise our price floor.
-        x = position.mAvgSellPrice + 0.00025; 
+        prcFloor = position.mAvgSellPrice + 0.00025; 
 
     } else if(usdcTotal < threshold.short) {
         console.log(`Short posn at an avg cost price of ${position.costPrice}`);
         // Avoid selling unless we can improve our average price.
-        x = position.mAvgSellPrice + 0.0001;
+        prcFloor = position.mAvgSellPrice + 0.0001;
     }
     if(usdcTotal > threshold.overBought) {
         console.log(`Over bought at an average price of ${position.costPrice}`);
         // We may need to sell at a loss as we are severely over-bought and running out of USDT.
-        x = position.mAvgBuyPrice - 0.0002; 
+        prcFloor = position.mAvgBuyPrice - 0.0002; 
     } else if(usdcTotal > threshold.long) {
         console.log(`Long posn at an average price of ${position.costPrice}`);
         // Avoid selling back at a loss. 
-        x = position.mAvgBuyPrice - 0.0001; 
+        prcFloor = position.mAvgBuyPrice - 0.0001; 
     }
 
     let ceiling = bestOffers[2].price;
-    console.log(`Sell price floor: ${x} and ceiling: ${ceiling}`)
+    console.log(`Sell price floor: ${prcFloor} and ceiling: ${ceiling}`)
     
     //cancel any open orders exceeding the price ceiling or fallen under the price floor. 
-    let staleOrders = allOrders.filter(order => ((parseFloat(order.price)<x) || (parseFloat(order.price)>ceiling)));
+    let staleOrders = allOrders.filter(order => (
+        (parseFloat(order.price)<prcFloor) || (parseFloat(order.price)>ceiling)
+        ));
 
     if(staleOrders.length>0) {
          console.log(`Cancel orders below price floor`);
@@ -161,7 +165,7 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
 
         console.log(`We have ${orders.length} orders on price level ${offer.price} with volume ${offer.qty}. quotaFull: ${quotaFull}`);
                
-        if(offer.price < x || offer.price > ceiling || quotaFull) {
+        if(offer.price < prcFloor || offer.price > ceiling || quotaFull) {
             console.log(`Ignoring price level ${offer.price} - ${offer.qty}`);
         } else {
             console.log(`Placing sell order at price level ${offer.price}.`);
