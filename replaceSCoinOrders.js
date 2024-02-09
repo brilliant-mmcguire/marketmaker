@@ -72,13 +72,13 @@ async function makeBids(bestBidPrices, allOrders, position, balances) {
         prcCeiling = position.mAvgSellPrice + 0.0001;
     }
     
-    let floor = bestBidPrices[2].price;
+    let prcFloor = bestBidPrices[2].price;
     
-    console.log(`Buy price ceiling: ${prcCeiling} and floor: ${floor}`);
+    console.log(`Buy price ceiling: ${prcCeiling} and floor: ${prcFloor}`);
     
     //cancel any open orders exceeding the price ceiling and fallen under the price floor. 
     let staleOrders = allOrders.filter(order => (
-        (parseFloat(order.price)>prcCeiling) || (parseFloat(order.price)<floor)
+        (parseFloat(order.price)>prcCeiling) || (parseFloat(order.price)<prcFloor)
         ));
     if(staleOrders.length>0) {
          console.log(`Cancel orders above price ceiling`);
@@ -94,7 +94,7 @@ async function makeBids(bestBidPrices, allOrders, position, balances) {
 
         console.log(`We have ${orders.length} orders on price level ${bid.price} with volume ${bid.qty}. quotaFull: ${quotaFull}`);
             
-        if(bid.price > prcCeiling || bid.price < floor || quotaFull) {
+        if(bid.price > prcCeiling || bid.price < prcFloor || quotaFull) {
             console.log(`Ignoring price level ${bid.price} - ${bid.qty}`);
         } else {
             console.log(`Placing buy order at price level ${bid.price}.`);
@@ -143,12 +143,12 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
         prcFloor = position.mAvgBuyPrice - 0.0001; 
     }
 
-    let ceiling = bestOffers[2].price;
-    console.log(`Sell price floor: ${prcFloor} and ceiling: ${ceiling}`)
+    let prcCeiling = bestOffers[2].price;
+    console.log(`Sell price floor: ${prcFloor} and ceiling: ${prcCeiling}`)
     
     //cancel any open orders exceeding the price ceiling or fallen under the price floor. 
     let staleOrders = allOrders.filter(order => (
-        (parseFloat(order.price)<prcFloor) || (parseFloat(order.price)>ceiling)
+        (parseFloat(order.price)<prcFloor) || (parseFloat(order.price)>prcCeiling)
         ));
 
     if(staleOrders.length>0) {
@@ -165,7 +165,7 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
 
         console.log(`We have ${orders.length} orders on price level ${offer.price} with volume ${offer.qty}. quotaFull: ${quotaFull}`);
                
-        if(offer.price < prcFloor || offer.price > ceiling || quotaFull) {
+        if(offer.price < prcFloor || offer.price > prcCeiling || quotaFull) {
             console.log(`Ignoring price level ${offer.price} - ${offer.qty}`);
         } else {
             console.log(`Placing sell order at price level ${offer.price}.`);
