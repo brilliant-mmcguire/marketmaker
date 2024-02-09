@@ -20,7 +20,7 @@ const threshold = {
     long : 500.0,
     overBought : 700.0,
 
-    overSoldPct : 1.03,  // temporary large value because very oversold right now. 
+    overSoldPct : 1.04,  // temporary large value because very oversold right now. 
     shortPct : 1.000,  
     longPct : 1.000, 
     overBoughtPct : 0.990
@@ -110,26 +110,26 @@ async function placeNewOrders(symbol, position, balance, priceStats) {
     try { // Make offers.
         let orderCount=0; 
         for (let i = params.sell.length-1; i > 0;  i--) {
-            if(position.cost < threshold.overSold && params.sell[i] <  (1.0 * position.mAvgSellPrice)) {
+            if(assetTotal < threshold.overSold && params.sell[i] <  (threshold.overSoldPct * position.mAvgSellPrice)) {
                 console.log(
                     `Oversold so we don't want to sell unless we are improving our avg price a lot.` , 
                     params.sell[i]);
                 continue;
             } else
-            if(position.cost < threshold.short && params.sell[i] <  (1.001 * position.mAvgSellPrice)) {
+            if(assetTotal< threshold.short && params.sell[i] <  (threshold.shortPct * position.mAvgSellPrice)) {
                 console.log(
                     `short position so we don't want to sell unless we are improving our avg cost price.` , 
                     params.sell[i]);
                 continue;
             }
 
-            if(position.cost > threshold.overBought && params.sell[i] > 0.99*position.mAvgBuyPrice) {
+            if(assetTotal > threshold.overBought && params.sell[i] > threshold.overBoughtPct * position.mAvgBuyPrice) {
                 console.log(
                     `Overbought so we may may need to sell back at a loss.`, 
                     params.sell[i]);
                // continue;
             } else
-            if(position.cost > threshold.long && params.sell[i] < 1.001*position.mAvgBuyPrice) {
+            if(assetTotal > threshold.long && params.sell[i] < threshold.longPct*position.mAvgBuyPrice) {
                 console.log(
                     `long position and we do not want to sell at less than cost price.`, 
                     params.sell[i]);
