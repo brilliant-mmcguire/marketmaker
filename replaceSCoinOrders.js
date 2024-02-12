@@ -68,8 +68,8 @@ async function makeBids(bestBidPrices, allOrders, position, balances) {
         prcCeiling = position.mAvgSellPrice + 0.0002;
     } else if(usdcTotal < threshold.short) {
         console.log(`Short posn at an average price of ${position.costPrice}`);
-        // Avoid buying back at a loss. 
-        prcCeiling = position.mAvgSellPrice;
+        // Buy back at a slight loss is necessary. 
+        prcCeiling = position.mAvgSellPrice + 0.00008;
     }
     
     let prcFloor = bestBidPrices[2].price;
@@ -139,8 +139,8 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
         prcFloor = position.mAvgBuyPrice - 0.0002; 
     } else if(usdcTotal > threshold.long) {
         console.log(`Long posn at an average price of ${position.costPrice}`);
-        // Avoid selling back at a loss. 
-        prcFloor = position.mAvgBuyPrice; 
+        // Sell back at a slight loss if necessary. 
+        prcFloor = position.mAvgBuyPrice - 0.00008; 
     }
 
     let prcCeiling = bestOffers[2].price;
