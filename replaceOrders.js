@@ -15,12 +15,12 @@ const { fetchAccountInfo } = require('./accountTxns');
 const threshold = { 
     orderCount : 2,
 
-    overSold : 220.0, 
+    overSold : 200.0, 
     short : 400.0, 
-    long : 500.0,
-    overBought : 700.0,
+    long : 600.0,
+    overBought : 800.0,
 
-    overSoldPct : 1.04,  // temporary large value because very oversold right now. 
+    overSoldPct : 1.01,  
     shortPct : 1.000,  
     longPct : 1.000, 
     overBoughtPct : 0.990
