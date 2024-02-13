@@ -93,14 +93,13 @@ async function placeNewOrders(symbol, position, balance, priceStats) {
                     `short position and we do not want to buy at ${params.buy[i]}, which is more than cost price.`);
                 continue;
             }
-
             const buyOrder = await placeOrder(
                 'BUY', 
                 params.quantity, 
                 symbol, 
                 params.buy[i]
             );
-            console.log('Order placed:', buyOrder);
+            console.log('Placed Buy Order:', buyOrder);
             if(++orderCount >= threshold.orderCount) break;
         }
     } catch (error) {
@@ -135,14 +134,14 @@ async function placeNewOrders(symbol, position, balance, priceStats) {
                     params.sell[i]);
                 continue;
             }
-
             const sellOrder = await placeOrder(
                 'SELL', 
                 params.quantity, 
                 symbol, 
                 params.sell[i]
             );
-            console.log('Order placed:', sellOrder);
+            console.log('Placed Sell Order:', sellOrder);
+            
             if(++orderCount>=threshold.orderCount) break;
         }
     } catch (error) {
@@ -165,6 +164,9 @@ async function replaceOrders(symbol)
 
     if(symbol.startsWith("ETH")) 
         balance = noneZeroBalances.balances.filter(balance => (balance.asset=='ETH'))[0];
+
+    if(symbol.startsWith("XRP")) 
+        balance = noneZeroBalances.balances.filter(balance => (balance.asset=='XRP'))[0];
 
     await placeNewOrders(symbol, position, balance, priceStats); 
 }
