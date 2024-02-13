@@ -22,7 +22,7 @@ const { fetchAccountInfo } = require('./accountTxns');
 const symbol = 'USDCUSDT';
 
 /*
-Use a quantity ladder to place smaller orders away from the current touch price. 
+Use a quantity ladder to place smaller orers away from the current touch price. 
 This is to reduce the impact of sharp price moves where the proce shoots through and 
 remains at high/low levels for some period of time.  In this scenario we become 
 oversold/overbought too quickly. 
@@ -30,10 +30,10 @@ oversold/overbought too quickly.
 const qtyLadder = [23, 19, 15, 13, 11];  
 
 const threshold = { 
-    overSold : 250, 
-    short : 500,
-    long : 700,
-    overBought : 950 
+    overSold : 300, 
+    short : 600,
+    long : 800,
+    overBought : 1100 
 };
 
 /* 
