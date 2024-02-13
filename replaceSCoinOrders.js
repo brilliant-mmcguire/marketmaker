@@ -27,7 +27,7 @@ This is to reduce the impact of sharp price moves where the proce shoots through
 remains at high/low levels for some period of time.  In this scenario we become 
 oversold/overbought too quickly. 
 */
-const qtyLadder = [21, 17, 13, 12, 11];  
+const qtyLadder = [23, 19, 15, 13, 11];  
 
 const threshold = { 
     overSold : 250, 
@@ -42,7 +42,7 @@ This is the help regulate the rate of exection of our orders.
 The more orders are in queue ahead of us, the more orders we need to keep in the queue.
 The goal is to maintin a steady rate of execution and to baclance to rate of buy and sell trades. 
 */
-const qtyQuanta = [250000, 6000000, 1400000, 3000000, 6000000, 100123456];
+const qtyQuanta = [250000, 800000, 190000, 3000000, 6000000, 100123456];
 
 async function makeBids(bestBidPrices, allOrders, position, balances) {
     
