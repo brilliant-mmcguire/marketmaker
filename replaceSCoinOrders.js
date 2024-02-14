@@ -90,14 +90,23 @@ async function makeBids(bestBidPrices, allOrders, position, balances) {
         let qty = qtyLadder[i];
         
         let orders = allOrders.filter(order => parseFloat(order.price) === bid.price ); 
+ 
+        let freshOrders = false;
+        if (orders.length>0) { 
+            const xxMinutes = 11 * 60 * 1000; // Ten minutes in milliseconds
+            freshOrders = ((Date.now() - orders[orders.length-1].time) < xxMinutes);
+        }
+
         let quotaFull = (bid.qty < qtyQuanta[orders.length]);
 
         console.log(
             `We have ${orders.length} orders on price level ${bid.price} with volume ${bid.qty}. quotaFull: ${quotaFull}`
             );
         
-        if(bid.price > prcCeiling || bid.price < prcFloor || quotaFull) {
-            console.log(`Ignoring price level ${bid.price} - ${bid.qty}`);
+        if(bid.price > prcCeiling || bid.price < prcFloor || quotaFull || freshOrders) {
+            console.log(`> Ignoring price level ${bid.price}`);
+            console.log(`> quotaFull: ${quotaFull}`); 
+            console.log(`> freshOrders: ${freshOrders}`);
         } else {
             console.log(`Placing buy order at price level ${bid.price}.`);
             try {
