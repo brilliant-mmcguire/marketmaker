@@ -92,8 +92,10 @@ async function makeBids(bestBidPrices, allOrders, position, balances) {
         let orders = allOrders.filter(order => parseFloat(order.price) === bid.price ); 
         let quotaFull = (bid.qty < qtyQuanta[orders.length]);
 
-        console.log(`We have ${orders.length} orders on price level ${bid.price} with volume ${bid.qty}. quotaFull: ${quotaFull}`);
-            
+        console.log(
+            `We have ${orders.length} orders on price level ${bid.price} with volume ${bid.qty}. quotaFull: ${quotaFull}`
+            );
+        
         if(bid.price > prcCeiling || bid.price < prcFloor || quotaFull) {
             console.log(`Ignoring price level ${bid.price} - ${bid.qty}`);
         } else {
@@ -161,12 +163,21 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
         let qty = qtyLadder[i];
 
         let orders = allOrders.filter(order => parseFloat(order.price) === offer.price ); 
+        
+        let freshOrders = false;
+        if (orders.length>0) { 
+            const xxMinutes = 11 * 60 * 1000; // Ten minutes in milliseconds
+            freshOrders = ((Date.now() - orders[orders.length-1].time) > xxMinutes);
+        }
+
         let quotaFull = (offer.qty < qtyQuanta[orders.length]);
 
-        console.log(`We have ${orders.length} orders on price level ${offer.price} with volume ${offer.qty}. quotaFull: ${quotaFull}`);
+        console.log(`We have ${orders.length} orders on price level ${offer.price} with volume ${offer.qty}.`);      
                
-        if(offer.price < prcFloor || offer.price > prcCeiling || quotaFull) {
-            console.log(`Ignoring price level ${offer.price} - ${offer.qty}`);
+        if(offer.price < prcFloor || offer.price > prcCeiling || quotaFull || freshOrders) {
+            console.log(`> Ignoring price level ${offer.price}`);
+            console.log(`> quotaFull: ${quotaFull}`); 
+            console.log(`> freshOrders: ${freshOrders}`);
         } else {
             console.log(`Placing sell order at price level ${offer.price}.`);
             try {
