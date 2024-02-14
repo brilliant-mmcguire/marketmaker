@@ -167,7 +167,7 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
         let freshOrders = false;
         if (orders.length>0) { 
             const xxMinutes = 11 * 60 * 1000; // Ten minutes in milliseconds
-            freshOrders = ((Date.now() - orders[orders.length-1].time) > xxMinutes);
+            freshOrders = ((Date.now() - orders[orders.length-1].time) < xxMinutes);
         }
 
         let quotaFull = (offer.qty < qtyQuanta[orders.length]);
