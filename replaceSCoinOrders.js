@@ -27,7 +27,7 @@ This is to reduce the impact of sharp price moves where the proce shoots through
 remains at high/low levels for some period of time.  In this scenario we become 
 oversold/overbought too quickly. 
 */
-const qtyLadder = [29, 25, 19, 15, 13];  
+const qtyLadder = [31, 27, 23, 19, 15];  
 
 const threshold = { 
     overSold : 300, 
@@ -100,7 +100,7 @@ async function makeBids(bestBidPrices, allOrders, position, balances) {
         let quotaFull = (bid.qty < qtyQuanta[orders.length]);
 
         console.log(
-            `We have ${orders.length} orders on price level ${bid.price} with volume ${bid.qty}. quotaFull: ${quotaFull}`
+            `We have ${orders.length} orders on price level ${bid.price} with volume ${bid.qty}.}`
             );
         
         if(bid.price > prcCeiling || bid.price < prcFloor || quotaFull || freshOrders) {
