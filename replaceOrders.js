@@ -20,10 +20,10 @@ const threshold = {
     long : 600.0,
     overBought : 800.0,
 
-    overSoldPct : 1.01,  
+    overSoldPct : 1.025,  
     shortPct : 1.000,  
     longPct : 1.000, 
-    overBoughtPct : 0.990
+    overBoughtPct : 0.985
 };
 
 function getOrderParameters(priceStats) {
@@ -75,7 +75,7 @@ async function placeNewOrders(symbol, position, balance, priceStats) {
                 console.log(
                     `overbought so avoid buying unless we are improving our avg cost price by a lot.`, 
                     params.buy[i]); 
-                continue; 
+                continue;   
             }
             else if((assetTotal > threshold.long) && params.buy[i] >  (threshold.longPct * position.mAvgBuyPrice)) {
                 console.log(
