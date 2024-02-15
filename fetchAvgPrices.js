@@ -175,14 +175,12 @@ async function main() {
     if(!symbol) throw 'Symbol not provided.'; 
     if(isNaN(dayCount))  dayCount = 7 ;
    
-   // console.log(dayCount); return;
-
     let sessions = []; 
 
     let netBought = accumulateTrades([]);
     let netSold = accumulateTrades([]);
     
-    for(let i = dayCount+1; i >= 1; i--) {
+    for(let i = dayCount; i >= 1; i--) {
         let stats = await fetch24hTrades(symbol, i); 
 
         let trades = parseTrades(stats.trades);
