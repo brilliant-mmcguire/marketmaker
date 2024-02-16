@@ -27,13 +27,13 @@ This is to reduce the impact of sharp price moves where the proce shoots through
 remains at high/low levels for some period of time.  In this scenario we become 
 oversold/overbought too quickly. 
 */
-const qtyLadder = [31, 27, 23, 19, 15];  
+const qtyLadder = [33, 29, 27, 23, 17];  
 
 const threshold = { 
-    overSold : 300, 
-    short : 600,
-    long : 900,
-    overBought : 1200 
+    overSold : 350, 
+    short : 700,
+    long : 1000,
+    overBought : 1350 
 };
 
 /* 
@@ -93,7 +93,7 @@ async function makeBids(bestBidPrices, allOrders, position, balances) {
  
         let freshOrders = false;
         if (orders.length>0) { 
-            const xxMinutes = 11 * 60 * 1000; // Ten minutes in milliseconds
+            const xxMinutes = 11 * 60 * 1000; // Eleven minutes in milliseconds
             freshOrders = ((Date.now() - orders[orders.length-1].time) < xxMinutes);
         }
 
