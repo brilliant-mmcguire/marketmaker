@@ -173,7 +173,7 @@ async function main() {
     let dayCount = parseInt(process.argv[3]);
 
     if(!symbol) throw 'Symbol not provided.'; 
-    if(isNaN(dayCount))  dayCount = 7 ;
+    if(isNaN(dayCount))  dayCount = 1 ;
    
     let sessions = []; 
 
