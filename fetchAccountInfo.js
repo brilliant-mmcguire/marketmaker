@@ -16,7 +16,8 @@ function filterByAsset(asset, price, accountInfo){
     let b = accountInfo.balances.filter(balance => (balance.asset==asset))[0];
     return {
         qty  : b.total, 
-        cost : b.total * price  
+        free : b.free,
+        usd : Math.round(100*b.total*price)/100  
     };
 }
 async function main() {
