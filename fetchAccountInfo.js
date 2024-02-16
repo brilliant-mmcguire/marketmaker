@@ -12,17 +12,27 @@ const API_SECRET = process.env.API_SECRET;
 
 const { fetchAccountInfo } = require('./accountTxns');
 
+function filterByAsset(asset, price, accountInfo){
+    let b = accountInfo.balances.filter(balance => (balance.asset==asset))[0];
+    return {
+        qty  : b.total, 
+        cost : b.total * price  
+    };
+}
 async function main() {
     try {
         const noneZeroBalances =  await fetchAccountInfo();
 
         let balances = {
-           usdc : noneZeroBalances.balances.filter(balance => (balance.asset=='USDC'))[0],
-           usdt : noneZeroBalances.balances.filter(balance => (balance.asset=='USDT'))[0]
+           USDC : filterByAsset('USDC',    1.00, noneZeroBalances),
+           USDT : filterByAsset('USDT',    1.00, noneZeroBalances), 
+           ETH  : filterByAsset('ETH',  2700.00, noneZeroBalances),
+           BTC  : filterByAsset('BTC', 50000.00, noneZeroBalances), 
+           BNB  : filterByAsset('BNB',   333.00, noneZeroBalances),
+           XRP  : filterByAsset('XRP',     0.56, noneZeroBalances)
         }
 
         console.log(`Balances for uid ${noneZeroBalances.uid} @ `, new Date());
-        //console.log(noneZeroBalances);    
         console.log(balances);
 
     } catch (error) {
