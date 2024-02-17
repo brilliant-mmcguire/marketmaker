@@ -65,7 +65,7 @@ function computePosition(trades) {
 }
 
 exports.fetchPositions = fetchPositions;
-async function fetchPositions(symbol, days=1.5) {
+async function fetchPositions(symbol, days=1.0) {
     try {
         const trades = await fetchMyTrades(symbol, 1000, days);
         const pos = {
@@ -170,7 +170,7 @@ async function fetchPositions(symbol, days=1.5) {
 async function main() {
     if (require.main !== module) return;
     const symbol = process.argv[2];
-    const days = (process.argv[3] == undefined) ? 1.5 : parseFloat(process.argv[3]);
+    const days = (process.argv[3] == undefined) ? 1.0 : parseFloat(process.argv[3]);
     
     if(!symbol) throw 'Symbol not provided.'; 
     fetchPositions(symbol, days);
