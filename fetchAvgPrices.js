@@ -125,7 +125,7 @@ function updatePosition(pos, session) {
             `Expect reduced position ${pos.qty} :> ${newPositionQty}`);
 
         pos.cost += s.surplusQty * pos.costPrice; 
-        pos.realisedPL += s.surplusQty * (pos.costPrice - s.surplusCostPrice); 
+        pos.matchedPL += s.surplusQty * (pos.costPrice - s.surplusCostPrice); 
         pos.qty += s.surplusQty;
         // costPrice doesn't change.
     
@@ -145,7 +145,7 @@ function updatePosition(pos, session) {
             Math.abs(pos.cost<=0.00000001), 
             `Expect zero pos.cost on flat position ${pos.cost}`); 
 
-        pos.realisedPL -= pos.qty * (pos.costPrice - s.surplusCostPrice); 
+        pos.matchedPL -= pos.qty * (pos.costPrice - s.surplusCostPrice); 
         
         //
         // now, the opening part of the trade.
@@ -158,7 +158,6 @@ function updatePosition(pos, session) {
         pos.qty += s.surplusQty;
         pos.costPrice =  Math.abs(pos.qty) >= 0.00000001 ? pos.cost / pos.qty : 0.0;
     }
-    //pos.realisedPL += s.matchedPL;
     pos.matchedQty += s.matchedQty;
     pos.matchedPL += s.matchedPL;
     pos.matchedCost += s.matchedCost;

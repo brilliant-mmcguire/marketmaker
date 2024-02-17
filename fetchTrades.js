@@ -76,7 +76,7 @@ async function fetchPositions(symbol, days=1.0) {
             mAvgBuyPrice : trades.buys[0].price,
             mAvgSellPrice : trades.sells[0].price,
             matchedQty : 0.0,
-            realisedPL : 0.0,
+            matchedPL : 0.0,
             cost: 0.0,
             costHigh : 0.0,
             costLow : 0.0,
@@ -119,7 +119,7 @@ async function fetchPositions(symbol, days=1.0) {
                     `Expect reduced position ${pos.qty} :> ${newPositionQty}`);
                 
                 pos.cost += t.qty * pos.costPrice; 
-                pos.realisedPL += t.qty * (pos.costPrice - t.price); 
+                pos.matchedPL += t.qty * (pos.costPrice - t.price); 
                 pos.matchedQty += Math.abs(t.qty);
                 pos.qty += t.qty;
                 pos.quoteQty += t.quoteQty;
@@ -141,7 +141,7 @@ async function fetchPositions(symbol, days=1.0) {
                     Math.abs(pos.cost<=0.00000001), 
                     `Expect zero pos.cost on flat position ${pos.cost}`); 
 
-                pos.realisedPL -= pos.qty * (pos.costPrice - t.price); 
+                pos.matchedPL -= pos.qty * (pos.costPrice - t.price); 
                 pos.matchedQty += Math.abs(pos.qty);
                 
                 //
