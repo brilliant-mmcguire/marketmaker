@@ -25,6 +25,7 @@ async function main() {
         const noneZeroBalances =  await fetchAccountInfo();
 
         let balances = {
+           totalUsd : 0,
            USDC : filterByAsset('USDC',    1.00, noneZeroBalances),
            USDT : filterByAsset('USDT',    1.00, noneZeroBalances), 
            ETH  : filterByAsset('ETH',  2700.00, noneZeroBalances),
@@ -32,6 +33,14 @@ async function main() {
            BNB  : filterByAsset('BNB',   333.00, noneZeroBalances),
            XRP  : filterByAsset('XRP',     0.56, noneZeroBalances)
         }
+
+        balances.totalUsd = 
+            balances.USDC.usd+
+            balances.USDT.usd+ 
+            balances.ETH.usd+
+            balances.BTC.usd+
+            balances.BNB.usd+
+            balances.XRP.usd;
 
         console.log(`Balances for uid ${noneZeroBalances.uid} @ `, new Date());
         console.log(balances);
