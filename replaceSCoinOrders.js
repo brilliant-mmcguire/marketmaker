@@ -42,7 +42,7 @@ This is the help regulate the rate of exection of our orders.
 The more orders are in queue ahead of us, the more orders we need to keep in the queue.
 The goal is to maintin a steady rate of execution and to baclance to rate of buy and sell trades. 
 */
-const qtyQuanta = [250000, 800000, 1900000, 4000000, 6500000, 100123456];
+const qtyQuanta = [212345, 512345, 812345, 1123456, 3123456, 6123456, 100123456];
 
 async function makeBids(bestBidPrices, allOrders, position, balances) {
     
