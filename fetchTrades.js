@@ -17,18 +17,27 @@ function createSignature(query) {
     return crypto.createHmac('sha256', API_SECRET).update(query).digest('hex');
 }
 
-async function fetchMyTrades(symbol, limit = 1000, days=1.5) {
+async function fetchMyTrades(symbol, limit = 1000, days=NaN) {
     const endpoint = '/api/v3/myTrades';
     const ts = new Date();
     
-    const params = {
-        symbol: symbol,
-        timestamp: Date.now(),
-        limit: limit,
-        // startTime : new Date(ts.getFullYear(), ts.getMonth(), ts.getDate()-1).getTime(),
-        // endTime : ts.getTime(), // endTime can't be more that 24hrs ahead of startTime.
-        startTime : (new Date().getTime() - (days * 24 * 60 * 60 * 1000))
-    };
+    let params = {};
+    if(isNaN(days)) {
+        params = {
+            symbol: symbol,
+            timestamp: Date.now(),
+            limit: limit,
+        }
+    } else {
+        params = {
+            symbol: symbol,
+            timestamp: Date.now(),
+            limit: limit,
+            // startTime : new Date(ts.getFullYear(), ts.getMonth(), ts.getDate()-1).getTime(),
+            // endTime : ts.getTime(), // endTime can't be more that 24hrs ahead of startTime.
+            startTime : (new Date().getTime() - (days * 24 * 60 * 60 * 1000))
+        };
+    }
     const query = qs.stringify(params);
     const signature = createSignature(query);
     const url = `${BASE_URL}${endpoint}?${query}&signature=${signature}`;
@@ -65,7 +74,7 @@ function computePosition(trades) {
 }
 
 exports.fetchPositions = fetchPositions;
-async function fetchPositions(symbol, days=1.0) {
+async function fetchPositions(symbol, days=NaN) {
     try {
         const trades = await fetchMyTrades(symbol, 1000, days);
         const pos = {
@@ -170,7 +179,7 @@ async function fetchPositions(symbol, days=1.0) {
 async function main() {
     if (require.main !== module) return;
     const symbol = process.argv[2];
-    const days = (process.argv[3] == undefined) ? 1.0 : parseFloat(process.argv[3]);
+    const days = (process.argv[3] == undefined) ? NaN : parseFloat(process.argv[3]);
     
     if(!symbol) throw 'Symbol not provided.'; 
     fetchPositions(symbol, days);
