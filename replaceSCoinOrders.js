@@ -27,13 +27,13 @@ This is to reduce the impact of sharp price moves where the proce shoots through
 remains at high/low levels for some period of time.  In this scenario we become 
 oversold/overbought too quickly. 
 */
-const qtyLadder = [43, 35, 29, 23, 17];  
+const qtyLadder = [47, 41, 31, 23, 17];  
 
 const threshold = { 
-    overSold : 350, 
-    short : 700,
-    long : 1000,
-    overBought : 1350 
+    overSold : 400, 
+    short : 800,
+    long : 1200,
+    overBought : 1600 
 };
 
 /* 
