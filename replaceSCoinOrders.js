@@ -93,11 +93,11 @@ async function makeBids(bestBidPrices, allOrders, position, balances) {
  
         let freshOrders = false;
         if (orders.length>0) { 
-            const xxMinutes = 11; // Minutes bewteen orders at a give price level.
+            const xxMinutes = 16; // Minimum number of minutes bewteen orders at a give price level.
             const xxMilliSeconds = xxMinutes * 60 * 1000; 
             freshOrders = ((Date.now() - orders[orders.length-1].time) < xxMilliSeconds);
         }
-
+        
         let quotaFull = (bid.qty < qtyQuanta[orders.length]);
 
         console.log(
