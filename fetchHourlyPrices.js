@@ -25,3 +25,5 @@ async function fetchAndLogHourlyPrices(symbol) {
 
 fetchAndLogHourlyPrices('BTCUSDC');
 fetchAndLogHourlyPrices('ETHUSDC');
+fetchAndLogHourlyPrices('USDCUSDT');
+
