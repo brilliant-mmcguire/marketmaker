@@ -10,9 +10,11 @@ async function main() {
     //['BTCUSDC', 'ETHUSDC'].forEach(fetchCurrentPrice);
     if (require.main !== module) return;
     const symbol = process.argv[2];
+    const windowSize = process.argv[3]; 
+
     if(!symbol) throw 'Symbol not provided.'; 
-    const priceStats = await fetchPriceStats(symbol);
-    console.log(priceStats, '1h');
+    const priceStats = await fetchPriceStats(symbol, windowSize);
+    console.log(priceStats, windowSize);
 }    
 if (require.main === module) main();
 
