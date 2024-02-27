@@ -30,10 +30,10 @@ oversold/overbought too quickly.
 const qtyLadder = [89, 61, 47, 37, 29];  
 
 const threshold = { 
-    overSold : 500, 
-    short : 800,
-    long : 1300,
-    overBought : 1600 
+    overSold : 800, 
+    short : 1200,
+    long : 1600,
+    overBought : 2000 
 };
 
 /* 
