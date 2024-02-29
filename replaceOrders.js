@@ -20,10 +20,10 @@ const threshold = {
     long : 400.0,
     overBought : 500.0,
 
-    overSoldPct : 1.040,  
-    shortPct : 1.0025,  
-    longPct : 1.0025, 
-    overBoughtPct : 0.960
+    overSoldPct : 1.035,  
+    shortPct : 1.0022,  
+    longPct : 1.0022, 
+    overBoughtPct : 0.975
 };
 
 function getOrderParameters(priceStats) {
