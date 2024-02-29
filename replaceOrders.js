@@ -20,10 +20,10 @@ const threshold = {
     long : 600.0,
     overBought : 800.0,
 
-    overSoldPct : 1.030,  
+    overSoldPct : 1.040,  
     shortPct : 1.002,  
     longPct : 1.002, 
-    overBoughtPct : 0.970
+    overBoughtPct : 0.960
 };
 
 function getOrderParameters(priceStats) {
@@ -31,7 +31,7 @@ function getOrderParameters(priceStats) {
     // Base prices: midway between current price (close) and the high or low. 
     const sellBasePrc = 0.5*(priceStats.lastPrice + priceStats.highPrice); 
     const buyBasePrice = 0.5*(priceStats.lastPrice + priceStats.lowPrice);
-
+   
     return {
         quantity : (Math.round((17.0 / priceStats.weightedAvgPrice) * 10000)) / 10000,
         sell : [
