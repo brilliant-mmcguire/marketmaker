@@ -67,9 +67,9 @@ function computePosition(trades) {
         tradeCount: trades.length,
         qty: totalQty,
         quoteQty: totalQuoteQty,
-        consideration: totalValue,
-        commission: totalCommision,
-        costPrice: totalValue / totalQty
+        cost: totalValue,
+        costPrice: totalValue / totalQty,
+        commission: totalCommision
     };
 }
 

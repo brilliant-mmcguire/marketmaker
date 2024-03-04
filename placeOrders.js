@@ -2,7 +2,7 @@
 Place orders in a small grid around the current spot price. 
 Here, we place three buy orders below the spot price and three sell orders above.
 These orders are priced so that they are within the expected hourly highs and lows.
-Order quatity is calculated so that the order consideration is $12.
+Order quatity is calculated so that the order cost/proceeds is $12.
 */
 const axios = require('axios');
 const crypto = require('crypto');
