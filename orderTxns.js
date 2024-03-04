@@ -77,11 +77,11 @@ async function fetchOpenOrders(symbol) {
         }
     });
     return response.data.map(d => ({
+        symbol: d.symbol,
+        side: d.side,
         orderId: d.orderId,
         time: d.time,
-        side: d.side,
         origQty: d.origQty,
-        symbol: d.symbol,
         price: d.price
     }));
 }
