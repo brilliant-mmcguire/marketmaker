@@ -79,6 +79,8 @@ async function fetchPositions(symbol, days=NaN) {
         const trades = await fetchMyTrades(symbol, 1000, days);
         const pos = {
             symbol : symbol,
+            startTime: new Date(trades.all[0].time),
+            endTime: new Date(trades.all[trades.all.length-1].time),
             qty : 0.0,
             quoteQty : 0.0,
             cost: 0.0,
@@ -113,7 +115,7 @@ async function fetchPositions(symbol, days=NaN) {
             };
             
             pos.commision += t.commission; 
-            
+
             // Trade increases position.
             let newPositionQty = pos.qty+t.qty;
        
