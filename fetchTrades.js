@@ -90,6 +90,7 @@ async function fetchPositions(symbol, days=NaN) {
             matchedQty : 0.0,
             matchedPL : 0.0,
             commision : 0.0,
+            commisionUSD : 0.0,
             mAvgBuyPrice : trades.buys[0].price,
             mAvgSellPrice : trades.sells[0].price,
             sold    : computePosition(trades.sells),
@@ -177,6 +178,7 @@ async function fetchPositions(symbol, days=NaN) {
             pos.costLow = Math.min(pos.costLow, pos.cost);
             
         };
+        pos.commisionUSD = pos.commision * 400;
         console.log(pos);
         return pos;
     } catch (error) {

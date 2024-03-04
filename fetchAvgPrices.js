@@ -95,7 +95,7 @@ function makeSession(params, bought, sold) {
         surplusCostPrice: surplusQty >=0 ? bought.costPrice : sold.costPrice,
 
         commision : bought.commission + sold.commission,
-        commisionUSD : 333*(bought.commission + sold.commission),
+        commisionUSD : 400*(bought.commission + sold.commission),
 
         bought: bought,
         sold: sold
