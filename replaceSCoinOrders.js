@@ -31,9 +31,9 @@ const qtyLadder = [131, 89, 67, 47, 37];
 
 const threshold = { 
     overSold : 1000, 
-    short : 1400,
-    long : 1800,
-    overBought : 2200 
+    short : 1500,
+    long : 2000,
+    overBought : 2500 
 };
 
 /* 
