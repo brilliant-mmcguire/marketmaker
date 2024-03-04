@@ -81,14 +81,15 @@ async function fetchPositions(symbol, days=NaN) {
             symbol : symbol,
             qty : 0.0,
             quoteQty : 0.0,
-            costPrice : 0.0,
-            mAvgBuyPrice : trades.buys[0].price,
-            mAvgSellPrice : trades.sells[0].price,
-            matchedQty : 0.0,
-            matchedPL : 0.0,
             cost: 0.0,
+            costPrice : 0.0,
             costHigh : 0.0,
             costLow : 0.0,
+            matchedQty : 0.0,
+            matchedPL : 0.0,
+            commision : 0.0,
+            mAvgBuyPrice : trades.buys[0].price,
+            mAvgSellPrice : trades.sells[0].price,
             sold    : computePosition(trades.sells),
             bought  : computePosition(trades.buys)
         };
@@ -98,7 +99,8 @@ async function fetchPositions(symbol, days=NaN) {
             let t = {
                 isBuyer : r.isBuyer, 
                 qty : 0.0, quoteQty : 0.0, 
-                price : parseFloat(r.price) 
+                price : parseFloat(r.price), 
+                commission : parseFloat(r.commission) 
             };
             if(t.isBuyer) {
                 t.qty = parseFloat(r.qty); 
@@ -109,6 +111,8 @@ async function fetchPositions(symbol, days=NaN) {
                 t.quoteQty = -1.0 * parseFloat(r.quoteQty);
                 pos.mAvgSellPrice = pos.mAvgSellPrice*0.95 + t.price*0.05;
             };
+            
+            pos.commision += t.commission; 
             
             // Trade increases position.
             let newPositionQty = pos.qty+t.qty;
@@ -125,7 +129,8 @@ async function fetchPositions(symbol, days=NaN) {
                 // Reduce position
                 console.assert(
                     Math.abs(pos.qty+t.qty) < Math.abs(pos.qty), 
-                    `Expect reduced position ${pos.qty} :> ${newPositionQty}`);
+                    `Expect reduced position ${pos.qty} :> ${newPositionQty}`
+                    );
                 
                 pos.cost += t.qty * pos.costPrice; 
                 pos.matchedPL += t.qty * (pos.costPrice - t.price); 
@@ -138,7 +143,8 @@ async function fetchPositions(symbol, days=NaN) {
                 // Flip position
                 console.assert(
                     Math.sign(newPositionQty)!= Math.sign(pos.qty), 
-                    `Expect flipped position ${pos.qty} :> ${newPositionQty}`);
+                    `Expect flipped position ${pos.qty} :> ${newPositionQty}`
+                    );
             
                 //
                 // first, the closing part of the trade.
