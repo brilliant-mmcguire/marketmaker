@@ -15,15 +15,15 @@ const { fetchAccountInfo } = require('./accountTxns');
 const threshold = { 
     orderCount : 2,
 
-    overSold : 200.0, 
-    short : 300.0, 
-    long : 400.0,
+    overSold : 250.0, 
+    short : 325.0, 
+    long : 425.0,
     overBought : 500.0,
 
     overSoldPct : 1.032,  
     shortPct : 1.0022,  
-    longPct : 0.9980, 
-    overBoughtPct : 0.972
+    longPct : 0.9978, 
+    overBoughtPct : 0.968
 };
 
 function getOrderParameters(priceStats) {
@@ -35,6 +35,7 @@ function getOrderParameters(priceStats) {
     return {
         quantity : (Math.round((17.0 / priceStats.weightedAvgPrice) * 10000)) / 10000,
         sell : [
+            Math.round((sellBasePrc * 1.0260) * 100) / 100,
             Math.round((sellBasePrc * 1.0210) * 100) / 100,
             Math.round((sellBasePrc * 1.0160) * 100) / 100,
             Math.round((sellBasePrc * 1.0110) * 100) / 100,
@@ -44,6 +45,7 @@ function getOrderParameters(priceStats) {
             Math.round((sellBasePrc * 1.0010) * 100) / 100
         ],
         buy : [
+            Math.round((buyBasePrice * 0.9740) * 100) / 100,
             Math.round((buyBasePrice * 0.9790) * 100) / 100,
             Math.round((buyBasePrice * 0.9840) * 100) / 100,
             Math.round((buyBasePrice * 0.9890) * 100) / 100,
