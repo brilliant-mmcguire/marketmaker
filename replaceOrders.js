@@ -13,7 +13,7 @@ const { cancelOpenOrders } = require('./orderTxns');
 const { fetchAccountInfo } = require('./accountTxns');
 
 const threshold = { 
-    orderCount : 2,
+    orderCount : 3,
 
     overSold : 250.0, 
     short : 325.0, 
