@@ -56,20 +56,20 @@ async function makeBids(bestBidPrices, allOrders, position, balances) {
     if(usdcTotal > threshold.overBought) {
         console.log(`Overbought at an avg cost price of ${position.costPrice}`);
         // We can be more demading on price and lower our buy ceiling. 
-        prcCeiling = position.mAvgBuyPrice - 0.00025; 
+        prcCeiling = position.mAvgBuyPrice - 0.0003; 
     } else if(usdcTotal > threshold.long) {
         console.log(`Long posn at an avg cost price of ${position.costPrice}`);
         // Avoid buying unless we can improve our average price.
-        prcCeiling = position.mAvgBuyPrice - 0.0001;
+        prcCeiling = position.mAvgBuyPrice - 0.00015;
     }
     if(usdcTotal < threshold.overSold) {
         console.log(`Over sold at an average price of ${position.costPrice}`);
         // We may need to buy at a loss as we are severely over-sold and running out of USDC.
-        prcCeiling = position.mAvgSellPrice + 0.0002;
+        prcCeiling = position.mAvgSellPrice + 0.0003;
     } else if(usdcTotal < threshold.short) {
         console.log(`Short posn at an average price of ${position.costPrice}`);
         // Buy back at a slight loss is necessary. 
-        prcCeiling = position.mAvgSellPrice + 0.00008;
+        prcCeiling = position.mAvgSellPrice + 0.00015;
     }
     
     let prcFloor = bestBidPrices[2].price;
@@ -138,21 +138,21 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
     if(usdcTotal < threshold.overSold) {
         console.log(`Oversold at an avg cost price of ${position.costPrice}`);
         // We can be more demading on price and raise our price floor.
-        prcFloor = position.mAvgSellPrice + 0.00025; 
+        prcFloor = position.mAvgSellPrice + 0.0003; 
 
     } else if(usdcTotal < threshold.short) {
         console.log(`Short posn at an avg cost price of ${position.costPrice}`);
         // Avoid selling unless we can improve our average price.
-        prcFloor = position.mAvgSellPrice + 0.0001;
+        prcFloor = position.mAvgSellPrice + 0.00015;
     }
     if(usdcTotal > threshold.overBought) {
         console.log(`Over bought at an average price of ${position.costPrice}`);
         // We may need to sell at a loss as we are severely over-bought and running out of USDT.
-        prcFloor = position.mAvgBuyPrice - 0.0002; 
+        prcFloor = position.mAvgBuyPrice - 0.0003; 
     } else if(usdcTotal > threshold.long) {
         console.log(`Long posn at an average price of ${position.costPrice}`);
         // Sell back at a slight loss if necessary. 
-        prcFloor = position.mAvgBuyPrice - 0.00008; 
+        prcFloor = position.mAvgBuyPrice - 0.00015; 
     }
 
     let prcCeiling = bestOffers[2].price;
