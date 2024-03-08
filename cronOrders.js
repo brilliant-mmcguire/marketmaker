@@ -6,8 +6,8 @@ if(!symbol) throw "Symbol not provided.";
 
 console.log(`Starting cron: replacing orders for ${symbol}`); 
 
-// Schedule the task to run every hour at 13 minutes past the hour.
-const jobB = cron.schedule('17,37,57 * * * *', async () => {
+// Schedule the task to run every 15 minutes past the hour.
+const jobB = cron.schedule('12,27,42,57 * * * *', async () => {
     console.log('Invoking cron task at ' + new Date().toLocaleString());
     try {
        await replaceOrders(symbol);
