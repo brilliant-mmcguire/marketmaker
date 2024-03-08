@@ -13,12 +13,13 @@ const { cancelOpenOrders } = require('./orderTxns');
 const { fetchAccountInfo } = require('./accountTxns');
 
 const threshold = { 
-    orderCount : 3,
+    buyCount : 3,
+    sellCount : 3,
 
     overSold : 250.0, 
     short : 325.0, 
     long : 400.0,
-    overBought : 460.0,
+    overBought : 475.0,
 
     overSoldPct : 1.032,  
     shortPct : 1.0022,  
@@ -62,13 +63,30 @@ async function placeNewOrders(symbol, position, balance, priceStats) {
 
     assetTotal = balance.total * priceStats.weightedAvgPrice;  
 
-    console.log(assetTotal); 
 
     const dt = new Date();
     console.log(`${symbol} current price ${priceStats.lastPrice} order quantity ${params.quantity} at ${dt.toLocaleString()}`);
     
     console.log(`Place orders at:`, params);
-   
+
+    if(assetTotal > threshold.overBought) {
+        threshold.buyCount = 1;
+    } else if(assetTotal > threshold.long) {
+        threshold.buyCount = 2;
+    } else {
+        threshold.buyCount = 3;
+    }
+
+    if(assetTotal < threshold.overSold) {
+        threshold.sellCount = 1;
+    } else if(assetTotal < threshold.short) {
+        threshold.sellCount = 2;
+    } else {
+        threshold.sellCount = 3;
+    }
+
+    console.log(`assetTotal: ${assetTotal} order count threshold: ${threshold.buyCount} ${threshold.sellCount}`);
+
     try {  // Make bids.
         let orderCount=0; 
         for (let i = params.buy.length-1; i > 0; i--) {
@@ -102,7 +120,7 @@ async function placeNewOrders(symbol, position, balance, priceStats) {
                 params.buy[i]
             );
             console.log('Placed Buy Order:', buyOrder);
-            if(++orderCount >= threshold.orderCount) break;
+            if(++orderCount >= threshold.buyCount) break;
         }
     } catch (error) {
         console.log(`Error thrown placing buy order ${error}`);
@@ -144,7 +162,7 @@ async function placeNewOrders(symbol, position, balance, priceStats) {
             );
             console.log('Placed Sell Order:', sellOrder);
             
-            if(++orderCount>=threshold.orderCount) break;
+            if(++orderCount>=threshold.sellCount) break;
         }
     } catch (error) {
         console.log(`Error thrown placing sell order ${error}`);
