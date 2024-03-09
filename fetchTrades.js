@@ -88,6 +88,7 @@ async function fetchPositions(symbol, days=NaN) {
             costHigh : 0.0,
             costLow : 0.0,
             matchedQty : 0.0,
+            matchedCost : 0.0,
             matchedPL : 0.0,
             commision : 0.0,
             commisionUSD : 0.0,
@@ -108,11 +109,11 @@ async function fetchPositions(symbol, days=NaN) {
             if(t.isBuyer) {
                 t.qty = parseFloat(r.qty); 
                 t.quoteQty = parseFloat(r.quoteQty); 
-                pos.mAvgBuyPrice = pos.mAvgBuyPrice*0.95 + t.price*0.05;
+                pos.mAvgBuyPrice = pos.mAvgBuyPrice*0.8 + t.price*0.2;
             } else {
                 t.qty = -1.0 * parseFloat(r.qty); 
                 t.quoteQty = -1.0 * parseFloat(r.quoteQty);
-                pos.mAvgSellPrice = pos.mAvgSellPrice*0.95 + t.price*0.05;
+                pos.mAvgSellPrice = pos.mAvgSellPrice*0.8 + t.price*0.2;
             };
             
             pos.commision += t.commission; 
@@ -137,6 +138,7 @@ async function fetchPositions(symbol, days=NaN) {
                 
                 pos.cost += t.qty * pos.costPrice; 
                 pos.matchedPL += t.qty * (pos.costPrice - t.price); 
+                pos.matchedCost += Math.abs(t.quoteQty);
                 pos.matchedQty += Math.abs(t.qty);
                 pos.qty += t.qty;
                 pos.quoteQty += t.quoteQty;
@@ -161,6 +163,7 @@ async function fetchPositions(symbol, days=NaN) {
 
                 pos.matchedPL -= pos.qty * (pos.costPrice - t.price); 
                 pos.matchedQty += Math.abs(pos.qty);
+                pos.matchedCost += Math.abs(pos.cost);
                 
                 //
                 // now, the opening part of the trade.
