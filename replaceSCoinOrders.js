@@ -27,7 +27,7 @@ This is to reduce the impact of sharp price moves where the proce shoots through
 remains at high/low levels for some period of time.  In this scenario we become 
 oversold/overbought too quickly. 
 */
-const qtyLadder = [131, 89, 67, 47, 37];  
+const qtyLadder = [97, 71, 53, 47, 37];  
 
 const threshold = { 
     overSold : 1000, 
@@ -155,7 +155,7 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
         prcFloor = position.mAvgBuyPrice - 0.00015; 
     }
 
-    let prcCeiling = bestOffers[2].price;
+    let prcCeiling = bestOffers[4].price;
     console.log(`Sell price floor: ${prcFloor} and ceiling: ${prcCeiling}`)
     
     //cancel any open orders exceeding the price ceiling or fallen under the price floor. 
