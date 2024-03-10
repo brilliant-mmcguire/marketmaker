@@ -18,8 +18,8 @@ const threshold = {
 
     overSold : 275.0, 
     short : 350.0, 
-    long : 400.0,
-    overBought : 475.0,
+    long : 380.0,
+    overBought : 455.0,
 
     overSoldPct : 1.032,  
     shortPct : 1.0022,  
