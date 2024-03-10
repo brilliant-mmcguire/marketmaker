@@ -16,10 +16,10 @@ const threshold = {
     buyCount : 3,
     sellCount : 3,
 
-    overSold : 250.0, 
+    overSold : 275.0, 
     short : 350.0, 
-    long : 450.0,
-    overBought : 550.0,
+    long : 400.0,
+    overBought : 475.0,
 
     overSoldPct : 1.032,  
     shortPct : 1.0022,  
