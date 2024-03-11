@@ -36,22 +36,22 @@ function getOrderParameters(priceStats) {
     return {
         quantity : (Math.round((17.0 / priceStats.weightedAvgPrice) * 10000)) / 10000,
         sell : [
-            Math.round((sellBasePrc * 1.0260) * 100) / 100,
+            Math.round((sellBasePrc * 1.0360) * 100) / 100,
+            Math.round((sellBasePrc * 1.0280) * 100) / 100,
             Math.round((sellBasePrc * 1.0210) * 100) / 100,
-            Math.round((sellBasePrc * 1.0160) * 100) / 100,
-            Math.round((sellBasePrc * 1.0110) * 100) / 100,
-            Math.round((sellBasePrc * 1.0070) * 100) / 100,
-            Math.round((sellBasePrc * 1.0050) * 100) / 100,
+            Math.round((sellBasePrc * 1.0150) * 100) / 100,
+            Math.round((sellBasePrc * 1.0100) * 100) / 100,
+            Math.round((sellBasePrc * 1.0060) * 100) / 100,
             Math.round((sellBasePrc * 1.0030) * 100) / 100,
             Math.round((sellBasePrc * 1.0010) * 100) / 100
         ],
         buy : [
-            Math.round((buyBasePrice * 0.9740) * 100) / 100,
+            Math.round((buyBasePrice * 0.9640) * 100) / 100,
+            Math.round((buyBasePrice * 0.9720) * 100) / 100,
             Math.round((buyBasePrice * 0.9790) * 100) / 100,
-            Math.round((buyBasePrice * 0.9840) * 100) / 100,
-            Math.round((buyBasePrice * 0.9890) * 100) / 100,
-            Math.round((buyBasePrice * 0.9930) * 100) / 100,
-            Math.round((buyBasePrice * 0.9950) * 100) / 100, 
+            Math.round((buyBasePrice * 0.9850) * 100) / 100,
+            Math.round((buyBasePrice * 0.9900) * 100) / 100,
+            Math.round((buyBasePrice * 0.9940) * 100) / 100, 
             Math.round((buyBasePrice * 0.9970) * 100) / 100, 
             Math.round((buyBasePrice * 0.9990) * 100) / 100
         ]
