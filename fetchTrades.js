@@ -13,6 +13,8 @@ const API_KEY = process.env.API_KEY;
 const API_SECRET = process.env.API_SECRET;
 const BASE_URL = 'https://api.binance.com';
 
+const fs = require('fs');
+
 function createSignature(query) {
     return crypto.createHmac('sha256', API_SECRET).update(query).digest('hex');
 }
@@ -74,9 +76,14 @@ function computePosition(trades) {
 }
 
 exports.fetchPositions = fetchPositions;
-async function fetchPositions(symbol, days=NaN) {
+async function fetchPositions(symbol, days) {
+    const trades = await fetchMyTrades(symbol, 1000, days);
+    return computePositions(symbol, trades);
+}
+
+function computePositions(symbol, trades) {
     try {
-        const trades = await fetchMyTrades(symbol, 1000, days);
+        //const trades = await fetchMyTrades(symbol, 1000, days);
         const pos = {
             symbol : symbol,
             startTime: new Date(trades.all[0].time),
@@ -106,16 +113,21 @@ async function fetchPositions(symbol, days=NaN) {
                 price : parseFloat(r.price), 
                 commission : parseFloat(r.commission) 
             };
+            
             if(t.isBuyer) {
                 t.qty = parseFloat(r.qty); 
                 t.quoteQty = parseFloat(r.quoteQty); 
-                pos.mAvgBuyPrice = pos.mAvgBuyPrice*0.8 + t.price*0.2;
             } else {
                 t.qty = -1.0 * parseFloat(r.qty); 
                 t.quoteQty = -1.0 * parseFloat(r.quoteQty);
+            };
+
+            if(t.isBuyer) {
+                pos.mAvgBuyPrice = pos.mAvgBuyPrice*0.8 + t.price*0.2;
+            } else {
                 pos.mAvgSellPrice = pos.mAvgSellPrice*0.8 + t.price*0.2;
             };
-            
+
             pos.commision += t.commission; 
 
             // Trade increases position.
@@ -179,7 +191,6 @@ async function fetchPositions(symbol, days=NaN) {
             }
             pos.costHigh = Math.max(pos.costHigh, pos.cost);
             pos.costLow = Math.min(pos.costLow, pos.cost);
-            
         };
         pos.commisionUSD = pos.commision * 400;
         console.log(pos);
@@ -189,13 +200,50 @@ async function fetchPositions(symbol, days=NaN) {
     }
 }
 
+function convertToCSV(trades) {
+    let rows = [];
+    for(let i = 0; i < trades.length; i++) {
+        let t = trades[i];
+        rows.push(`${t.price},${t.qty},${t.quoteQty},${t.commission}`);
+    }
+    return rows.join('\n');
+}
+
+function mapTrades(rawTrades) {
+    let trades = [];
+    for(let i = 0; i < rawTrades.all.length; i++) {
+        let r = rawTrades.all[i];
+        let t = {
+            symbol : r.symbol,
+            time : r.time,
+            isBuyer : r.isBuyer, 
+            qty : 0.0, quoteQty : 0.0, 
+            price : parseFloat(r.price), 
+            commission : parseFloat(r.commission) 
+        };
+        if(t.isBuyer) {
+            t.qty = parseFloat(r.qty); 
+            t.quoteQty = parseFloat(r.quoteQty); 
+        } else {
+            t.qty = -1.0 * parseFloat(r.qty); 
+            t.quoteQty = -1.0 * parseFloat(r.quoteQty);
+        };
+        trades.push(t);
+    }
+    return trades;
+}
+
 async function main() {
     if (require.main !== module) return;
     const symbol = process.argv[2];
     const days = (process.argv[3] == undefined) ? NaN : parseFloat(process.argv[3]);
     
     if(!symbol) throw 'Symbol not provided.'; 
-    fetchPositions(symbol, days);
+
+    const rawTrades = await fetchMyTrades(symbol, 1000, days);
+    const trades = mapTrades(rawTrades);
+    fs.writeFileSync('fetchTradesOutput.csv', convertToCSV(trades));
+    computePositions(symbol, rawTrades);
 }
 
 if (require.main === module) main();
