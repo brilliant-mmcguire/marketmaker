@@ -1,7 +1,6 @@
 /*
 Fetch Trades to compute trading position and statistics. 
 
-
 */
 const cfg = require('dotenv').config();
 const axios = require('axios');
@@ -77,17 +76,17 @@ function computePosition(trades) {
 
 exports.fetchPositions = fetchPositions;
 async function fetchPositions(symbol, days) {
-    const trades = await fetchMyTrades(symbol, 1000, days);
+    const rawTrades = await fetchMyTrades(symbol, 1000, days);
+    const trades = mapTrades(rawTrades.all);
     return computePositions(symbol, trades);
 }
 
-function computePositions(symbol, trades) {
+function computePositions(symbol,trades) {
     try {
-        //const trades = await fetchMyTrades(symbol, 1000, days);
         const pos = {
             symbol : symbol,
-            startTime: new Date(trades.all[0].time),
-            endTime: new Date(trades.all[trades.all.length-1].time),
+            startTime: new Date(trades[0].time),
+            endTime: new Date(trades[trades.length-1].time),
             qty : 0.0,
             quoteQty : 0.0,
             cost: 0.0,
@@ -99,29 +98,12 @@ function computePositions(symbol, trades) {
             matchedPL : 0.0,
             commision : 0.0,
             commisionUSD : 0.0,
-            mAvgBuyPrice : trades.buys[0].price,
-            mAvgSellPrice : trades.sells[0].price,
-            sold    : computePosition(trades.sells),
-            bought  : computePosition(trades.buys)
+            mAvgBuyPrice : trades[0].price, // rawTrades.buys[0].price,
+            mAvgSellPrice : trades[0].price
         };
 
-        for(let i = 0; i < trades.all.length; i++) {
-            let r = trades.all[i];
-            let t = {
-                isBuyer : r.isBuyer, 
-                qty : 0.0, quoteQty : 0.0, 
-                price : parseFloat(r.price), 
-                commission : parseFloat(r.commission) 
-            };
-            
-            if(t.isBuyer) {
-                t.qty = parseFloat(r.qty); 
-                t.quoteQty = parseFloat(r.quoteQty); 
-            } else {
-                t.qty = -1.0 * parseFloat(r.qty); 
-                t.quoteQty = -1.0 * parseFloat(r.quoteQty);
-            };
-
+        for(let i = 0; i < trades.length; i++) {
+            let t = trades[i];
             if(t.isBuyer) {
                 pos.mAvgBuyPrice = pos.mAvgBuyPrice*0.8 + t.price*0.2;
             } else {
@@ -211,8 +193,8 @@ function convertToCSV(trades) {
 
 function mapTrades(rawTrades) {
     let trades = [];
-    for(let i = 0; i < rawTrades.all.length; i++) {
-        let r = rawTrades.all[i];
+    for(let i = 0; i < rawTrades.length; i++) {
+        let r = rawTrades[i];
         let t = {
             symbol : r.symbol,
             time : r.time,
@@ -241,9 +223,11 @@ async function main() {
     if(!symbol) throw 'Symbol not provided.'; 
 
     const rawTrades = await fetchMyTrades(symbol, 1000, days);
-    const trades = mapTrades(rawTrades);
+    const trades = mapTrades(rawTrades.all);
     fs.writeFileSync('fetchTradesOutput.csv', convertToCSV(trades));
-    computePositions(symbol, rawTrades);
+    console.log(`Bought `, computePosition(rawTrades.buys));
+    console.log(`Sold `, computePosition(rawTrades.sells));
+    computePositions(symbol, trades);
 }
 
 if (require.main === module) main();
