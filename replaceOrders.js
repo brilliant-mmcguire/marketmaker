@@ -111,7 +111,7 @@ async function placeNewOrders(symbol, position, balance, priceStats) {
                 console.log(
                     `oversold so buy back at ${params.buy[i]} to realise a loss.`);
                 //continue;
-            } else if((position.cost < threshold.short) && params.buy[i] > (threshold.shortPct * position.mAvgSellPrice)) {
+            } else if((assetTotal< threshold.short) && params.buy[i] > (threshold.shortPct * position.mAvgSellPrice)) {
                 console.log(
                     `short position and we do not want to buy at ${params.buy[i]}, which is more than cost price.`);
                 continue;
