@@ -81,7 +81,7 @@ async function fetchPositions(symbol, days) {
     return computePositions(symbol, trades);
 }
 
-function computePositions(symbol,trades) {
+function computePositions(symbol,trades,rows = []) {
     try {
         const pos = {
             symbol : symbol,
@@ -94,6 +94,7 @@ function computePositions(symbol,trades) {
             costHigh : 0.0,
             costLow : 0.0,
             matchedQty : 0.0,
+            matchedQuoteQty : 0.0,
             matchedCost : 0.0,
             matchedPL : 0.0,
             commision : 0.0,
@@ -114,7 +115,7 @@ function computePositions(symbol,trades) {
 
             // Trade increases position.
             let newPositionQty = pos.qty+t.qty;
-       
+            
             if (Math.sign(pos.qty) == Math.sign(t.qty)) {
                 // Increase position
                 pos.qty += t.qty;
@@ -134,6 +135,7 @@ function computePositions(symbol,trades) {
                 pos.matchedPL += t.qty * (pos.costPrice - t.price); 
                 pos.matchedCost += Math.abs(t.quoteQty);
                 pos.matchedQty += Math.abs(t.qty);
+                pos.matchedQuoteQty += Math.abs(t.quoteQty);
                 pos.qty += t.qty;
                 pos.quoteQty += t.quoteQty;
                 // costPrice doesn't change.
@@ -157,6 +159,7 @@ function computePositions(symbol,trades) {
 
                 pos.matchedPL -= pos.qty * (pos.costPrice - t.price); 
                 pos.matchedQty += Math.abs(pos.qty);
+                pos.matchedQty += Math.abs(pos.quoteQty);
                 pos.matchedCost += Math.abs(pos.cost);
                 
                 //
@@ -173,8 +176,9 @@ function computePositions(symbol,trades) {
             }
             pos.costHigh = Math.max(pos.costHigh, pos.cost);
             pos.costLow = Math.min(pos.costLow, pos.cost);
+            pos.commisionUSD = pos.commision * 400;
+            rows.push(convertPositionToCSVRow(t, pos));
         };
-        pos.commisionUSD = pos.commision * 400;
         console.log(pos);
         return pos;
     } catch (error) {
@@ -182,13 +186,20 @@ function computePositions(symbol,trades) {
     }
 }
 
-function convertToCSV(trades) {
+function convertTradesToCSV(trades) {
     let rows = [];
     for(let i = 0; i < trades.length; i++) {
         let t = trades[i];
         rows.push(`${t.price},${t.qty},${t.quoteQty},${t.commission}`);
     }
     return rows.join('\n');
+}
+
+function convertPositionToCSVRow(trade, position) {
+    let p = position;
+    let t = trade;
+    let row = `${t.qty},${t.quoteQty},${t.price},${p.qty},${p.quoteQty},${p.cost},${p.costPrice},${p.matchedQty},${p.matchedQuoteQty},${p.matchedPL}` // ,${p.commision},${p.commisionUSD}`;
+    return row; 
 }
 
 function mapTrades(rawTrades) {
@@ -224,10 +235,13 @@ async function main() {
 
     const rawTrades = await fetchMyTrades(symbol, 1000, days);
     const trades = mapTrades(rawTrades.all);
-    fs.writeFileSync('fetchTradesOutput.csv', convertToCSV(trades));
+ 
     console.log(`Bought `, computePosition(rawTrades.buys));
     console.log(`Sold `, computePosition(rawTrades.sells));
-    computePositions(symbol, trades);
+
+    let rows = [];
+    computePositions(symbol, trades, rows);
+    fs.writeFileSync('fetchTradesOutput.csv', rows.join('\n'));
 }
 
 if (require.main === module) main();
