@@ -81,8 +81,8 @@ async function placeNewOrders(symbol, position, balance, priceStats) {
     } 
 
     if(assetTotal < threshold.overSold) {
-        threshold.sellCount = 1;
         threshold.buyCount = 3;
+        threshold.sellCount = 1;
     } else if(assetTotal < threshold.short) {
         threshold.sellCount = 2;
         threshold.buyCount = 2;
