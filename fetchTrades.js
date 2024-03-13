@@ -87,17 +87,17 @@ function computePositions(symbol,trades,rows = []) {
             symbol : symbol,
             startTime: new Date(trades[0].time),
             endTime: new Date(trades[trades.length-1].time),
-            qty : 0.0,
-            quoteQty : 0.0,
-            cost: 0.0,
-            costPrice : 0.0,
-            costHigh : 0.0,
-            costLow : 0.0,
-            matchedQty : 0.0,
-            matchedQuoteQty : 0.0,
-            matchedCost : 0.0,
-            matchedPL : 0.0,
-            commision : 0.0,
+            qty : 0.0,      // Total amount of base coin held. 
+            quoteQty : 0.0, // Total amount payment/quote coin held.  Assume this starts at zero. 
+            cost: 0.0,      // Total amount of payment coin paid for qty / Book value of coin held. 
+            costPrice : 0.0, // Avg price paid for base coin held. 
+            costHigh : 0.0,  // TODO Needs work
+            costLow : 0.0,  // TODO Needs work
+            matchedQty : 0.0,   // TODO Needs work
+            matchedQuoteQty : 0.0,  // TODO Needs work
+            matchedCost : 0.0, // TODO Needs work
+            matchedPL : 0.0,  // QQ - Q*costPrice
+            commision : 0.0,  //Commission paid in BNB 
             commisionUSD : 0.0,
             mAvgBuyPrice : trades[0].price, // rawTrades.buys[0].price,
             mAvgSellPrice : trades[0].price
@@ -119,7 +119,7 @@ function computePositions(symbol,trades,rows = []) {
             if (Math.sign(pos.qty) == Math.sign(t.qty)) {
                 // Increase position
                 pos.qty += t.qty;
-                pos.quoteQty += t.quoteQty;    
+                pos.quoteQty -= t.quoteQty;    
                 pos.cost += t.qty*t.price;
                 pos.costPrice =  Math.abs(pos.qty) >= 0.00000001 ? pos.cost / pos.qty : 0.0;
                 // PL does not change.
@@ -132,12 +132,14 @@ function computePositions(symbol,trades,rows = []) {
                     );
                 
                 pos.cost += t.qty * pos.costPrice; 
-                pos.matchedPL += t.qty * (pos.costPrice - t.price); 
-                pos.matchedCost += Math.abs(t.quoteQty);
+                // pos.matchedPL += t.qty * (t.price - pos.costPrice); 
+                pos.matchedCost += Math.abs(t.qty * pos.costPrice);
                 pos.matchedQty += Math.abs(t.qty);
                 pos.matchedQuoteQty += Math.abs(t.quoteQty);
+                
                 pos.qty += t.qty;
-                pos.quoteQty += t.quoteQty;
+                pos.quoteQty -= t.quoteQty;
+                pos.matchedPL = pos.quoteQty + pos.cost;
                 // costPrice doesn't change.
             
             } else {
@@ -146,7 +148,7 @@ function computePositions(symbol,trades,rows = []) {
                     Math.sign(newPositionQty)!= Math.sign(pos.qty), 
                     `Expect flipped position ${pos.qty} :> ${newPositionQty}`
                     );
-            
+                
                 //
                 // first, the closing part of the trade.
                 //
@@ -157,9 +159,9 @@ function computePositions(symbol,trades,rows = []) {
                     Math.abs(pos.cost<=0.00000001), 
                     `Expect zero pos.cost on flat position ${pos.cost}`); 
 
-                pos.matchedPL -= pos.qty * (pos.costPrice - t.price); 
+               // pos.matchedPL += pos.qty * (t.price-pos.costPrice); 
                 pos.matchedQty += Math.abs(pos.qty);
-                pos.matchedQty += Math.abs(pos.quoteQty);
+                pos.matchedQuoteQty += Math.abs(pos.quoteQty);
                 pos.matchedCost += Math.abs(pos.cost);
                 
                 //
@@ -171,15 +173,16 @@ function computePositions(symbol,trades,rows = []) {
                 // finally, the general case computations. 
                 //
                 pos.qty += t.qty;
-                pos.quoteQty += t.quoteQty;
+                pos.quoteQty -= t.quoteQty;
                 pos.costPrice =  Math.abs(pos.qty) >= 0.00000001 ? pos.cost / pos.qty : 0.0;
+                pos.matchedPL = pos.quoteQty + pos.cost;
             }
             pos.costHigh = Math.max(pos.costHigh, pos.cost);
             pos.costLow = Math.min(pos.costLow, pos.cost);
             pos.commisionUSD = pos.commision * 400;
+
             rows.push(convertPositionToCSVRow(t, pos));
         };
-        console.log(pos);
         return pos;
     } catch (error) {
         console.error(`Error fetching trades: ${error}`);
@@ -240,8 +243,9 @@ async function main() {
     console.log(`Sold `, computePosition(rawTrades.sells));
 
     let rows = [];
-    computePositions(symbol, trades, rows);
+    const pos = computePositions(symbol, trades, rows);
     fs.writeFileSync('fetchTradesOutput.csv', rows.join('\n'));
+    console.log(`Position `, pos);
 }
 
 if (require.main === module) main();
