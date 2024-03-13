@@ -69,23 +69,23 @@ async function placeNewOrders(symbol, position, balance, priceStats) {
     
     console.log(`Place orders at:`, params);
 
-    threshold.buyCount = 3;
-    threshold.sellCount = 3;
+    threshold.buyCount = 2;
+    threshold.sellCount = 2;
 
     if(assetTotal > threshold.overBought) {
         threshold.buyCount = 1;
-        threshold.sellCount = 5;
+        threshold.sellCount = 3;
     } else if(assetTotal > threshold.long) {
         threshold.buyCount = 2;
-        threshold.sellCount = 4;
+        threshold.sellCount = 2;
     } 
 
     if(assetTotal < threshold.overSold) {
         threshold.sellCount = 1;
-        threshold.buyCount = 5;
+        threshold.buyCount = 3;
     } else if(assetTotal < threshold.short) {
         threshold.sellCount = 2;
-        threshold.buyCount = 4;
+        threshold.buyCount = 2;
     } 
 
     console.log(`assetTotal: ${assetTotal} order count threshold: ${threshold.buyCount} ${threshold.sellCount}`);
