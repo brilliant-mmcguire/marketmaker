@@ -13,13 +13,13 @@ const { cancelOpenOrders } = require('./orderTxns');
 const { fetchAccountInfo } = require('./accountTxns');
 
 const threshold = { 
-    buyCount : 3,
-    sellCount : 3,
+    buyCount : 2,
+    sellCount : 2,
 
-    overSold : 300.0, 
-    short : 370.0, 
-    long : 440.0,
-    overBought : 510.0,
+    overSold : 250.0, 
+    short : 320.0, 
+    long : 400.0,
+    overBought : 470.0,
 
     overSoldPct : 1.032,  
     shortPct : 1.0022,  
@@ -74,15 +74,15 @@ async function placeNewOrders(symbol, position, balance, priceStats) {
 
     if(assetTotal > threshold.overBought) {
         threshold.buyCount = 1;
-        threshold.sellCount = 3;
+        threshold.sellCount = 2;
     } else if(assetTotal > threshold.long) {
         threshold.buyCount = 2;
         threshold.sellCount = 2;
     } 
 
     if(assetTotal < threshold.overSold) {
-        threshold.buyCount = 3;
-        threshold.sellCount = 1;
+        threshold.buyCount = 2;
+        threshold.sellCount = 2;
     } else if(assetTotal < threshold.short) {
         threshold.sellCount = 2;
         threshold.buyCount = 2;
