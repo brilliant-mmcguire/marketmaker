@@ -72,7 +72,7 @@ async function makeBids(bestBidPrices, allOrders, position, balances) {
         prcCeiling = position.mAvgSellPrice + 0.00015;
     }
     
-    let prcFloor = bestBidPrices[4].price;
+    let prcFloor = bestBidPrices[2].price;
     
     console.log(`Buy price ceiling: ${prcCeiling} and floor: ${prcFloor}`);
     
@@ -155,7 +155,7 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
         prcFloor = position.mAvgBuyPrice - 0.00015; 
     }
 
-    let prcCeiling = bestOffers[4].price;
+    let prcCeiling = bestOffers[2].price;
     console.log(`Sell price floor: ${prcFloor} and ceiling: ${prcCeiling}`)
     
     //cancel any open orders exceeding the price ceiling or fallen under the price floor. 

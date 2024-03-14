@@ -193,7 +193,8 @@ function convertTradesToCSV(trades) {
     let rows = [];
     for(let i = 0; i < trades.length; i++) {
         let t = trades[i];
-        rows.push(`${t.price},${t.qty},${t.quoteQty},${t.commission}`);
+        let tTime = new Date(t.time)
+        rows.push(`${tTime},${t.price},${t.qty},${t.quoteQty},${t.commission}`);
     }
     return rows.join('\n');
 }
@@ -201,7 +202,8 @@ function convertTradesToCSV(trades) {
 function convertPositionToCSVRow(trade, position) {
     let p = position;
     let t = trade;
-    let row = `${t.qty},${t.quoteQty},${t.price},${p.qty},${p.quoteQty},${p.cost},${p.costPrice},${p.matchedQty},${p.matchedQuoteQty},${p.matchedPL}` // ,${p.commision},${p.commisionUSD}`;
+    let tTime = new Date(t.time).toISOString();
+    let row = `${tTime},${t.qty},${t.quoteQty},${t.price},${p.qty},${p.quoteQty},${p.cost},${p.costPrice},${p.matchedQty},${p.matchedQuoteQty},${p.matchedPL}` // ,${p.commision},${p.commisionUSD}`;
     return row; 
 }
 
