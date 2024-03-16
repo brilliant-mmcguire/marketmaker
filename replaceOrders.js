@@ -16,10 +16,10 @@ const threshold = {
     buyCount : 2,
     sellCount : 2,
 
-    overSold : 250.0, 
-    short : 320.0, 
-    long : 400.0,
-    overBought : 470.0,
+    overSold : 200.0, 
+    short : 280.0, 
+    long : 360.0,
+    overBought : 440.0,
 
     overSoldPct : 1.032,  
     shortPct : 1.0022,  
@@ -73,19 +73,24 @@ async function placeNewOrders(symbol, position, balance, priceStats) {
     threshold.sellCount = 2;
 
     if(assetTotal > threshold.overBought) {
-        threshold.buyCount = 1;
-        threshold.sellCount = 2;
+        // Probably on a downward trend so expect to be trailing the market price
+        // Hypothesis is that our buy price will lag and expect to catch retracements
+        // whle our sell price will be close to recent lows and the last price. 
+        threshold.buyCount = 3;
+        threshold.sellCount = 1;
     } else if(assetTotal > threshold.long) {
         threshold.buyCount = 2;
         threshold.sellCount = 2;
     } 
 
     if(assetTotal < threshold.overSold) {
-        threshold.buyCount = 2;
-        threshold.sellCount = 2;
+        // Probably on an upward trend so expect to be trailing the market price
+        // see above ...  
+        threshold.buyCount = 1;
+        threshold.sellCount = 3;
     } else if(assetTotal < threshold.short) {
-        threshold.sellCount = 2;
         threshold.buyCount = 2;
+        threshold.sellCount = 2;
     } 
 
     console.log(`assetTotal: ${assetTotal} order count threshold: ${threshold.buyCount} ${threshold.sellCount}`);
