@@ -1,5 +1,5 @@
 const cron = require('node-cron');
-const { replaceOrders } = require('./replaceOrders');
+const { replaceOrders } = require('./replaceBtcOrders');
 
 const symbol = process.argv[2];
 if(!symbol) throw "Symbol not provided.";
