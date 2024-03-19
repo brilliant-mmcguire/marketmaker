@@ -34,7 +34,7 @@ function getOrderParameters(priceStats) {
     const buyBasePrice = 0.5*(priceStats.lastPrice + priceStats.lowPrice);
    
     return {
-        quantity : (Math.round((17.0 / priceStats.weightedAvgPrice) * 10000)) / 10000,
+        quantity : 0.00033, 
         sell : [
             Math.round((sellBasePrc * 1.0360) * 100) / 100,
             Math.round((sellBasePrc * 1.0280) * 100) / 100,
