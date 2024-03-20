@@ -91,14 +91,13 @@ function computePositions(symbol,trades,rows = []) {
             quoteQty : 0.0, // Total amount payment/quote coin held.  Assume this starts at zero. 
             cost: 0.0,      // Total amount of payment coin paid for qty / Book value of coin held. 
             costPrice : 0.0, // Avg price paid for base coin held. 
-            costHigh : 0.0,  // TODO Needs work
-            costLow : 0.0,  // TODO Needs work
-            matchedQty : 0.0,   // TODO Needs work
-            matchedQuoteQty : 0.0,  // TODO Needs work
-            matchedCost : 0.0, // TODO Needs work
+            costHigh : 0.0,  // Max pos.cost
+            costLow : 0.0,  // Min pos.cost
+            matchedQty : 0.0,   
+            matchedCost : 0.0,
             matchedPL : 0.0,  // QQ - Q*costPrice
             commision : 0.0,  //Commission paid in BNB 
-            commisionUSD : 0.0,
+            commisionUSD : 0.0,  // Approximate USD value of commission.
             mAvgBuyPrice : trades[0].price, // rawTrades.buys[0].price,
             mAvgSellPrice : trades[0].price
         };
@@ -130,12 +129,11 @@ function computePositions(symbol,trades,rows = []) {
                     Math.abs(pos.qty+t.qty) < Math.abs(pos.qty), 
                     `Expect reduced position ${pos.qty} :> ${newPositionQty}`
                     );
-                
                 pos.cost += t.qty * pos.costPrice; 
                 // pos.matchedPL += t.qty * (t.price - pos.costPrice); 
-                pos.matchedCost += Math.abs(t.qty * pos.costPrice);
                 pos.matchedQty += Math.abs(t.qty);
-                pos.matchedQuoteQty += Math.abs(t.quoteQty);
+                //pos.matchedQuoteQty += Math.abs(-t.quoteQty);
+                pos.matchedCost += Math.abs(t.qty * pos.costPrice);
                 
                 pos.qty += t.qty;
                 pos.quoteQty -= t.quoteQty;
@@ -153,17 +151,16 @@ function computePositions(symbol,trades,rows = []) {
                 // first, the closing part of the trade.
                 //
 
+                pos.matchedQty += Math.abs(pos.qty);
+                //pos.matchedQuoteQty += Math.abs(t.quoteQty*pos.qty/t.qty);
+                pos.matchedCost += Math.abs(pos.cost);
+                
                 // zero out cost.
-                pos.cost -= pos.qty * pos.costPrice; 
+                pos.cost -= pos.qty * pos.costPrice;
                 console.assert(
                     Math.abs(pos.cost<=0.00000001), 
                     `Expect zero pos.cost on flat position ${pos.cost}`); 
 
-               // pos.matchedPL += pos.qty * (t.price-pos.costPrice); 
-                pos.matchedQty += Math.abs(pos.qty);
-                pos.matchedQuoteQty += Math.abs(pos.quoteQty);
-                pos.matchedCost += Math.abs(pos.cost);
-                
                 //
                 // now, the opening part of the trade.
                 //
@@ -203,7 +200,7 @@ function convertPositionToCSVRow(trade, position) {
     let p = position;
     let t = trade;
     let tTime = new Date(t.time).toISOString().replace('T', ' ').substr(0, 19);
-    let row = `${tTime},${t.qty},${t.quoteQty},${t.price},${p.qty},${p.quoteQty},${p.cost},${p.costPrice},${p.matchedQty},${p.matchedQuoteQty},${p.matchedPL}` // ,${p.commision},${p.commisionUSD}`;
+    let row = `${tTime},${t.qty},${t.quoteQty},${t.price},${p.qty},${p.quoteQty},${p.cost},${p.costPrice},${p.matchedQty},${p.matchedCost},${p.matchedPL}` // ,${p.commision},${p.commisionUSD}`;
     return row; 
 }
 
