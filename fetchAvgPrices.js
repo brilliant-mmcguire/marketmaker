@@ -87,11 +87,13 @@ function makeSession(params, bought, sold) {
         // Intraday matches.
         matchedQty: matchedQty,
         matchedCost: Math.min(bought.cost, Math.abs(sold.cost)),
+        matchedQuoteQty: Math.min(bought.quoteQty, Math.abs(sold.quoteQty)),
         matchedPL: matchedQty*(sold.costPrice - bought.costPrice),
     
          // End of day net or surplus position. 
         surplusQty: surplusQty,
         surplusCost: surplusQty*(surplusQty > 0 ? bought.costPrice : sold.costPrice), 
+        surplusQuoteQty: bought.quoteQty + sold.quoteQty, 
         surplusCostPrice: surplusQty >=0 ? bought.costPrice : sold.costPrice,
 
         commision : bought.commission + sold.commission,
@@ -161,6 +163,7 @@ function updatePosition(pos, session) {
     pos.matchedQty += s.matchedQty;
     pos.matchedPL += s.matchedPL;
     pos.matchedCost += s.matchedCost;
+    pos.matchedQuoteQty += s.matchedQuoteQty
 
     return pos;
 }
