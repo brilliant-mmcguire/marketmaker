@@ -32,12 +32,12 @@ const qtyLadder = [163, 131, 89, 67, 53, 37, 23];
 const threshold = {
     upperPrice : 1.0010,
     lowerPrice : 0.9990,
-    upperTarget : 1500, // Hold less USDC when its price is high in anticipation of mean reversion.  
-    lowerTarget : 2500, // Buy more USDC when its price is low. 
-    long : + 500, 
-    overBought : +1000, 
-    short : -500, 
-    overSold : -1000
+    upperTarget : 1200, // Hold less USDC when its price is high in anticipation of mean reversion.  
+    lowerTarget : 2200, // Buy more USDC when its price is low. 
+    long : + 450, 
+    overBought : +900, 
+    short : -450, 
+    overSold : -900
 };
 
 /* 
@@ -63,7 +63,7 @@ function targetQty(bestPrice) {
             threshold.upperTarget * (threshold.upperPrice - prc) )
         / (threshold.upperPrice-threshold.lowerPrice);
 
-    //console.log(`Calculate targetQty: ${qty} based on best price ${bestPrice}` )
+    console.log(`Target Qty: ${qty} based on best price ${bestPrice}` )
     return qty;
 }
 
@@ -76,7 +76,7 @@ async function makeBids(bestBidPrices, allOrders, position, balances) {
     let prcCeiling = position.mAvgSellPrice; // Avoid buying back at a loss relative to our recent trades. 
 
     let targetQ = targetQty(bestBidPrices[0].price);
-
+    
     // Order price ceiling adjustments.
     if(usdcTotal > (targetQ+threshold.overBought)) {
         console.log(`Overbought at an avg cost price of ${position.costPrice}`);
@@ -126,7 +126,7 @@ async function makeBids(bestBidPrices, allOrders, position, balances) {
         let quotaFull = (bid.qty < qtyQuanta[orders.length]);
 
         console.log(
-            `We have ${orders.length} orders on price level ${bid.price} with volume ${bid.qty}.}`
+            `We have ${orders.length} orders on price level ${bid.price} with volume ${bid.qty}.`
             );
         
         if(bid.price > prcCeiling || bid.price < prcFloor || quotaFull || freshOrders) {
