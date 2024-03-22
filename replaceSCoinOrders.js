@@ -34,10 +34,10 @@ const threshold = {
     lowerPrice : 0.9990,
     upperTarget : 1200, // Hold less USDC when its price is high in anticipation of mean reversion.  
     lowerTarget : 2200, // Buy more USDC when its price is low. 
-    long : + 450, 
-    overBought : +900, 
-    short : -450, 
-    overSold : -900
+    long : + 400, 
+    overBought : +800, 
+    short : -400, 
+    overSold : -800
 };
 
 /* 
