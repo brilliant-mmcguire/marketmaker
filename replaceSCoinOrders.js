@@ -32,9 +32,8 @@ const qtyLadder = [163, 131, 89, 67, 53, 37, 23];
 const threshold = {
     upperPrice : 1.0010,
     lowerPrice : 0.9990,
-    upperTarget : 2500,  
-    lowerTarget : 1500,  
-    target : 2000, 
+    upperTarget : 1500, // Hold less USDC when its price is high in anticipation of mean reversion.  
+    lowerTarget : 2500, // Buy more USDC when its price is low. 
     long : + 500, 
     overBought : +1000, 
     short : -500, 
@@ -49,6 +48,9 @@ The goal is to maintin a steady rate of execution and to baclance to rate of buy
 */
 const qtyQuanta = [212345, 512345, 812345, 1123456, 3123456, 6123456, 100123456];
 
+/*
+Target USDC balance uses a linear function between the upper and lower quantity thresholds.
+*/
 function targetQty(bestPrice) {
     let qty = 0.5*(threshold.upperTarget + threshold.lowerPrice); 
     let prc = bestPrice;
