@@ -46,7 +46,7 @@ This is the help regulate the rate of exection of our orders.
 The more orders are in queue ahead of us, the more orders we need to keep in the queue.
 The goal is to maintin a steady rate of execution and to baclance to rate of buy and sell trades. 
 */
-const qtyQuanta = [212345, 612345 , 1123456, 5523456, 10123456, 100123456];
+const qtyQuanta = [212345, 612345 , 2123456, 6523456, 12123456, 100123456];
 
 /*
 Target USDC balance uses a linear function between the upper and lower quantity thresholds.
@@ -81,7 +81,7 @@ async function makeBids(bestBidPrices, allOrders, position, balances) {
     if(usdcTotal > (targetQ+threshold.overBought)) {
         console.log(`Overbought at an avg cost price of ${position.costPrice}`);
         // We can be more demading on price and lower our buy ceiling. 
-        prcCeiling = position.mAvgBuyPrice - 0.0003; 
+        prcCeiling = position.mAvgBuyPrice - 0.00030; 
     } else if(usdcTotal > (targetQ + threshold.long)) {
         console.log(`Long posn at an avg cost price of ${position.costPrice}`);
         // Avoid buying unless we can improve our average price.
@@ -90,7 +90,7 @@ async function makeBids(bestBidPrices, allOrders, position, balances) {
     if(usdcTotal < (targetQ + threshold.overSold)) {
         console.log(`Over sold at an average price of ${position.costPrice}`);
         // We may need to buy at a loss as we are severely over-sold and running out of USDC.
-        prcCeiling = position.mAvgSellPrice + 0.0003;
+        prcCeiling = position.mAvgSellPrice + 0.00030;
     } else if(usdcTotal < (targetQ + threshold.short)) {
         console.log(`Short posn at an average price of ${position.costPrice}`);
         // Buy back at a slight loss is necessary. 
@@ -118,7 +118,7 @@ async function makeBids(bestBidPrices, allOrders, position, balances) {
  
         let freshOrders = false;
         if (orders.length>0) { 
-            const xxMinutes = 16; // Minimum number of minutes bewteen orders at a give price level.
+            const xxMinutes = 17; // Minimum number of minutes bewteen orders at a give price level.
             const xxMilliSeconds = xxMinutes * 60 * 1000; 
             freshOrders = ((Date.now() - orders[orders.length-1].time) < xxMilliSeconds);
         }
