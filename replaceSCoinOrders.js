@@ -46,7 +46,7 @@ This is the help regulate the rate of exection of our orders.
 The more orders are in queue ahead of us, the more orders we need to keep in the queue.
 The goal is to maintin a steady rate of execution and to baclance to rate of buy and sell trades. 
 */
-const qtyQuanta = [212345, 512345, 812345, 1123456, 3123456, 6123456, 100123456];
+const qtyQuanta = [212345, 612345 , 1123456, 5523456, 10123456, 100123456];
 
 /*
 Target USDC balance uses a linear function between the upper and lower quantity thresholds.
