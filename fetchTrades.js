@@ -99,15 +99,23 @@ function computePositions(symbol,trades,rows = []) {
             commision : 0.0,  //Commission paid in BNB 
             commisionUSD : 0.0,  // Approximate USD value of commission.
             mAvgBuyPrice : trades[0].price, // rawTrades.buys[0].price,
-            mAvgSellPrice : trades[0].price
+            mAvgBuyAge : 0.0,
+            mAvgBuyQty : 0.0,
+            mAvgSellPrice : trades[0].price,
+            mAvgSellAge : 0.0,
+            mAvgSellQty : 0.0
         };
 
         for(let i = 0; i < trades.length; i++) {
             let t = trades[i];
             if(t.isBuyer) {
-                pos.mAvgBuyPrice = pos.mAvgBuyPrice*0.8 + t.price*0.2;
+                pos.mAvgBuyPrice = pos.mAvgBuyPrice*0.6 + t.price*0.4;
+                pos.mAvgBuyAge = pos.mAvgBuyAge*0.6 + ((Date.now() - t.time)/(60*60*1000))*0.4;
+                pos.mAvgBuyQty = pos.mAvgBuyQty*0.6 + t.qty*0.4;
             } else {
-                pos.mAvgSellPrice = pos.mAvgSellPrice*0.8 + t.price*0.2;
+                pos.mAvgSellPrice = pos.mAvgSellPrice*0.6 + t.price*0.4;
+                pos.mAvgSellAge = pos.mAvgSellAge*0.6 + ((Date.now() - t.time)/(60*60*1000))*0.4;
+                pos.mAvgSellQty = pos.mAvgSellQty*0.6 + t.qty*0.4;
             };
 
             pos.commision += t.commission; 
