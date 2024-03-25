@@ -168,13 +168,13 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
         console.log(`Oversold at an avg cost price of ${position.costPrice}`);
         // We can be more demading on price and raise our price floor.
         //prcFloor = position.mAvgSellPrice + 0.00030;
-        prcFloor = Math.min(position.mAvgSellPrice,bestOffers[0].price) - 0.00030;  
+        prcFloor = Math.max(position.mAvgSellPrice,bestOffers[0].price) + 0.00030;  
 
     } else if(usdcTotal < (targetQ + threshold.short)) {
         console.log(`Short posn at an avg cost price of ${position.costPrice}`);
         // Avoid selling unless we can improve our average price.
         // prcFloor = position.mAvgSellPrice + 0.00015;    
-        prcFloor = Math.min(position.mAvgSellPrice,bestOffers[0].price) - 0.00015;  
+        prcFloor = Math.max(position.mAvgSellPrice,bestOffers[0].price) + 0.00015;  
     }
     if(usdcTotal > (targetQ + threshold.overBought)) {
         console.log(`Over bought at an average price of ${position.costPrice}`);
