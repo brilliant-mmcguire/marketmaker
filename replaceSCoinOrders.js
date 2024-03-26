@@ -52,15 +52,15 @@ const qtyQuanta = [212345, 612345 , 2123456, 6523456, 12123456, 100123456];
 Target USDC balance uses a linear function between the upper and lower quantity thresholds.
 */
 function targetQty(bestPrice) {
-    let qty = 0.5*(threshold.upperTarget + threshold.lowerPrice); 
+    let qty = 0.5*(threshold.upperTarget + threshold.lowerTarget); 
     let prc = bestPrice;
 
     prc = (bestPrice > threshold.upperPrice) ? threshold.upperPrice : bestPrice;
     prc = (bestPrice < threshold.lowerPrice) ?  threshold.lowerPrice : bestPrice;
     
-    qty = ( threshold.lowerTarget * (prc - threshold.lowerPrice) 
+    qty = ( threshold.lowerTarget * (threshold.upperPrice - prc) 
             + 
-            threshold.upperTarget * (threshold.upperPrice - prc) )
+            threshold.upperTarget * (prc - threshold.lowerPrice) )
         / (threshold.upperPrice-threshold.lowerPrice);
 
     console.log(`Target Qty: ${qty} based on best price ${bestPrice}` )
