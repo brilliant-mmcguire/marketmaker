@@ -50,6 +50,8 @@ const qtyQuanta = [212345, 612345 , 2123456, 6523456, 12123456, 100123456];
 
 /*
 Target USDC balance uses a linear function between the upper and lower quantity thresholds.
+At the upper threshold we can tolerate a smaller position in the expectation of prices falling again. 
+At the lower threshold we allow for a larger position, expecting a price increase in the near future.
 */
 function targetQty(bestPrice) {
     let qty = 0.5*(threshold.upperTarget + threshold.lowerTarget); 
@@ -72,9 +74,9 @@ async function makeBids(bestBidPrices, allOrders, position, balances) {
     console.log(`Making bids for ${symbol} at ${new Date()}`);
 
     let usdcTotal = balances.usdc.total;
-
+    
     let prcCeiling = position.mAvgSellPrice; // Avoid buying back at a loss relative to our recent trades. 
-
+    let prcFloor = bestBidPrices[2].price;
     let targetQ = targetQty(bestBidPrices[0].price);
     
     // Order price ceiling adjustments.
@@ -98,8 +100,6 @@ async function makeBids(bestBidPrices, allOrders, position, balances) {
         // Buy back at a slight loss is necessary. 
         prcCeiling = position.mAvgSellPrice + 0.00015;
     }
-    
-    let prcFloor = bestBidPrices[2].price;
     
     console.log(`Buy price ceiling: ${prcCeiling} and floor: ${prcFloor}`);
     
@@ -160,9 +160,9 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
     let usdcTotal = balances.usdc.total;
 
     let prcFloor = position.mAvgBuyPrice; // Avoid selling back at a loss relative to our recent trades.
-
+    let prcCeiling = bestOffers[2].price;
     let targetQ = targetQty(bestOffers[0].price);
-
+    
     // Order price floor adjustments.
     if(usdcTotal < (targetQ + threshold.overSold)) {
         console.log(`Oversold at an avg cost price of ${position.costPrice}`);
@@ -186,7 +186,6 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
         prcFloor = position.mAvgBuyPrice - 0.00015; 
     }
 
-    let prcCeiling = bestOffers[2].price;
     console.log(`Sell price floor: ${prcFloor} and ceiling: ${prcCeiling}`)
     
     //cancel any open orders exceeding the price ceiling or fallen under the price floor. 
