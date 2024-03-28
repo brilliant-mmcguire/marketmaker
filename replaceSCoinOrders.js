@@ -32,7 +32,7 @@ const qtyLadder = [163, 113, 53, 37, 23, 13, 11];
 const threshold = {
     upperPrice : 1.0010,
     lowerPrice : 0.9990,
-    upperTarget : 1400, // Hold less USDC when its price is high in anticipation of mean reversion.  
+    upperTarget : 1000, // Hold less USDC when its price is high in anticipation of mean reversion.  
     lowerTarget : 2400, // Buy more USDC when its price is low. 
     long : +400, 
     overBought : +800, 
