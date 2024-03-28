@@ -27,13 +27,13 @@ This is to reduce the impact of sharp price moves where the proce shoots through
 remains at high/low levels for some period of time.  In this scenario we become 
 oversold/overbought too quickly. 
 */
-const qtyLadder = [151, 101, 47, 29, 17, 13, 11];  
+const qtyLadder = [163, 113, 53, 37, 23, 13, 11];  
 
 const threshold = {
     upperPrice : 1.0010,
     lowerPrice : 0.9990,
-    upperTarget : 1200, // Hold less USDC when its price is high in anticipation of mean reversion.  
-    lowerTarget : 2200, // Buy more USDC when its price is low. 
+    upperTarget : 1400, // Hold less USDC when its price is high in anticipation of mean reversion.  
+    lowerTarget : 2400, // Buy more USDC when its price is low. 
     long : +400, 
     overBought : +800, 
     short : -400, 
