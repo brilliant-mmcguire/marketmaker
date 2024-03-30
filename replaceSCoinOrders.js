@@ -157,7 +157,13 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
 
     let usdcTotal = balances.usdc.total;
 
-    let prcFloor = position.mAvgBuyPrice; // Avoid selling back at a loss relative to our recent trades.
+    let prcFloor = position.mAvgBuyPrice; // Avoid selling back at a loss relative to our recent trades.   
+    
+    // Testing a strategy to encourage a long position when price drops. 
+    if((bestOffers[0].price) < 0.9996) { 
+        prcFloor = bestOffers[0].price + 0.00001;
+    }
+
     let prcCeiling = bestOffers[2].price;
     let targetQ = targetQty(bestOffers[0].price);
     
