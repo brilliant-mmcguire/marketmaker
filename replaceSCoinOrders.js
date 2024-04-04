@@ -76,6 +76,12 @@ async function makeBids(bestBidPrices, allOrders, position, balances) {
     let usdcTotal = balances.usdc.total;
     
     let prcCeiling = position.mAvgSellPrice; // Avoid buying back at a loss relative to our recent trades. 
+   
+    // Testing a strategy to encourage a long position when price drops. 
+    if((bestBidPrices[0].price) > 1.0004) { 
+        prcCeiling = bestBidPrices[0].price - 0.00001;
+    }
+
     let prcFloor = bestBidPrices[2].price;
     let targetQ = targetQty(bestBidPrices[0].price);
     
@@ -153,7 +159,7 @@ async function makeBids(bestBidPrices, allOrders, position, balances) {
 
 async function makeOffers(bestOffers, allOrders, position, balances) {
 
-    console.log(`Making offers for ${symbol}  at ${new Date()}`);
+    console.log(`Making offers for ${symbol} at ${new Date()}`);
 
     let usdcTotal = balances.usdc.total;
 
