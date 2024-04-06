@@ -12,7 +12,8 @@ There is a risk of this getting stuck at high or low prices outside the current 
 TODO - analyse and test this 'getting stuck' scenario. 
 */
 
-const { fetchOpenOrders, cancelOrder } = require('./orderTxns');
+const { fetchOpenOrders } = require('./orderTxns');
+const { cancelOrder } = require('./orderTxns');
 const { placeOrder } = require('./orderTxns');
 const { fetchPriceDepth } = require('./marketDataTxns');
 const { fetchPositions } = require('./fetchTrades');
@@ -33,7 +34,7 @@ const threshold = {
     upperPrice : 1.0010,
     lowerPrice : 0.9990,
     upperTarget : 1000, // Hold less USDC when its price is high in anticipation of mean reversion.  
-    lowerTarget : 2400, // Buy more USDC when its price is low. 
+    lowerTarget : 2600, // Buy more USDC when its price is low. 
     long : +400, 
     overBought : +800, 
     short : -400, 
