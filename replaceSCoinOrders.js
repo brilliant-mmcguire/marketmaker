@@ -124,7 +124,7 @@ async function makeBids(bestBidPrices, allOrders, position, balances) {
  
         let freshOrders = false;
         if (orders.length>0) { 
-            const xxMinutes = 17; // Minimum number of minutes bewteen orders at a give price level.
+            const xxMinutes = 11; // Minimum number of minutes bewteen orders at a give price level.
             const xxMilliSeconds = xxMinutes * 60 * 1000; 
             freshOrders = ((Date.now() - orders[orders.length-1].time) < xxMilliSeconds);
         }
@@ -214,12 +214,13 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
         
         let freshOrders = false;
         if (orders.length>0) { 
-            const xxMinutes = 11 * 60 * 1000; // Ten minutes in milliseconds
-            freshOrders = ((Date.now() - orders[orders.length-1].time) < xxMinutes);
+            const xxMinutes = 11; // Minimum number of minutes bewteen orders at a give price level.
+            const xxMilliSeconds = 11 * 60 * 1000; // Ten minutes in milliseconds
+            freshOrders = ((Date.now() - orders[orders.length-1].time) < xxMilliSeconds);
         }
 
         let quotaFull = (offer.qty < qtyQuanta[orders.length]);
-
+        
         console.log(`We have ${orders.length} orders on price level ${offer.price} with volume ${offer.qty}.`);      
                
         if(offer.price < prcFloor || offer.price > prcCeiling || quotaFull || freshOrders) {
