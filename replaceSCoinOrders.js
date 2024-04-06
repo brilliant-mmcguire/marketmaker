@@ -130,6 +130,11 @@ async function makeBids(bestBidPrices, allOrders, position, balances) {
         }
         
         let quotaFull = (bid.qty < qtyQuanta[orders.length]);
+        let quotaBreach = orders.length > 0 ? (bid.qty < qtyQuanta[orders.length-1]) : false;
+        if(quotaBreach) {
+            cancelOrder(orders[orders.length-1]);
+            console.log(`Quota breach ${bid.qty} and cancelling last order.`);
+        }
 
         console.log(
             `We have ${orders.length} orders on price level ${bid.price} with volume ${bid.qty}.`
@@ -137,7 +142,7 @@ async function makeBids(bestBidPrices, allOrders, position, balances) {
         
         if(bid.price > prcCeiling || bid.price < prcFloor || quotaFull || freshOrders) {
             console.log(`> Ignoring price level ${bid.price}`);
-            console.log(`> quotaFull: ${quotaFull}`); 
+            console.log(`> quotaFull: ${quotaFull}, breach: ${quotaBreach}`); 
             console.log(`> freshOrders: ${freshOrders}`);
         } else {
             console.log(`Placing buy order at price level ${bid.price}.`);
@@ -220,12 +225,17 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
         }
 
         let quotaFull = (offer.qty < qtyQuanta[orders.length]);
-        
+        let quotaBreach = orders.length > 0 ? (offer.qty < qtyQuanta[orders.length-1]) : false;
+        if(quotaBreach) {
+            cancelOrder(orders[orders.length-1]);
+            console.log(`Quota breach ${offer.qty} and cancelling last order.`);
+        }
+
         console.log(`We have ${orders.length} orders on price level ${offer.price} with volume ${offer.qty}.`);      
                
         if(offer.price < prcFloor || offer.price > prcCeiling || quotaFull || freshOrders) {
             console.log(`> Ignoring price level ${offer.price}`);
-            console.log(`> quotaFull: ${quotaFull}`); 
+            console.log(`> quotaFull: ${quotaFull}, breach: ${quotaBreach}`); 
             console.log(`> freshOrders: ${freshOrders}`);
         } else {
             console.log(`Placing sell order at price level ${offer.price}.`);
