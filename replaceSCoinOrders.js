@@ -133,7 +133,7 @@ async function makeBids(bestBidPrices, allOrders, position, balances) {
         let quotaFull = (bid.qty < qtyQuanta[orders.length]);
         let quotaBreach = orders.length > 0 ? (bid.qty < qtyQuanta[orders.length-1]) : false;
         if(quotaBreach) {
-            cancelOrder(orders[orders.length-1]);
+            cancelOrders([orders[orders.length-1]]);
             console.log(`Quota breach ${bid.qty} and cancelling last order.`);
         }
 
@@ -228,7 +228,7 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
         let quotaFull = (offer.qty < qtyQuanta[orders.length]);
         let quotaBreach = orders.length > 0 ? (offer.qty < qtyQuanta[orders.length-1]) : false;
         if(quotaBreach) {
-            cancelOrder(orders[orders.length-1]);
+            cancelOrders([orders[orders.length-1]]);
             console.log(`Quota breach ${offer.qty} and cancelling last order.`);
         }
 
