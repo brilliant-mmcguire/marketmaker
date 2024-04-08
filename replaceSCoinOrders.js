@@ -13,7 +13,6 @@ TODO - analyse and test this 'getting stuck' scenario.
 */
 
 const { fetchOpenOrders } = require('./orderTxns');
-const { cancelOrder } = require('./orderTxns');
 const { placeOrder } = require('./orderTxns');
 const { fetchPriceDepth } = require('./marketDataTxns');
 const { fetchPositions } = require('./fetchTrades');
