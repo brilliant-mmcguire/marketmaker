@@ -69,7 +69,7 @@ function targetQty(bestPrice) {
     return qty;
 }
 
-async function makeBids(bestBidPrices, allOrders, position, balances) {
+async function makeBids(bestBids, allOrders, position, balances) {
     
     console.log(`Making bids for ${symbol} at ${new Date()}`);
 
@@ -78,22 +78,22 @@ async function makeBids(bestBidPrices, allOrders, position, balances) {
     let prcCeiling = position.mAvgSellPrice; // Avoid buying back at a loss relative to our recent trades. 
    
     // Testing a strategy to encourage a long position when price drops. 
-    if((bestBidPrices[0].price) > 1.0004) { 
-        prcCeiling = bestBidPrices[0].price - 0.00001;
+    if((bestBids[0].price) > 1.0004) { 
+        prcCeiling = bestBids[0].price - 0.00001;
     }
 
-    let prcFloor = bestBidPrices[2].price;
-    let targetQ = targetQty(bestBidPrices[0].price);
+    let prcFloor = bestBids[2].price;
+    let targetQ = targetQty(bestBids[0].price);
     
     // Order price ceiling adjustments.
     if(usdcTotal > (targetQ+threshold.overBought)) {
         console.log(`Overbought  posn of ${usdcTotal} at an recent avg price of ${position.mAvgBuyPrice} (${position.mAvgBuyAge} hrs)`);
         // We can be more demading on price and lower our buy ceiling.
-        prcCeiling = Math.min(position.mAvgBuyPrice,bestBidPrices[0].price) - 0.00030; 
+        prcCeiling = Math.min(position.mAvgBuyPrice,bestBids[0].price) - 0.00030; 
     } else if(usdcTotal > (targetQ + threshold.long)) {
         console.log(`Long posn of  ${usdcTotal} at an avg price of ${position.mAvgBuyPrice} (${position.mAvgBuyAge} hrs)`);
         // Avoid buying unless we can improve our average price.
-        prcCeiling = Math.min(position.mAvgBuyPrice,bestBidPrices[0].price) - 0.00015;
+        prcCeiling = Math.min(position.mAvgBuyPrice,bestBids[0].price) - 0.00015;
     }
     if(usdcTotal < (targetQ + threshold.overSold)) {
         console.log(`Oversold posn of  ${usdcTotal} at an recent avg price of ${position.mAvgSellPrice} (${position.mAvgSellAge} hrs)`);
@@ -116,8 +116,8 @@ async function makeBids(bestBidPrices, allOrders, position, balances) {
          await cancelOrders(staleOrders);
     }
     
-    for(let i = 0; i< bestBidPrices.length; i++) {
-        let bid = bestBidPrices[i];
+    for(let i = 0; i< bestBids.length; i++) {
+        let bid = bestBids[i];
         let qty = qtyLadder[i];
         
         let orders = allOrders.filter(order => parseFloat(order.price) === bid.price ); 
