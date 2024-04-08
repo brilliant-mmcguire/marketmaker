@@ -28,7 +28,7 @@ This is to reduce the impact of sharp price moves where the proce shoots through
 remains at high/low levels for some period of time.  In this scenario we become 
 oversold/overbought too quickly. 
 */
-const qtyLadder = [191, 151, 83, 37, 23, 13, 11];  
+const qtyLadder = [197, 157, 89, 43, 29, 13, 11];  
 
 const threshold = {
     upperPrice : 1.0010,
@@ -47,7 +47,7 @@ This is the help regulate the rate of exection of our orders.
 The more orders are in queue ahead of us, the more orders we need to keep in the queue.
 The goal is to maintin a steady rate of execution and to baclance to rate of buy and sell trades. 
 */
-const qtyQuanta = [212345, 712345 , 3123456, 7523456, 13123456, 100123456];
+const qtyQuanta = [212345, 712345 , 2523456, 6523456, 11123456, 100123456];
 
 /*
 Target USDC balance uses a linear function between the upper and lower quantity thresholds.
