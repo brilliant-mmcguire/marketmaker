@@ -182,35 +182,45 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
     let usdcTotal = balances.usdc.total;
 
     let prcFloor = position.mAvgBuyPrice; // Avoid selling back at a loss relative to our recent trades.   
-    
-    // Testing a strategy to encourage a long position when price drops. 
-    // Default bid is one tick away from the current best bid. 
-    if((bestOffers[0].price) < 0.9996) { 
-        prcFloor = bestOffers[0].price + tickSize;
-    }
 
     let prcCeiling = bestOffers[2].price;
     let targetQ = targetQty(bestOffers[0].price);
     
-    // Order price floor adjustments.
-    if(usdcTotal < (targetQ + threshold.overSold)) {
-        console.log(`Oversold posn of ${usdcTotal} at a recent avg price of ${position.mAvgSellPrice} (${position.mAvgSellAge} hrs)`);
-        // We can be more demading on price and raise our price floor.
-        prcFloor = Math.max(position.mAvgSellPrice,bestOffers[0].price) + 3*tickSize;  
-     
-    } else if(usdcTotal < (targetQ + threshold.short)) {
-        console.log(`Short posn of ${usdcTotal} at an recent avg price of ${position.mAvgSellPrice} (${position.mAvgSellAge} hrs)`);
-        // Avoid selling unless we can improve our average price.
-        prcFloor = Math.max(position.mAvgSellPrice,bestOffers[0].price) + 1.5*tickSize;  
+    if (usdcTotal < targetQ) {
+        // We are short already so want to match or improve on our average sell price.
+        prcFloor = Math.max(position.mAvgSellPrice,bestOffers[0].price);
+
+        // Order price floor adjustments.
+        if(usdcTotal < (targetQ + threshold.overSold)) {
+            console.log(`Oversold posn of ${usdcTotal} at a recent avg price of ${position.mAvgSellPrice} (${position.mAvgSellAge} hrs)`);
+            // We can be more demading on price and raise our price floor.
+            prcFloor += 3*tickSize;  
+        
+        } else if(usdcTotal < (targetQ + threshold.short)) {
+            console.log(`Short posn of ${usdcTotal} at an recent avg price of ${position.mAvgSellPrice} (${position.mAvgSellAge} hrs)`);
+            // Avoid selling unless we can improve our average price.
+            prcFloor += 1.5*tickSize;  
+        }
     }
-    if(usdcTotal > (targetQ + threshold.overBought)) {
-        console.log(`Over bought at ${usdcTotal} an recent avg price of ${position.mAvgBuyPrice} (${position.mAvgBuyAge} hrs)`);
-        // We may need to sell at a loss as we are severely over-bought and running out of USDT.
-        prcFloor = position.mAvgBuyPrice - 3*tickSize; 
-    } else if(usdcTotal > (targetQ + threshold.long)) {
-        console.log(`Long posn of ${usdcTotal} bought at an recent avg price of ${position.mAvgBuyPrice} (${position.mAvgBuyAge} hrs)`);
-        // Sell back at a slight loss if necessary. 
-        prcFloor = position.mAvgBuyPrice - 1.5*tickSize; 
+    
+    if (usdcTotal > targetQ) {
+        // We are long so want to sell even if at cost or at a loss.
+        prcFloor = position.mAvgBuyPrice 
+
+        if(usdcTotal > (targetQ + threshold.overBought)) {
+            console.log(`Over bought at ${usdcTotal} an recent avg price of ${position.mAvgBuyPrice} (${position.mAvgBuyAge} hrs)`);
+            // We may need to sell at a loss as we are severely over-bought and running out of USDT.
+            prcFloor -= 3*tickSize; 
+        } else if(usdcTotal > (targetQ + threshold.long)) {
+            console.log(`Long posn of ${usdcTotal} bought at an recent avg price of ${position.mAvgBuyPrice} (${position.mAvgBuyAge} hrs)`);
+            // Sell back at a slight loss if necessary. 
+            prcFloor -= 1.5*tickSize; 
+        }
+    }
+    // Testing a strategy to encourage a long position when price drops. 
+    // Default bid is one tick away from the current best bid. 
+    if((bestOffers[0].price) < 0.9996) { 
+        prcFloor = Math.max(bestOffers[0].price + tickSize, prcFloor);
     }
 
     console.log(`Sell price floor: ${prcFloor} and ceiling: ${prcCeiling}`)
