@@ -85,28 +85,31 @@ async function makeBids(bestBids, allOrders, position, balances) {
     if(usdcTotal > targetQ) { 
         // Long on USDC so aim to improve on recent avg buy price. 
         prcCeiling = Math.min(position.mAvgBuyPrice,bestBids[0].price);
-    } else if(usdcTotal > (targetQ+threshold.overBought)) {
-        console.log(`Overbought  posn of ${usdcTotal} at an recent avg price of ${position.mAvgBuyPrice} (${position.mAvgBuyAge} hrs)`);
-        // We can be more demading on price and lower our buy ceiling.
-        prcCeiling -= 3*tickSize; 
-    } else if(usdcTotal > (targetQ + threshold.long)) {
-        console.log(`Long posn of  ${usdcTotal} at an avg price of ${position.mAvgBuyPrice} (${position.mAvgBuyAge} hrs)`);
-        // Avoid buying unless we can improve our average price.
-        prcCeiling -= 1.5*tickSize;
+        
+        if(usdcTotal > (targetQ+threshold.overBought)) {
+            console.log(`Overbought  posn of ${usdcTotal} at an recent avg price of ${position.mAvgBuyPrice} (${position.mAvgBuyAge} hrs)`);
+            // We can be more demading on price and lower our buy ceiling.
+            prcCeiling -= 3*tickSize; 
+        } else if(usdcTotal > (targetQ + threshold.long)) {
+            console.log(`Long posn of  ${usdcTotal} at an avg price of ${position.mAvgBuyPrice} (${position.mAvgBuyAge} hrs)`);
+            // Avoid buying unless we can improve our average price.
+            prcCeiling -= 1.5*tickSize;
+        }
     } 
-
-     
+    
     if(usdcTotal < targetQ) { 
         // Short on USDC so aim to not buy back at a loss on recent avg buy prices. 
         prcCeiling = position.mAvgSellPrice;
-    } else if(usdcTotal < (targetQ + threshold.overSold)) {
-        console.log(`Oversold posn of  ${usdcTotal} at an recent avg price of ${position.mAvgSellPrice} (${position.mAvgSellAge} hrs)`);
-        // We may need to buy at a loss as we are severely over-sold and running out of USDC.
-        prcCeiling += 3*tickSize;
-    } else if(usdcTotal < (targetQ + threshold.short)) {
-        console.log(`Short posn of ${usdcTotal} at an avg price of ${position.mAvgSellPrice} (${position.mAvgSellAge} hrs)`);
-        // Buy back at a slight loss is necessSary. 
-        prcCeiling += 1.5*tickSize;
+        
+        if(usdcTotal < (targetQ + threshold.overSold)) {
+            console.log(`Oversold posn of  ${usdcTotal} at an recent avg price of ${position.mAvgSellPrice} (${position.mAvgSellAge} hrs)`);
+            // We may need to buy at a loss as we are severely over-sold and running out of USDC.
+            prcCeiling += 3*tickSize;
+        } else if(usdcTotal < (targetQ + threshold.short)) {
+            console.log(`Short posn of ${usdcTotal} at an avg price of ${position.mAvgSellPrice} (${position.mAvgSellAge} hrs)`);
+            // Buy back at a slight loss is necessSary. 
+            prcCeiling += 1.5*tickSize;
+        }
     }
 
     // Testing a strategy to encourage a short position when price increases.
@@ -114,7 +117,7 @@ async function makeBids(bestBids, allOrders, position, balances) {
     if((bestBids[0].price) > 1.0004) { 
         prcCeiling = Math.min(bestBids[0].price - tickSize,prcCeiling);
     }
-    
+
     console.log(`Buy price ceiling: ${prcCeiling} and floor: ${prcFloor}`);
     
     //cancel any open orders exceeding the price ceiling and fallen under the price floor. 
