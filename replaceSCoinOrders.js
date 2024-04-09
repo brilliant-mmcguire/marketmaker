@@ -99,8 +99,8 @@ async function makeBids(bestBids, allOrders, position, balances) {
     
     if(usdcTotal < targetQ) { 
         // Short on USDC so aim to not buy back at a loss on recent avg buy prices. 
-        prcCeiling = position.mAvgSellPrice;
-        
+        prcCeiling = Math.min(position.mAvgSellPrice,bestBids[0].price);
+
         if(usdcTotal < (targetQ + threshold.overSold)) {
             console.log(`Oversold posn of  ${usdcTotal} at an recent avg price of ${position.mAvgSellPrice} (${position.mAvgSellAge} hrs)`);
             // We may need to buy at a loss as we are severely over-sold and running out of USDC.
@@ -113,7 +113,7 @@ async function makeBids(bestBids, allOrders, position, balances) {
     }
 
     // Testing a strategy to encourage a short position when price increases.
-    // Default bid is one tick away from the current best bid. 
+    // Enforce bid to be at least one tick away from the current best bid. 
     if((bestBids[0].price) > 1.0004) { 
         prcCeiling = Math.min(bestBids[0].price - tickSize,prcCeiling);
     }
