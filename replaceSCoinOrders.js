@@ -85,7 +85,17 @@ async function makeBids(bestBids, allOrders, position, balances) {
     if(usdcTotal > targetQ) { 
         // Long on USDC so aim to improve on recent avg buy price. 
         prcCeiling = Math.min(position.mAvgBuyPrice,bestBids[0].price);
+        prcCeiling += 0.5*tickSize; // Compensate for rounding to nearest tick. 
+
+        let posn = (usdcTotal - targetQ)/threshold.overBought;
+        let adjustment = 3*tickSize;
         
+        prcCeiling -= posn*adjustment; 
+        
+        console.log(`Long posn of ${usdcTotal} at an recent avg price of ${position.mAvgBuyPrice} (${position.mAvgBuyAge} hrs)`);
+        console.log(`Price ceiling ${prcCeiling} with an adjustment of ${posn*adjustment}} and scaled posn ${posn}`);
+        
+        /*
         if(usdcTotal > (targetQ+threshold.overBought)) {
             console.log(`Overbought  posn of ${usdcTotal} at an recent avg price of ${position.mAvgBuyPrice} (${position.mAvgBuyAge} hrs)`);
             // We can be more demading on price and lower our buy ceiling.
@@ -95,12 +105,22 @@ async function makeBids(bestBids, allOrders, position, balances) {
             // Avoid buying unless we can improve our average price.
             prcCeiling -= 1.5*tickSize;
         }
+        */
     } 
     
     if(usdcTotal < targetQ) { 
-        // Short on USDC so aim to not buy back at a loss on recent avg buy prices. 
-        prcCeiling = Math.min(position.mAvgSellPrice,bestBids[0].price);
-
+        // Short on USDC so buy back, even if at cost or at a loss.
+        // prcCeiling = Math.min(position.mAvgSellPrice,bestBids[0].price);
+        prcCeiling = position.mAvgSellPrice;
+        let posn = (targetQ - usdcTotal)/threshold.overBought ;
+        let adjustment = 3*tickSize;
+        
+        prcCeiling += posn*adjustment; 
+       
+        console.log(`Short  posn of ${usdcTotal} at an recent avg price of ${position.mAvgSellPrice} (${position.mAvgSellAge} hrs)`);
+        console.log(`Price ceiling ${prcCeiling} with an adjustment of ${posn*adjustment}} and scaled posn ${posn}`);
+     
+        /*
         if(usdcTotal < (targetQ + threshold.overSold)) {
             console.log(`Oversold posn of  ${usdcTotal} at an recent avg price of ${position.mAvgSellPrice} (${position.mAvgSellAge} hrs)`);
             // We may need to buy at a loss as we are severely over-sold and running out of USDC.
@@ -110,6 +130,7 @@ async function makeBids(bestBids, allOrders, position, balances) {
             // Buy back at a slight loss is necessSary. 
             prcCeiling += 1.5*tickSize;
         }
+        */
     }
 
     // Testing a strategy to encourage a short position when price increases.
@@ -119,7 +140,7 @@ async function makeBids(bestBids, allOrders, position, balances) {
     }
 
     console.log(`Buy price ceiling: ${prcCeiling} and floor: ${prcFloor}`);
-    
+
     //cancel any open orders exceeding the price ceiling and fallen under the price floor. 
     let staleOrders = allOrders.filter(order => (
         (parseFloat(order.price)>prcCeiling) || (parseFloat(order.price)<prcFloor)
@@ -188,8 +209,19 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
     
     if (usdcTotal < targetQ) {
         // We are short already so want to match or improve on our average sell price.
-        prcFloor = Math.max(position.mAvgSellPrice,bestOffers[0].price);
+        //prcFloor = Math.max(position.mAvgSellPrice,bestOffers[0].price);
+        prcFloor = position.mAvgSellPrice;
+        prcFloor -= 0.5*tickSize; // Compensate for rounding to nearest tick. 
 
+        let posn = (targetQ - usdcTotal)/threshold.overBought;
+        let adjustment = 3*tickSize;
+        
+        prcFloor += posn*adjustment; 
+               
+        console.log(`Short posn of ${usdcTotal} at an recent avg price of ${position.mAvgSellPrice} (${position.mAvgSellAge} hrs)`);
+        console.log(`Price floor ${prcFloor} with an adjustment of ${posn*adjustment} and scaled posn ${posn}`);
+            
+        /*
         // Order price floor adjustments.
         if(usdcTotal < (targetQ + threshold.overSold)) {
             console.log(`Oversold posn of ${usdcTotal} at a recent avg price of ${position.mAvgSellPrice} (${position.mAvgSellAge} hrs)`);
@@ -201,12 +233,22 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
             // Avoid selling unless we can improve our average price.
             prcFloor += 1.5*tickSize;  
         }
+        */
     }
     
     if (usdcTotal > targetQ) {
         // We are long so want to sell even if at cost or at a loss.
-        prcFloor = position.mAvgBuyPrice 
+        prcFloor = Math.max(position.mAvgBuyPrice,bestOffers[0].price);
 
+        let posn = (usdcTotal - targetQ)/threshold.overBought;
+        let adjustment = 3*tickSize;
+        
+        prcFloor -= posn*adjustment; 
+               
+        console.log(`Long posn of ${usdcTotal} at an recent avg price of ${position.mAvgBuyPrice} (${position.mAvgBuyAge} hrs)`);
+        console.log(`Price floor ${prcFloor} with an adjustment of ${posn*adjustment} and scaled posn ${posn}`);
+            
+        /*
         if(usdcTotal > (targetQ + threshold.overBought)) {
             console.log(`Over bought at ${usdcTotal} an recent avg price of ${position.mAvgBuyPrice} (${position.mAvgBuyAge} hrs)`);
             // We may need to sell at a loss as we are severely over-bought and running out of USDT.
@@ -216,6 +258,7 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
             // Sell back at a slight loss if necessary. 
             prcFloor -= 1.5*tickSize; 
         }
+        */
     }
     // Testing a strategy to encourage a long position when price drops. 
     // Default bid is one tick away from the current best bid. 
