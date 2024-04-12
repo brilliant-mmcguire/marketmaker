@@ -32,10 +32,10 @@ const qtyLadder = [197, 167, 101, 43, 29, 13, 11];
 const tickSize = 0.0001;  // Tick Size is 1 basis point.
 
 const target = {
-    upperPrice : 1.0010,
-    lowerPrice : 0.9990,
-    upperQty : 1100, // Hold less USDC when its price is high in anticipation of mean reversion.  
-    lowerQty : 2700, // Buy more USDC when its price is low. 
+    hiPrice : 1.0010,
+    loPrice : 0.9990,
+    hiQty : 1100, // Hold less USDC when its price is high in anticipation of mean reversion.  
+    loQty : 2700, // Buy more USDC when its price is low. 
     posUnit : 900  // aim to remain inside target +- posUnit
 };
 
@@ -53,16 +53,16 @@ At the upper target we can tolerate a smaller position in the expectation of pri
 At the lower target we allow for a larger position, expecting a price increase in the near future.
 */
 function targetQty(bestPrice) {
-    let qty = 0.5*(target.upperQty + target.lowerQty); 
+    let qty = 0.5*(target.hiQty + target.loQty); 
     let prc = bestPrice;
 
-    prc = (bestPrice > target.upperPrice) ? target.upperPrice : bestPrice;
-    prc = (bestPrice < target.lowerPrice) ?  target.lowerPrice : bestPrice;
+    prc = (bestPrice > target.hiPrice) ? target.hiPrice : bestPrice;
+    prc = (bestPrice < target.loPrice) ?  target.loPrice : bestPrice;
     
-    qty = ( target.lowerQty * (target.upperPrice - prc) 
+    qty = ( target.loQty * (target.hiPrice - prc) 
             + 
-            target.upperQty * (prc - target.lowerPrice) )
-        / (target.upperPrice-target.lowerPrice);
+            target.hiQty * (prc - target.loPrice) )
+        /  (target.hiPrice-target.loPrice);
 
     console.log(`Target Qty: ${qty} based on best price ${bestPrice}` )
     return qty;
