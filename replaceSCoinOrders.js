@@ -30,13 +30,13 @@ oversold/overbought too quickly.
 const qtyLadder = [197, 167, 101, 43, 29, 13, 11];  
 
 const tickSize = 0.0001;  // Tick Size is 1 basis point.
+const posLimit = 900  // aim to remain inside targetQ +- posLimit
 
 const target = {
     hiPrice : 1.0010,
     loPrice : 0.9990,
     hiQty : 1200, // Hold less USDC when its price is high in anticipation of mean reversion.  
     loQty : 2800, // Buy more USDC when its price is low. 
-    posUnit : 900  // aim to remain inside target +- posUnit
 };
 
 /* 
@@ -84,13 +84,13 @@ async function makeBids(bestBids, allOrders, position, balances) {
         prcCeiling = Math.min(position.mAvgBuyPrice,bestBids[0].price);
        // prcCeiling += 0.5*tickSize; // Compensate for rounding to nearest tick. 
 
-        let posn = (usdcTotal - targetQ)/target.posUnit;
-        let adjustment = 3*tickSize;
+        let posn = (usdcTotal - targetQ)/posLimit;
+        let adjustment = 3*tickSize*posn;
         
-        prcCeiling -= posn*adjustment; 
+        prcCeiling -= adjustment; 
         
         console.log(`Long posn of ${usdcTotal} at an recent avg price of ${position.mAvgBuyPrice} (${position.mAvgBuyAge} hrs)`);
-        console.log(`Price ceiling ${prcCeiling} with an adjustment of ${posn*adjustment}} and scaled posn ${posn}`);
+        console.log(`Price ceiling ${prcCeiling} with an adjustment of ${adjustment}} and scaled posn ${posn}`);
         
     } 
     
@@ -98,13 +98,13 @@ async function makeBids(bestBids, allOrders, position, balances) {
         // Short on USDC so buy back, even if at cost or at a loss.
         // prcCeiling = Math.min(position.mAvgSellPrice,bestBids[0].price);
         prcCeiling = position.mAvgSellPrice;
-        let posn = (targetQ - usdcTotal)/target.posUnit ;
-        let adjustment = 3*tickSize;
+        let posn = (targetQ - usdcTotal)/posLimit ;
+        let adjustment = 3*tickSize*posn;
         
-        prcCeiling += posn*adjustment; 
-       
+        prcCeiling += adjustment; 
+        
         console.log(`Short  posn of ${usdcTotal} at an recent avg price of ${position.mAvgSellPrice} (${position.mAvgSellAge} hrs)`);
-        console.log(`Price ceiling ${prcCeiling} with an adjustment of ${posn*adjustment}} and scaled posn ${posn}`);
+        console.log(`Price ceiling ${prcCeiling} with an adjustment of ${adjustment}} and scaled posn ${posn}`);
     }
 
     // Testing a strategy to encourage a short position when price increases.
@@ -187,26 +187,26 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
         prcFloor = position.mAvgSellPrice;
     //    prcFloor -= 0.5*tickSize; // Compensate for rounding to nearest tick. 
 
-        let posn = (targetQ - usdcTotal)/target.posUnit;
-        let adjustment = 3*tickSize;
+        let posn = (targetQ - usdcTotal)/posLimit;
+        let adjustment = 3*tickSize*posn;
         
-        prcFloor += posn*adjustment; 
+        prcFloor += adjustment; 
                
         console.log(`Short posn of ${usdcTotal} at an recent avg price of ${position.mAvgSellPrice} (${position.mAvgSellAge} hrs)`);
-        console.log(`Price floor ${prcFloor} with an adjustment of ${posn*adjustment} and scaled posn ${posn}`);
+        console.log(`Price floor ${prcFloor} with an adjustment of ${adjustment} and scaled posn ${posn}`);
     }
     
     if (usdcTotal > targetQ) {
         // We are long so want to sell even if at cost or at a loss.
         prcFloor = Math.max(position.mAvgBuyPrice,bestOffers[0].price);
 
-        let posn = (usdcTotal - targetQ)/target.posUnit;
-        let adjustment = 3*tickSize;
+        let posn = (usdcTotal - targetQ)/posLimit;
+        let adjustment = 3*tickSize*posn;
         
-        prcFloor -= posn*adjustment; 
+        prcFloor -= adjustment; 
                
         console.log(`Long posn of ${usdcTotal} at an recent avg price of ${position.mAvgBuyPrice} (${position.mAvgBuyAge} hrs)`);
-        console.log(`Price floor ${prcFloor} with an adjustment of ${posn*adjustment} and scaled posn ${posn}`);
+        console.log(`Price floor ${prcFloor} with an adjustment of ${adjustment} and scaled posn ${posn}`);
     }
     // Testing a strategy to encourage a long position when price drops. 
     // Default bid is one tick away from the current best bid. 
