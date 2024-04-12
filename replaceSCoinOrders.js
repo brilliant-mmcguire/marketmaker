@@ -36,7 +36,7 @@ const target = {
     lowerPrice : 0.9990,
     upperQty : 1100, // Hold less USDC when its price is high in anticipation of mean reversion.  
     lowerQty : 2700, // Buy more USDC when its price is low. 
-    posUnit : 800  // aim to remain inside target +- posUnit
+    posUnit : 900  // aim to remain inside target +- posUnit
 };
 
 /* 
