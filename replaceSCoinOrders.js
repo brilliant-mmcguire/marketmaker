@@ -31,11 +31,11 @@ const qtyLadder = [197, 167, 101, 43, 29, 13, 11];
 
 const tickSize = 0.0001;  // Tick Size is 1 basis point.
 
-const threshold = {
+const target = {
     upperPrice : 1.0010,
     lowerPrice : 0.9990,
-    upperTarget : 1100, // Hold less USDC when its price is high in anticipation of mean reversion.  
-    lowerTarget : 2700, // Buy more USDC when its price is low. 
+    upperQty : 1100, // Hold less USDC when its price is high in anticipation of mean reversion.  
+    lowerQty : 2700, // Buy more USDC when its price is low. 
     posUnit : 800  // aim to remain inside target +- posUnit
 };
 
@@ -48,21 +48,21 @@ The goal is to maintin a steady rate of execution and to baclance to rate of buy
 const qtyQuanta = [212345, 712345 , 2523456, 6523456, 11123456, 100123456];
 
 /*
-Target USDC balance uses a linear function between the upper and lower quantity thresholds.
-At the upper threshold we can tolerate a smaller position in the expectation of prices falling again. 
-At the lower threshold we allow for a larger position, expecting a price increase in the near future.
+Target USDC balance uses a linear function between the upper and lower target quantities.
+At the upper target we can tolerate a smaller position in the expectation of prices falling again. 
+At the lower target we allow for a larger position, expecting a price increase in the near future.
 */
 function targetQty(bestPrice) {
-    let qty = 0.5*(threshold.upperTarget + threshold.lowerTarget); 
+    let qty = 0.5*(target.upperQty + target.lowerQty); 
     let prc = bestPrice;
 
-    prc = (bestPrice > threshold.upperPrice) ? threshold.upperPrice : bestPrice;
-    prc = (bestPrice < threshold.lowerPrice) ?  threshold.lowerPrice : bestPrice;
+    prc = (bestPrice > target.upperPrice) ? target.upperPrice : bestPrice;
+    prc = (bestPrice < target.lowerPrice) ?  target.lowerPrice : bestPrice;
     
-    qty = ( threshold.lowerTarget * (threshold.upperPrice - prc) 
+    qty = ( target.lowerQty * (target.upperPrice - prc) 
             + 
-            threshold.upperTarget * (prc - threshold.lowerPrice) )
-        / (threshold.upperPrice-threshold.lowerPrice);
+            target.upperQty * (prc - target.lowerPrice) )
+        / (target.upperPrice-target.lowerPrice);
 
     console.log(`Target Qty: ${qty} based on best price ${bestPrice}` )
     return qty;
@@ -84,7 +84,7 @@ async function makeBids(bestBids, allOrders, position, balances) {
         prcCeiling = Math.min(position.mAvgBuyPrice,bestBids[0].price);
        // prcCeiling += 0.5*tickSize; // Compensate for rounding to nearest tick. 
 
-        let posn = (usdcTotal - targetQ)/threshold.posUnit;
+        let posn = (usdcTotal - targetQ)/target.posUnit;
         let adjustment = 3*tickSize;
         
         prcCeiling -= posn*adjustment; 
@@ -98,7 +98,7 @@ async function makeBids(bestBids, allOrders, position, balances) {
         // Short on USDC so buy back, even if at cost or at a loss.
         // prcCeiling = Math.min(position.mAvgSellPrice,bestBids[0].price);
         prcCeiling = position.mAvgSellPrice;
-        let posn = (targetQ - usdcTotal)/threshold.posUnit ;
+        let posn = (targetQ - usdcTotal)/target.posUnit ;
         let adjustment = 3*tickSize;
         
         prcCeiling += posn*adjustment; 
@@ -187,7 +187,7 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
         prcFloor = position.mAvgSellPrice;
     //    prcFloor -= 0.5*tickSize; // Compensate for rounding to nearest tick. 
 
-        let posn = (targetQ - usdcTotal)/threshold.posUnit;
+        let posn = (targetQ - usdcTotal)/target.posUnit;
         let adjustment = 3*tickSize;
         
         prcFloor += posn*adjustment; 
@@ -200,7 +200,7 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
         // We are long so want to sell even if at cost or at a loss.
         prcFloor = Math.max(position.mAvgBuyPrice,bestOffers[0].price);
 
-        let posn = (usdcTotal - targetQ)/threshold.posUnit;
+        let posn = (usdcTotal - targetQ)/target.posUnit;
         let adjustment = 3*tickSize;
         
         prcFloor -= posn*adjustment; 
