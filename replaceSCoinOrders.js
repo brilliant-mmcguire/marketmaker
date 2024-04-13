@@ -80,7 +80,7 @@ async function makeBids(bestBids, allOrders, position, balances) {
     let targetQ = targetQty(bestBids[0].price);
 
     let posn = (usdcTotal - targetQ)/posLimit;
-    let adjustment = 3*tickSize*posn;
+    let adjustment = 3*tickSize*(posn**2);
 
     if(usdcTotal > targetQ) { 
         // Long on USDC so aim to improve on recent avg buy price. 
@@ -172,7 +172,7 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
     let targetQ = targetQty(bestOffers[0].price);
     
     let posn = (usdcTotal - targetQ)/posLimit;
-    let adjustment = 3*tickSize*posn;
+    let adjustment = 3*tickSize*(posn**2);
 
     if (usdcTotal < targetQ) {
         // We are short already so want to match or improve on our average sell price.
