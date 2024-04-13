@@ -84,10 +84,9 @@ async function makeBids(bestBids, allOrders, position, balances) {
 
     if(usdcTotal > targetQ) { 
         // Long on USDC so aim to improve on recent avg buy price. 
-        prcCeiling = Math.min(position.mAvgBuyPrice,bestBids[0].price);      
+        prcCeiling = Math.min(position.mAvgBuyPrice,bestBids[0].price); 
         console.log(`Long posn of ${usdcTotal} at an recent avg price of ${position.mAvgBuyPrice} (${position.mAvgBuyAge} hrs)`);    
-    } 
-    if(usdcTotal < targetQ) { 
+    } else { // (usdcTotal <= targetQ) { 
         // Short on USDC so buy back, even if at cost or at a loss.
         prcCeiling = position.mAvgSellPrice;    
         console.log(`Short  posn of ${usdcTotal} at an recent avg price of ${position.mAvgSellPrice} (${position.mAvgSellAge} hrs)`);
@@ -179,8 +178,7 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
         // We are short already so want to match or improve on our average sell price.
         prcFloor = position.mAvgSellPrice;
         console.log(`Short posn of ${usdcTotal} at an recent avg price of ${position.mAvgSellPrice} (${position.mAvgSellAge} hrs)`);
-    }
-    if (usdcTotal > targetQ) {
+    } else { // (usdcTotal >= targetQ) {
         // We are long so want to sell even if at cost or at a loss.
         prcFloor = Math.max(position.mAvgBuyPrice,bestOffers[0].price);
         console.log(`Long posn of ${usdcTotal} at an recent avg price of ${position.mAvgBuyPrice} (${position.mAvgBuyAge} hrs)`);
@@ -188,7 +186,7 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
 
     prcFloor -= adjustment; 
     console.log(`Price floor ${prcFloor} with an adjustment of ${adjustment} and scaled posn ${posn}`);
-     
+    
     /*
     // Testing a strategy to encourage a long position when price drops. 
     // Default bid is one tick away from the current best bid. 
