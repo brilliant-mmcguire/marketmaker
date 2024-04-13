@@ -82,11 +82,11 @@ async function makeBids(bestBids, allOrders, position, balances) {
     let posn = (usdcTotal - targetQ)/posLimit;
     let adjustment = 3*tickSize * posn * Math.abs(posn);
 
-    if(usdcTotal > targetQ) { 
+    if ( posn >= 0) { // (usdcTotal > targetQ) { 
         // Long on USDC so aim to improve on recent avg buy price. 
         prcCeiling = Math.min(position.mAvgBuyPrice,bestBids[0].price); 
         console.log(`Long posn of ${usdcTotal} at an recent avg price of ${position.mAvgBuyPrice} (${position.mAvgBuyAge} hrs)`);    
-    } else { // (usdcTotal <= targetQ) { 
+    } else { // (usdcTotal < targetQ) { 
         // Short on USDC so buy back, even if at cost or at a loss.
         prcCeiling = position.mAvgSellPrice;    
         console.log(`Short  posn of ${usdcTotal} at an recent avg price of ${position.mAvgSellPrice} (${position.mAvgSellAge} hrs)`);
@@ -174,7 +174,7 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
     let posn = (usdcTotal - targetQ)/posLimit;
     let adjustment = 3*tickSize * posn * Math.abs(posn);
 
-    if (usdcTotal < targetQ) {
+    if ( posn < 0 ) { //(usdcTotal < targetQ) {
         // We are short already so want to match or improve on our average sell price.
         prcFloor = position.mAvgSellPrice;
         console.log(`Short posn of ${usdcTotal} at an recent avg price of ${position.mAvgSellPrice} (${position.mAvgSellAge} hrs)`);
