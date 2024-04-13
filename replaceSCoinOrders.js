@@ -174,26 +174,24 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
     let posn = (usdcTotal - targetQ)/posLimit;
     let adjustment = 3*tickSize * posn * Math.abs(posn);
 
-    if ( posn < 0 ) { //(usdcTotal < targetQ) {
-        // We are short already so want to match or improve on our average sell price.
-        prcFloor = position.mAvgSellPrice;
-        console.log(`Short posn of ${usdcTotal} at an recent avg price of ${position.mAvgSellPrice} (${position.mAvgSellAge} hrs)`);
-    } else { // (usdcTotal >= targetQ) {
+    if ( posn >= 0 ) { //(usdcTotal < targetQ) {
         // We are long so want to sell even if at cost or at a loss.
         prcFloor = Math.max(position.mAvgBuyPrice,bestOffers[0].price);
         console.log(`Long posn of ${usdcTotal} at an recent avg price of ${position.mAvgBuyPrice} (${position.mAvgBuyAge} hrs)`);
+    } else { // (usdcTotal >= targetQ) {
+        // We are short already so want to match or improve on our average sell price.
+        prcFloor = position.mAvgSellPrice;
+        console.log(`Short posn of ${usdcTotal} at an recent avg price of ${position.mAvgSellPrice} (${position.mAvgSellAge} hrs)`);
     }
 
     prcFloor -= adjustment; 
     console.log(`Price floor ${prcFloor} with an adjustment of ${adjustment} and scaled posn ${posn}`);
     
-    /*
     // Testing a strategy to encourage a long position when price drops. 
     // Default bid is one tick away from the current best bid. 
-    if((bestOffers[0].price) < 0.9996) { 
+    if((bestOffers[0].price) < 0.9995) { 
         prcFloor = Math.max(bestOffers[0].price + tickSize, prcFloor);
     }
-    */
 
     console.log(`Sell price floor: ${prcFloor} and ceiling: ${prcCeiling}`)
     
