@@ -95,14 +95,12 @@ async function makeBids(bestBids, allOrders, position, balances) {
     prcCeiling -= adjustment; 
     console.log(`Price ceiling ${prcCeiling} with an adjustment of ${adjustment}} and scaled posn ${posn}`);
     
-    /*
     // Testing a strategy to encourage a short position when price increases.
     // Enforce bid to be at least one tick away from the current best bid. 
-    if((bestBids[0].price) > 1.0004) { 
+    if((bestBids[0].price) > 1.0005) { 
         prcCeiling = Math.min(bestBids[0].price - tickSize,prcCeiling);
     }
-    */
-
+    
     console.log(`Buy price ceiling: ${prcCeiling} and floor: ${prcFloor}`);
 
     //cancel any open orders exceeding the price ceiling and fallen under the price floor. 
