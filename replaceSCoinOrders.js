@@ -95,12 +95,14 @@ async function makeBids(bestBids, allOrders, position, balances) {
     prcCeiling -= adjustment; 
     console.log(`Price ceiling ${prcCeiling} with an adjustment of ${adjustment}} and scaled posn ${posn}`);
     
-    // Testing a strategy to encourage a short position when price increases.
+    // Testing a strategy to:
+    // a) encourage a short position when price pops up. 
+    // b) avoid buying at very high prices, when for example there is a short lived liquidity hole.
     // Enforce bid to be at least one tick away from the current best bid. 
-    if((bestBids[0].price) > 1.0005) { 
+    if((bestBids[0].price) > target.hiPrice) { 
         prcCeiling = Math.min(bestBids[0].price - tickSize,prcCeiling);
     }
-    
+
     console.log(`Buy price ceiling: ${prcCeiling} and floor: ${prcFloor}`);
 
     //cancel any open orders exceeding the price ceiling and fallen under the price floor. 
@@ -185,12 +187,14 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
     prcFloor -= adjustment; 
     console.log(`Price floor ${prcFloor} with an adjustment of ${adjustment} and scaled posn ${posn}`);
     
-    // Testing a strategy to encourage a long position when price drops. 
+    // Testing a strategy to 
+    // a) encourage a long position when price drops. 
+    // b) avoid selling at very low prices, when for example there is a short lived liquidity hole.
     // Default bid is one tick away from the current best bid. 
-    if((bestOffers[0].price) < 0.9995) { 
+    if((bestOffers[0].price) < target.loPrice) { 
         prcFloor = Math.max(bestOffers[0].price + tickSize, prcFloor);
     }
-
+    
     console.log(`Sell price floor: ${prcFloor} and ceiling: ${prcCeiling}`)
     
     //cancel any open orders exceeding the price ceiling or fallen under the price floor. 
