@@ -27,7 +27,7 @@ This is to reduce the impact of sharp price moves where the proce shoots through
 remains at high/low levels for some period of time.  In this scenario we become 
 oversold/overbought too quickly. 
 */
-const qtyLadder = [211, 173, 113, 43, 29, 13, 11];  
+const qtyLadder = [223, 179, 139, 43, 29, 13, 11];  
 
 const tickSize = 0.0001;  // Tick Size is 1 basis point.
 const posLimit = 900  // aim to remain inside targetQ +- posLimit
@@ -194,7 +194,7 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
     if((bestOffers[0].price) < target.loPrice) { 
         prcFloor = Math.max(bestOffers[0].price + tickSize, prcFloor);
     }
-    
+
     console.log(`Sell price floor: ${prcFloor} and ceiling: ${prcCeiling}`)
     
     //cancel any open orders exceeding the price ceiling or fallen under the price floor. 
@@ -247,10 +247,9 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
             } catch (error) {
                 console.error(error.message);
             }
-        }  
+        } 
     };
 }
-
 
 exports.placeSCoinOrders = placeSCoinOrders;
 async function placeSCoinOrders() {
