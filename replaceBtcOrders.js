@@ -12,6 +12,8 @@ const { fetchPriceStats } = require('./marketDataTxns');
 const { cancelOpenOrders } = require('./orderTxns');
 const { fetchAccountInfo } = require('./accountTxns');
 
+const lotSize = 0.00033; //BTC
+
 const threshold = { 
     buyCount : 2,
     sellCount : 2,
@@ -34,7 +36,7 @@ function getOrderParameters(priceStats) {
     const buyBasePrice = 0.5*(priceStats.lastPrice + priceStats.lowPrice);
    
     return {
-        quantity : 0.00033, 
+        quantity : lotSize, 
         sell : [
             Math.round((sellBasePrc * 1.0360) * 100) / 100,
             Math.round((sellBasePrc * 1.0280) * 100) / 100,
