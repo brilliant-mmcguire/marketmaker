@@ -13,9 +13,9 @@ const { cancelOpenOrders } = require('./orderTxns');
 const { fetchAccountInfo } = require('./accountTxns');
 
 const lotSize = 0.00033; //BTC
-const posnTarget = 15*lotSize; 
-const posnHi = posnTarget + 5*lotSize;  
-const posnLo = posnTarget - 5*lotSize;
+//const posnTarget = 15*lotSize; 
+//const posnHi = posnTarget + 5*lotSize;  
+//const posnLo = posnTarget - 5*lotSize;
 
 const threshold = { 
     buyCount : 2,
@@ -121,7 +121,6 @@ async function placeNewOrders(symbol, position, balance, priceStats) {
     try {  // Make bids.
         let orderCount=0; 
         for (let i = params.buy.length-1; i > 0; i--) {
-           
             if((assetTotal > threshold.overBought) && params.buy[i] >  (threshold.overBoughtPct * position.mAvgBuyPrice)) {
                 console.log(
                     `overbought so avoid buying unless we are improving our avg cost price by a lot.`, 
@@ -223,7 +222,7 @@ async function replaceOrders(symbol)
         balance = noneZeroBalances.balances.filter(balance => (balance.asset=='XRP'))[0];
 */
 
-    console.log(`Targeting ${posnTarget} BTC with hi ${posnHi}, lo ${posnLo}, and lot size of ${lotSize}`)
+    //console.log(`Targeting ${posnTarget} BTC with hi ${posnHi}, lo ${posnLo}, and lot size of ${lotSize}`)
     console.log(`Balance:`, balance);
 
     await placeNewOrders(symbol, position, balance, priceStats); 
