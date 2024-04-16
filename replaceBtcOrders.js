@@ -26,9 +26,13 @@ const threshold = {
     long : 330.0,
     overBought : 400.0,
 
+    target : 300, 
+    deviation : 100, 
+    pricePct : 0.032, // at one deviation.
+
     overSoldPct : 1.032,  
     shortPct : 1.0022,  
-    longPct : 0.9977, 
+    longPct : 0.9977,
     overBoughtPct : 0.967
 };
 
@@ -62,20 +66,20 @@ function getOrderParameters(priceStats) {
         ]
     }
 }
-exports.placeNewOrders = placeNewOrders;
-async function placeNewOrders(symbol, position, balance, priceStats) {
-    const params = getOrderParameters(priceStats);
 
-    assetTotal = balance.total * priceStats.weightedAvgPrice;  
-
-
-    const dt = new Date();
-    console.log(`${symbol} current price ${priceStats.lastPrice} order quantity ${params.quantity} at ${dt.toLocaleString()}`);
-    
-    console.log(`Place orders at:`, params);
-
+function updateThreshold(assetTotal) {
     threshold.buyCount = 2;
     threshold.sellCount = 2;
+
+    threshold.overBought    = threshold.target + threshold.deviation;
+    threshold.long          = threshold.target + 0.3*threshold.deviation;
+    threshold.short         = threshold.target - 0.3*threshold.deviation;
+    threshold.overSold      = threshold.target - threshold.deviation;
+
+    threshold.overBoughtPct = 1.0 - threshold.pricePct;
+    threshold.longPct       = 1.0 - threshold.pricePct * 0.3**2;
+    threshold.shortPct      = 1.0 + threshold.pricePct * 0.3**2;
+    threshold.overSoldPct   = 1.0 + threshold.pricePct;
 
     if(assetTotal > threshold.overBought) {
         // Probably on a downward trend so expect to be trailing the market price
@@ -97,8 +101,22 @@ async function placeNewOrders(symbol, position, balance, priceStats) {
         threshold.buyCount = 2;
         threshold.sellCount = 2;
     } 
+}
 
-    console.log(`assetTotal: ${assetTotal} order count threshold: ${threshold.buyCount} ${threshold.sellCount}`);
+exports.placeNewOrders = placeNewOrders;
+async function placeNewOrders(symbol, position, balance, priceStats) {
+    const params = getOrderParameters(priceStats);
+
+    assetTotal = balance.total * priceStats.weightedAvgPrice;  
+
+    const dt = new Date();
+    console.log(`${symbol} current price ${priceStats.lastPrice} order quantity ${params.quantity} at ${dt.toLocaleString()}`);
+    console.log(`Place orders at:`, params);
+
+    updateThreshold(assetTotal);
+
+    console.log(`assetTotal: ${assetTotal}`);
+    console.log(threshold);
 
     try {  // Make bids.
         let orderCount=0; 
