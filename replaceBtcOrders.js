@@ -13,6 +13,9 @@ const { cancelOpenOrders } = require('./orderTxns');
 const { fetchAccountInfo } = require('./accountTxns');
 
 const lotSize = 0.00033; //BTC
+const posnTarget = 15*lotSize; 
+const posnHi = posnTarget + 5*lotSize;  
+const posnLo = posnTarget - 5*lotSize;
 
 const threshold = { 
     buyCount : 2,
@@ -201,6 +204,9 @@ async function replaceOrders(symbol)
     if(symbol.startsWith("XRP")) 
         balance = noneZeroBalances.balances.filter(balance => (balance.asset=='XRP'))[0];
 */
+
+    console.log(`Targeting ${posnTarget} BTC with hi ${posnHi}, lo ${posnLo}, and lot size of ${lotSize}`)
+    console.log(`Balance:`, balance);
 
     await placeNewOrders(symbol, position, balance, priceStats); 
 }
