@@ -69,7 +69,7 @@ function updateThreshold(posnDeviation) {
         threshold.sellCount = 1;
     } 
 
-    if(posnDeviation < 0.9) {
+    if(posnDeviation < -0.9) {
         // Probably on an upward trend so expect to be trailing the market price
         // see above ...  
         threshold.buyCount = 1;
