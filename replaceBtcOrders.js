@@ -17,7 +17,6 @@ const lotSize = 0.00033; //BTC
 //const posnHi = posnTarget + 5*lotSize;  
 //const posnLo = posnTarget - 5*lotSize;
 
-
 const threshold = { 
     target : 300, 
     deviation : 100, 
@@ -94,29 +93,28 @@ async function placeNewOrders(symbol, position, balance, priceStats) {
 
     let prcPct = 1.0 - relativePosn*Math.abs(relativePosn)*threshold.pricePct;  
     
+    let buyPrcCeiling = prcPct * position.mAvgBuyPrice;
+    let sellPrcFloor = prcPct * position.mAvgSellPrice;
+
     console.log(`assetTotal: ${assetTotal} ; posDeviation: ${relativePosn}` );
     console.log(`Avg buy price: ${ position.mAvgBuyPrice} ; Avg sell price: ${position.mAvgSellPrice}.`);
     console.log(threshold);
     
    
     try {  // Make bids.
-        if(relativePosn>0) console.log(
-                `Long posn so we don't want to buy unless we are improving our avg cost price ${position.mAvgBuyPrice}. Adjusted: ${prcPct * position.mAvgBuyPrice}.`
+        if(relativePosn > 0) console.log(
+                `Long posn so we don't want to buy unless we are improving our avg cost price ${position.mAvgBuyPrice}. Ceiling: ${buyPrcCeiling}`
             );
-        if(relativePosn<0) console.log(
-                `Short posn so we do not want realise a loss by buying back at more than avg sell price ${position.mAvgSellPrice}`
+        if(relativePosn < 0) console.log(
+                `Short posn so we do not want realise a loss by buying back at more than avg sell price ${position.mAvgSellPrice}. Ceiling: ${buyPrcCeiling}`
             );
         
         let orderCount=0;
         for (let i = params.buy.length-1; i > 0; i--) {
-            if(relativePosn > 0 && params.buy[i] > prcPct * position.mAvgBuyPrice) {
-                console.log(`>Buy price ${params.buy[i]} is greater than ${prcPct*position.mAvgBuyPrice}. Ignore order`);
+            if(params.buy[i] > buyPrcCeiling) {
+                console.log(`> Buy price ${params.buy[i]} is greater than ceiling ${buyPrcCeiling}. Ignore order`);
                 continue;
             } 
-            if(relativePosn < 0 && params.buy[i] > position.mAvgSellPrice) {
-                console.log(`>Buy price ${params.buy[i]} is a greater than cost sell price ${position.mAvgSellPrice}. Ignore order.`);
-                continue;
-            }
 
             /*
             if(assetTotal < threshold.overSold && params.buy[i] < threshold.overSoldPct * position.mAvgSellPrice) {
@@ -144,22 +142,19 @@ async function placeNewOrders(symbol, position, balance, priceStats) {
     }
 
     try { // Make offers.
-        if(relativePosn>0) console.log(
-                `long position and we do not want to realise a loss by selling at less than avg cost price ${ position.mAvgBuyPrice}.` 
+        if(relativePosn > 0) console.log(
+                `long position and we do not want to realise a loss by selling at less than avg cost price ${ position.mAvgBuyPrice} Floor: ${sellPrcFloor}.` 
             );
         
-        if(relativePosn<0) console.log(
-                `Short posn so we  don't want to sell unless we are improving on our cost price ${position.mAvgSellPrice} Adjusted: ${prcPct * position.mAvgBuyPrice}`
+        if(relativePosn < 0) console.log(
+                `Short posn so we  don't want to sell unless we are improving on our cost price ${position.mAvgSellPrice} Adjusted: ${sellPrcFloor}`
             );
        
         let orderCount=0; 
+        
         for (let i = params.sell.length-1; i > 0;  i--) {
-            if(relativePosn > 0  && params.sell[i] < position.mAvgBuyPrice) {
-                console.log(`> Sell price ${params.sell[i]} is less than cost price ${ position.mAvgBuyPrice}. Ignore order.`);  
-                continue;  
-            } 
-            if(relativePosn < 0  && params.sell[i] <  prcPct*position.mAvgSellPrice) {
-                console.log(`> Sell price ${params.sell[i]} is less than ${prcPct*position.mAvgSellPrice}. Ignore order.`);
+            if( params.sell[i] < sellPrcFloor) {
+                console.log(`> Sell price ${params.sell[i]} is less than floor ${sellPrcFloor}. Ignore order.`);
                 continue;
             }
 
@@ -222,9 +217,11 @@ async function replaceOrders(symbol)
 }
 
 async function main() {
-    const symbol = process.argv[2];
-    if(!symbol) throw 'Symbol not provided.'; 
-    console.log(`replace BTC orders.`)
+    let symbol = process.argv[2];
+    if(!symbol) symbol = 'BTCUSDT'; 
+
+    console.log(`replace ${symbol} orders.`);
+
     try {
         await replaceOrders(symbol);
     } catch (error) {    
