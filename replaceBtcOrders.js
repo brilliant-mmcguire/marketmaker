@@ -119,19 +119,6 @@ async function placeNewOrders(symbol, position, balance, priceStats) {
             }
 
             /*
-            if((assetTotal > threshold.overBought) && params.buy[i] >  (threshold.overBoughtPct * position.mAvgBuyPrice)) {
-                console.log(
-                    `overbought so avoid buying unless we are improving our avg cost price by a lot.`, 
-                    params.buy[i]); 
-                continue;   
-            }
-            else if((assetTotal > threshold.long) && params.buy[i] >  (threshold.longPct * position.mAvgBuyPrice)) {
-                console.log(
-                    `long position so we don't want to buy unless we are improving our avg cost price.`, 
-                    params.buy[i]);
-                continue;
-            }
-
             if(assetTotal < threshold.overSold && params.buy[i] < threshold.overSoldPct * position.mAvgSellPrice) {
                 console.log(
                     `oversold so buy back at ${params.buy[i]} to realise a loss.`);
@@ -177,19 +164,6 @@ async function placeNewOrders(symbol, position, balance, priceStats) {
             }
 
             /*
-            if(assetTotal < threshold.overSold && params.sell[i] <  (threshold.overSoldPct * position.mAvgSellPrice)) {
-                console.log(
-                    `Oversold so we don't want to sell unless we are improving our avg price a lot.` , 
-                    params.sell[i]);
-                continue;
-            } else
-            if(assetTotal< threshold.short && params.sell[i] <  (threshold.shortPct * position.mAvgSellPrice)) {
-                console.log(
-                    `short position so we don't want to sell unless we are improving our avg cost price.` , 
-                    params.sell[i]);
-                continue;
-            }
-
             if(assetTotal > threshold.overBought && params.sell[i] > threshold.overBoughtPct * position.mAvgBuyPrice) {
                 console.log(
                     `Overbought so we may may need to sell back at a loss.`, 
