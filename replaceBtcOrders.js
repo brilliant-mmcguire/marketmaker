@@ -127,11 +127,17 @@ async function placeNewOrders(symbol, position, balance, priceStats) {
         let orderCount=0;
         for (let i = params.buy.length-1; i > 0; i--) {
             if(relativePosn>0 && params.buy[i] > prcPct * position.mAvgBuyPrice) {
-                console.log(`Long position ${relativePosn} so we don't want to buy unless we are improving our avg cost price ${ position.mAvgBuyPrice} by ${prcPct}.`);
+                console.log(
+                    `Posn deviation ${relativePosn} so we don't want to buy unless we are improving our avg cost price ${ position.mAvgBuyPrice} by ${prcPct}.`, 
+                    params.buy[i]
+                );
                 continue;
             } 
             if(relativePosn < 0 && params.buy[i] < prcPct*position.mAvgSellPrice) {
-                console.log(`Short position ${relativePosn} so we may need to buy back at a loss to avg cost price ${position.mAvgSellPrice}.`);
+                console.log(
+                    `Posn deviation ${relativePosn} so we may need to buy back at a loss to avg cost price ${position.mAvgSellPrice}.`,
+                    params.buy[i]
+                );
                 continue;
             }
 
