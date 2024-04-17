@@ -123,21 +123,23 @@ async function placeNewOrders(symbol, position, balance, priceStats) {
     console.log(`Avg buy price: ${ position.mAvgBuyPrice} ; Avg sell price: ${position.mAvgSellPrice}.`);
     console.log(threshold);
     
+   
     try {  // Make bids.
+        if(relativePosn>0) console.log(
+                `Long posn so we don't want to buy unless we are improving our avg cost price ${position.mAvgBuyPrice}. Adjusted: ${prcPct * position.mAvgBuyPrice}.`
+            );
+        if(relativePosn<0) console.log(
+                `Short posn so we do not want realise a loss by buying back at more than avg sell price ${position.mAvgSellPrice}`
+            );
+        
         let orderCount=0;
         for (let i = params.buy.length-1; i > 0; i--) {
-            if(relativePosn>0 && params.buy[i] > prcPct * position.mAvgBuyPrice) {
-                console.log(
-                    `Posn deviation ${relativePosn} so we don't want to buy unless we are improving our avg cost price ${ position.mAvgBuyPrice} by ${prcPct}.`, 
-                    params.buy[i]
-                );
+            if(relativePosn > 0 && params.buy[i] > prcPct * position.mAvgBuyPrice) {
+                console.log(`>Buy price ${params.buy[i]} is greater than ${prcPct*position.mAvgBuyPrice}. Ignore order`);
                 continue;
             } 
-            if(relativePosn < 0 && params.buy[i] < prcPct*position.mAvgSellPrice) {
-                console.log(
-                    `Posn deviation ${relativePosn} so we may need to buy back at a loss to avg cost price ${position.mAvgSellPrice}.`,
-                    params.buy[i]
-                );
+            if(relativePosn < 0 && params.buy[i] > position.mAvgSellPrice) {
+                console.log(`>Buy price ${params.buy[i]} is a greater than cost sell price ${position.mAvgSellPrice}. Ignore order.`);
                 continue;
             }
 
@@ -180,19 +182,26 @@ async function placeNewOrders(symbol, position, balance, priceStats) {
     }
 
     try { // Make offers.
+        if(relativePosn>0) console.log(
+                `long position and we do not want to realise a loss by selling at less than avg cost price ${ position.mAvgBuyPrice}.` 
+            );
+        
+        if(relativePosn<0) console.log(
+                `Short posn so we  don't want to sell unless we are improving on our cost price ${position.mAvgSellPrice} Adjusted: ${prcPct * position.mAvgBuyPrice}`
+            );
+       
         let orderCount=0; 
         for (let i = params.sell.length-1; i > 0;  i--) {
-
-            if(relativePosn>=0) {
-                console.log(
-                `Long position ${relativePosn} so we may need to sell at a loss to our avg cost price ${ position.mAvgBuyPrice}.`
-                )
-            } else {
-                console.log(
-                `Short position ${relativePosn} so we  don't want to sell unless we are improving on our cost price ${position.mAvgSellPrice}.`
-                )
+            if(relativePosn > 0  && params.sell[i] < position.mAvgBuyPrice) {
+                console.log(`> Sell price ${params.sell[i]} is less than cost price ${ position.mAvgBuyPrice}. Ignore order.`);  
+                continue;  
+            } 
+            if(relativePosn < 0  && params.sell[i] <  prcPct*position.mAvgSellPrice) {
+                console.log(`> Sell price ${params.sell[i]} is less than ${prcPct*position.mAvgSellPrice}. Ignore order.`);
+                continue;
             }
 
+            /*
             if(assetTotal < threshold.overSold && params.sell[i] <  (threshold.overSoldPct * position.mAvgSellPrice)) {
                 console.log(
                     `Oversold so we don't want to sell unless we are improving our avg price a lot.` , 
@@ -218,6 +227,7 @@ async function placeNewOrders(symbol, position, balance, priceStats) {
                     params.sell[i]);
                 continue;
             }
+            */
             const sellOrder = await placeOrder(
                 'SELL', 
                 params.quantity, 
