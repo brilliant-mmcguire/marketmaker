@@ -25,16 +25,6 @@ const threshold = {
 
     buyCount : 2,
     sellCount : 2,
-
-    overSold : 200.0, 
-    short : 270.0, 
-    long : 330.0,
-    overBought : 400.0,
-
-    overSoldPct : 1.032,  
-    shortPct : 1.0022,  
-    longPct : 0.9977,
-    overBoughtPct : 0.967
 };
 
 function getOrderParameters(priceStats) {
@@ -68,39 +58,23 @@ function getOrderParameters(priceStats) {
     }
 }
 
-function updateThreshold(assetTotal) {
+function updateThreshold(posnDeviation) {
     threshold.buyCount = 2;
     threshold.sellCount = 2;
 
-    threshold.overBought    = threshold.target + threshold.deviation;
-    threshold.long          = threshold.target + 0.3*threshold.deviation;
-    threshold.short         = threshold.target - 0.3*threshold.deviation;
-    threshold.overSold      = threshold.target - threshold.deviation;
-
-    threshold.overBoughtPct = 1.0 - threshold.pricePct;
-    threshold.longPct       = 1.0 - threshold.pricePct * 0.3**2;
-    threshold.shortPct      = 1.0 + threshold.pricePct * 0.3**2;
-    threshold.overSoldPct   = 1.0 + threshold.pricePct;
-
-    if(assetTotal > threshold.overBought) {
+    if(posnDeviation>0.9) {
         // Probably on a downward trend so expect to be trailing the market price
         // Hypothesis is that our buy price will lag and expect to catch retracements
         // whle our sell price will be close to recent lows and the last price. 
         threshold.buyCount = 3;
         threshold.sellCount = 1;
-    } else if(assetTotal > threshold.long) {
-        threshold.buyCount = 2;
-        threshold.sellCount = 2;
     } 
 
-    if(assetTotal < threshold.overSold) {
+    if(posnDeviation < 0.9) {
         // Probably on an upward trend so expect to be trailing the market price
         // see above ...  
         threshold.buyCount = 1;
         threshold.sellCount = 3;
-    } else if(assetTotal < threshold.short) {
-        threshold.buyCount = 2;
-        threshold.sellCount = 2;
     } 
 }
 
@@ -114,9 +88,10 @@ async function placeNewOrders(symbol, position, balance, priceStats) {
     console.log(`${symbol} current price ${priceStats.lastPrice} order quantity ${params.quantity} at ${dt.toLocaleString()}`);
     console.log(`Place orders at:`, params);
 
-    updateThreshold(assetTotal);
-
     let relativePosn = (assetTotal-threshold.target)/threshold.deviation;
+    
+    updateThreshold(relativePosn);
+
     let prcPct = 1.0 - relativePosn*Math.abs(relativePosn)*threshold.pricePct;  
     
     console.log(`assetTotal: ${assetTotal} ; posDeviation: ${relativePosn}` );
