@@ -17,7 +17,12 @@ const lotSize = 0.00033; //BTC
 //const posnHi = posnTarget + 5*lotSize;  
 //const posnLo = posnTarget - 5*lotSize;
 
+
 const threshold = { 
+    target : 300, 
+    deviation : 100, 
+    pricePct : 0.032, // at one deviation.
+
     buyCount : 2,
     sellCount : 2,
 
@@ -25,10 +30,6 @@ const threshold = {
     short : 270.0, 
     long : 330.0,
     overBought : 400.0,
-
-    target : 300, 
-    deviation : 100, 
-    pricePct : 0.032, // at one deviation.
 
     overSoldPct : 1.032,  
     shortPct : 1.0022,  
@@ -115,12 +116,26 @@ async function placeNewOrders(symbol, position, balance, priceStats) {
 
     updateThreshold(assetTotal);
 
-    console.log(`assetTotal: ${assetTotal}`);
+    let relativePosn = (assetTotal-threshold.target)/threshold.deviation;
+    let prcPct = 1.0 - relativePosn*Math.abs(relativePosn)*threshold.pricePct;  
+    
+    console.log(`assetTotal: ${assetTotal} ; posDeviation: ${relativePosn}` );
+    console.log(`Avg buy price: ${ position.mAvgBuyPrice} ; Avg sell price: ${position.mAvgSellPrice}.`);
     console.log(threshold);
-
+    
     try {  // Make bids.
-        let orderCount=0; 
+        let orderCount=0;
         for (let i = params.buy.length-1; i > 0; i--) {
+            if(relativePosn>0 && params.buy[i] > prcPct * position.mAvgBuyPrice) {
+                console.log(`Long position ${relativePosn} so we don't want to buy unless we are improving our avg cost price ${ position.mAvgBuyPrice} by ${prcPct}.`);
+                continue;
+            } 
+            if(relativePosn < 0 && params.buy[i] < prcPct*position.mAvgSellPrice) {
+                console.log(`Short position ${relativePosn} so we may need to buy back at a loss to avg cost price ${position.mAvgSellPrice}.`);
+                continue;
+            }
+
+            /*
             if((assetTotal > threshold.overBought) && params.buy[i] >  (threshold.overBoughtPct * position.mAvgBuyPrice)) {
                 console.log(
                     `overbought so avoid buying unless we are improving our avg cost price by a lot.`, 
@@ -143,6 +158,8 @@ async function placeNewOrders(symbol, position, balance, priceStats) {
                     `short position and we do not want to buy at ${params.buy[i]}, which is more than cost price.`);
                 continue;
             }
+            */
+
             const buyOrder = await placeOrder(
                 'BUY', 
                 params.quantity, 
@@ -159,6 +176,17 @@ async function placeNewOrders(symbol, position, balance, priceStats) {
     try { // Make offers.
         let orderCount=0; 
         for (let i = params.sell.length-1; i > 0;  i--) {
+
+            if(relativePosn>=0) {
+                console.log(
+                `Long position ${relativePosn} so we may need to sell at a loss to our avg cost price ${ position.mAvgBuyPrice}.`
+                )
+            } else {
+                console.log(
+                `Short position ${relativePosn} so we  don't want to sell unless we are improving on our cost price ${position.mAvgSellPrice}.`
+                )
+            }
+
             if(assetTotal < threshold.overSold && params.sell[i] <  (threshold.overSoldPct * position.mAvgSellPrice)) {
                 console.log(
                     `Oversold so we don't want to sell unless we are improving our avg price a lot.` , 
