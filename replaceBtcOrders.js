@@ -18,8 +18,8 @@ const lotSize = 0.00033; //BTC
 //const posnLo = posnTarget - 5*lotSize;
 
 const threshold = { 
-    target : 300, 
-    deviation : 100, 
+    target : 300, //USDT 
+    deviation : 100,  //USDT
     pricePct : 0.032, // at one deviation.
 
     buyCount : 2,
@@ -38,6 +38,8 @@ function getOrderParameters(priceStats) {
         hiPrice : priceStats.highPrice,
         loPrice : priceStats.lowPrice,
         weightedAvgPrice : priceStats.weightedAvgPrice,
+        sellBasePrc : sellBasePrc,
+        buyBasePrice : buyBasePrice,
         sell : [
             Math.round((sellBasePrc * 1.0360) * 100) / 100,
             Math.round((sellBasePrc * 1.0280) * 100) / 100,
@@ -90,34 +92,41 @@ function updateThreshold(posnDeviation) {
 }
 
 exports.placeNewOrders = placeNewOrders;
-async function placeNewOrders(symbol, position, balance, priceStats) {
+async function placeNewOrders(symbol, tradingPos, totalQty, priceStats) {
     const params = getOrderParameters(priceStats);
 
-    assetTotal = balance.total * priceStats.weightedAvgPrice;  
+    btcPos = {
+       coinQty  : totalQty,
+       quotePrc : priceStats.weightedAvgPrice, 
+       quoteQty : totalQty * priceStats.weightedAvgPrice,
+    }
+
+  //  assetTotal = totalQty * priceStats.weightedAvgPrice;  
 
     const dt = new Date();
-    console.log(`${symbol} current price ${priceStats.lastPrice} order quantity ${params.quantity} at ${dt.toLocaleString()}`);
-    console.log(`Place orders at:`, params);
-
-    let relativePosn = (assetTotal-threshold.target)/threshold.deviation;
+    //console.log(`${symbol} current price ${priceStats.lastPrice} order quantity ${params.quantity} at ${dt.toLocaleString()}`);
+    console.log(`Coin position:`, btcPos); 
+    console.log(`Order placement parametrs:`, params);
     
-    updateThreshold(relativePosn);
+    let relativePosn = (btcPos.quoteQty-threshold.target)/threshold.deviation;
+    
+    // updateThreshold(relativePosn);
 
     let prcPct = 1.0 - relativePosn*Math.abs(relativePosn)*threshold.pricePct;  
     
-    let buyPrcCeiling = prcPct * position.mAvgBuyPrice;
-    let sellPrcFloor = prcPct * position.mAvgSellPrice;
+    let buyPrcCeiling = prcPct * tradingPos.mAvgBuyPrice;
+    let sellPrcFloor = prcPct * tradingPos.mAvgSellPrice;
 
-    console.log(`assetTotal: ${assetTotal} ; posDeviation: ${relativePosn}` );
-    console.log(`Avg buy price: ${ position.mAvgBuyPrice} ; Avg sell price: ${position.mAvgSellPrice}.`);
+    console.log(`QQ balance: ${btcPos.quoteQty} ; posDeviation: ${relativePosn}` );
+    console.log(`Avg buy price: ${ tradingPos.mAvgBuyPrice} ; Avg sell price: ${tradingPos.mAvgSellPrice}.`);
     console.log(threshold);
    
     try {  // Make bids.
         if(relativePosn > 0)  console.log(
-                `Long posn @ avg buy price ${position.mAvgBuyPrice}. Ceiling: ${buyPrcCeiling}. Buy more at lower price.`
+                `Long posn @ avg buy price ${tradingPos.mAvgBuyPrice}. Ceiling: ${buyPrcCeiling}. Buy more at lower price.`
             );
         if(relativePosn < 0) console.log(
-                `Short posn @ avg sell price ${position.mAvgSellPrice}. Ceiling: ${buyPrcCeiling}. Tension between closing position and realising a loss.`
+                `Short posn @ avg sell price ${tradingPos.mAvgSellPrice}. Ceiling: ${buyPrcCeiling}. Tension between closing position and realising a loss.`
             );
         
         let orderCount=0;
@@ -141,11 +150,11 @@ async function placeNewOrders(symbol, position, balance, priceStats) {
 
     try { // Make offers.
         if(relativePosn > 0) console.log(
-                `Long posn @ ${position.mAvgBuyPrice}. Floor ${sellPrcFloor}.  Tension between closing position and realising a loss.` 
+                `Long posn @ ${tradingPos.mAvgBuyPrice}. Floor ${sellPrcFloor}.  Tension between closing position and realising a loss.` 
             );
         
         if(relativePosn < 0) console.log(
-                `Short posn @ avg sell price ${position.mAvgSellPrice}. Floor ${sellPrcFloor}. Sell more at higher price.`
+                `Short posn @ avg sell price ${tradingPos.mAvgSellPrice}. Floor ${sellPrcFloor}. Sell more at higher price.`
             );
        
         let orderCount=0; 
@@ -176,21 +185,20 @@ exports.replaceOrders = replaceOrders;
 async function replaceOrders(symbol) 
 {
   
-    const position = await fetchPositions(symbol, 3);
+    const tradingPos = await fetchPositions(symbol, 3);
     const priceStats  = await fetchPriceStats(symbol, '1h');
     const noneZeroBalances =  await fetchAccountInfo();
 
-    let balance = {};
+    let btcBalance = {};
     if(symbol.startsWith("BTC")) 
-        balance = noneZeroBalances.balances.filter(balance => (balance.asset=='BTC'))[0];
+        btcBalance = noneZeroBalances.balances.filter(balance => (balance.asset=='BTC'))[0];
     else throw 'Symbol not for BTC.'
 
     await cancelOpenOrders(symbol);
-    
-    //console.log(`Targeting ${posnTarget} BTC with hi ${posnHi}, lo ${posnLo}, and lot size of ${lotSize}`)
-    console.log(`Balance:`, balance);
 
-    await placeNewOrders(symbol, position, balance, priceStats); 
+    //console.log(`Targeting ${posnTarget} BTC with hi ${posnHi}, lo ${posnLo}, and lot size of ${lotSize}`)
+
+    await placeNewOrders(symbol, tradingPos, btcBalance.total, priceStats); 
 }
 
 async function main() {
