@@ -33,7 +33,11 @@ function getOrderParameters(priceStats) {
     const buyBasePrice = 0.5*(priceStats.lastPrice + priceStats.lowPrice);
    
     return {
-        quantity : lotSize, 
+        quantity : lotSize,
+        lastPrice : priceStats.lastPrice, 
+        hiPrice : priceStats.highPrice,
+        loPrice : priceStats.lowPrice,
+        weightedAvgPrice : priceStats.weightedAvgPrice,
         sell : [
             Math.round((sellBasePrc * 1.0360) * 100) / 100,
             Math.round((sellBasePrc * 1.0280) * 100) / 100,
@@ -141,7 +145,7 @@ async function placeNewOrders(symbol, position, balance, priceStats) {
                 symbol, 
                 params.buy[i]
             );
-            console.log('Placed Buy Order:', buyOrder);
+            console.log(`Placed: ${buyOrder.side} ${buyOrder.origQty} ${buyOrder.symbol} @ ${buyOrder.price}`);
             if(++orderCount >= threshold.buyCount) break;
         }
     } catch (error) {
@@ -185,7 +189,7 @@ async function placeNewOrders(symbol, position, balance, priceStats) {
                 symbol, 
                 params.sell[i]
             );
-            console.log('Placed Sell Order:', sellOrder);
+            console.log(`Placed: ${sellOrder.side} ${sellOrder.origQty} ${sellOrder.symbol} @ ${sellOrder.price}`);
             
             if(++orderCount>=threshold.sellCount) break;
         }
