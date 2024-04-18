@@ -63,34 +63,6 @@ function getOrderParameters(priceStats) {
     }
 }
 
-function updateThreshold(posnDeviation) {
-    threshold.buyCount = 2;
-    threshold.sellCount = 2;
-
-    if(posnDeviation>0.9) {
-        // Probably on a downward trend so expect to be trailing the market price
-        // Hypothesis is that our buy price will lag and expect to catch retracements
-        // whle our sell price will be close to recent lows and the last price. 
-
-        /*
-        I've forgotten why I set the buy count in this contrainrian fashion.  Backing out for now. 
-        threshold.buyCount = 3;
-        threshold.sellCount = 1;
-        */
-    } 
-
-    if(posnDeviation < -0.9) {
-        // Probably on an upward trend so expect to be trailing the market price
-        // see above ...  
-        
-        /*
-        I've forgotten why I set the buy count in this contrainrian fashion.  Backing out for now. 
-        threshold.buyCount = 1;
-        threshold.sellCount = 3;
-        */
-    } 
-}
-
 exports.placeNewOrders = placeNewOrders;
 async function placeNewOrders(symbol, tradingPos, totalQty, priceStats) {
     const params = getOrderParameters(priceStats);
