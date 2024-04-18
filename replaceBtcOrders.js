@@ -26,7 +26,7 @@ const threshold = {
     sellCount : 2,
 };
 
-function getOrderParameters(priceStats) {
+function getTradeSignals(priceStats) {
 
     // Base prices: midway between current price (close) and the high or low. 
     const sellBasePrc = 0.5*(priceStats.lastPrice + priceStats.highPrice); 
@@ -65,51 +65,59 @@ function getOrderParameters(priceStats) {
 
 exports.placeNewOrders = placeNewOrders;
 async function placeNewOrders(symbol, tradingPos, totalQty, priceStats) {
-    const params = getOrderParameters(priceStats);
+    const tradeSignals = getTradeSignals(priceStats);
 
     btcPos = {
        coinQty  : totalQty,
        quotePrc : priceStats.weightedAvgPrice, 
        quoteQty : totalQty * priceStats.weightedAvgPrice,
     }
-
-    const dt = new Date();
-    //console.log(`${symbol} current price ${priceStats.lastPrice} order quantity ${params.quantity} at ${dt.toLocaleString()}`);
+   
     console.log(`Coin position:`, btcPos); 
-    console.log(`Order placement parametrs:`, params);
+    console.log(`Trade signals:`, tradeSignals);
     
     let relativePosn = (btcPos.quoteQty-threshold.target)/threshold.deviation;
-    
-    // updateThreshold(relativePosn);
 
     let prcPct = 1.0 - relativePosn*Math.abs(relativePosn)*threshold.pricePct;  
-    
+
     let buyPrcCeiling = prcPct * tradingPos.mAvgBuyPrice;
     let sellPrcFloor = prcPct * tradingPos.mAvgSellPrice;
 
-    console.log(`QQ balance: ${btcPos.quoteQty} ; posDeviation: ${relativePosn}` );
-    console.log(`Avg buy price: ${tradingPos.mAvgBuyPrice} ; Avg sell price: ${tradingPos.mAvgSellPrice}.`);
-    console.log(threshold);
+    guardRails = {
+        buyAvgPrc : tradingPos.mAvgBuyPrice,
+        buyPrcCeiling : buyPrcCeiling,
+        sellAvgPrc : tradingPos.mAvgSellPrice,
+        sellPrcFloor : sellPrcFloor,
+        quoteQty : btcPos.quoteQty,
+        targetQuoteQty  : threshold.target,
+        qtyDeviation : relativePosn,
+        prcTolerance : relativePosn*Math.abs(relativePosn)*threshold.pricePct
+    }
+
+    console.log(`Guard rails: `, guardRails);
+    //console.log(`QQ balance: ${btcPos.quoteQty} ; posDeviation: ${relativePosn}` );
+    //console.log(`Avg buy price: ${tradingPos.mAvgBuyPrice} ; Avg sell price: ${tradingPos.mAvgSellPrice}.`);
+    //console.log(threshold);
    
     try {  // Make bids.
         if(relativePosn > 0)  console.log(
-                `Make bids. Long posn @ avg buy price ${tradingPos.mAvgBuyPrice}. Ceiling: ${buyPrcCeiling}. Buy more at lower price.`
+                `Make bids.Long posn @ avg buy price ${tradingPos.mAvgBuyPrice}. Ceiling: ${buyPrcCeiling}. Buy more at lower price.`
             );
         if(relativePosn < 0) console.log(
-                `Make bids Short posn @ avg sell price ${tradingPos.mAvgSellPrice}. Ceiling: ${buyPrcCeiling}. Tension between closing position and realising a loss.`
+                `Make bids.Short posn @ avg sell price ${tradingPos.mAvgSellPrice}. Ceiling: ${buyPrcCeiling}. Tension between closing position and realising a loss.`
             );
         
         let orderCount=0;
-        for (let i = params.buy.length-1; i > 0; i--) {
-            if(params.buy[i] > buyPrcCeiling) {
-                console.log(`> Buy price ${params.buy[i]} is greater than ceiling ${buyPrcCeiling}. Ignore order`);
+        for (let i = tradeSignals.buy.length-1; i > 0; i--) {
+            if(tradeSignals.buy[i] > buyPrcCeiling) {
+                console.log(`> Buy price ${tradeSignals.buy[i]} is greater than ceiling ${buyPrcCeiling}. Ignore order`);
                 continue;
             } 
             const buyOrder = await placeOrder(
                 'BUY', 
-                params.quantity, 
+                tradeSignals.quantity, 
                 symbol, 
-                params.buy[i]
+                tradeSignals.buy[i]
             );
             console.log(`> Placed: ${buyOrder.side} ${buyOrder.origQty} ${buyOrder.symbol} @ ${buyOrder.price}`);
             if(++orderCount >= threshold.buyCount) break;
@@ -120,26 +128,26 @@ async function placeNewOrders(symbol, tradingPos, totalQty, priceStats) {
 
     try { // Make offers.
         if(relativePosn > 0) console.log(
-                `Make offers. Long posn @ ${tradingPos.mAvgBuyPrice}. Floor ${sellPrcFloor}.  Tension between closing position and realising a loss.` 
+                `Make offers.Long posn @ ${tradingPos.mAvgBuyPrice}. Floor ${sellPrcFloor}.  Tension between closing position and realising a loss.` 
             );
         
         if(relativePosn < 0) console.log(
-                `Make offers. Short posn @ avg sell price ${tradingPos.mAvgSellPrice}. Floor ${sellPrcFloor}. Sell more at higher price.`
+                `Make offers.Short posn @ avg sell price ${tradingPos.mAvgSellPrice}. Floor ${sellPrcFloor}. Sell more at higher price.`
             );
        
         let orderCount=0; 
         
-        for (let i = params.sell.length-1; i > 0;  i--) {
-            if( params.sell[i] < sellPrcFloor) {
-                console.log(`> Sell price ${params.sell[i]} is less than floor ${sellPrcFloor}. Ignore order.`);
+        for (let i = tradeSignals.sell.length-1; i > 0;  i--) {
+            if( tradeSignals.sell[i] < sellPrcFloor) {
+                console.log(`> Sell price ${tradeSignals.sell[i]} is less than floor ${sellPrcFloor}. Ignore order.`);
                 continue;
             }
 
             const sellOrder = await placeOrder(
                 'SELL', 
-                params.quantity, 
+                tradeSignals.quantity, 
                 symbol, 
-                params.sell[i]
+                tradeSignals.sell[i]
             );
             console.log(`> Placed: ${sellOrder.side} ${sellOrder.origQty} ${sellOrder.symbol} @ ${sellOrder.price}`);
             
@@ -154,7 +162,6 @@ async function placeNewOrders(symbol, tradingPos, totalQty, priceStats) {
 exports.replaceOrders = replaceOrders;
 async function replaceOrders(symbol) 
 {
-  
     const tradingPos = await fetchPositions(symbol, 3);
     const priceStats  = await fetchPriceStats(symbol, '1h');
     const noneZeroBalances =  await fetchAccountInfo();
@@ -175,7 +182,7 @@ async function main() {
     let symbol = process.argv[2];
     if(!symbol) symbol = 'BTCUSDT'; 
 
-    console.log(`replace ${symbol} orders.`);
+    console.log(`replace ${symbol} orders ${new Date().toLocaleString()}`);
 
     try {
         await replaceOrders(symbol);
