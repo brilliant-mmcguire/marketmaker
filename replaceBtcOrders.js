@@ -107,14 +107,13 @@ async function placeNewOrders(symbol, position, balance, priceStats) {
     console.log(`assetTotal: ${assetTotal} ; posDeviation: ${relativePosn}` );
     console.log(`Avg buy price: ${ position.mAvgBuyPrice} ; Avg sell price: ${position.mAvgSellPrice}.`);
     console.log(threshold);
-    
    
     try {  // Make bids.
-        if(relativePosn > 0) console.log(
-                `Long posn so we don't want to buy unless we are improving our avg cost price ${position.mAvgBuyPrice}. Ceiling: ${buyPrcCeiling}`
+        if(relativePosn > 0)  console.log(
+                `Long posn @ avg buy price ${position.mAvgBuyPrice}. Ceiling: ${buyPrcCeiling}. Buy more at lower price.`
             );
         if(relativePosn < 0) console.log(
-                `Short posn so we do not want realise a loss by buying back at more than avg sell price ${position.mAvgSellPrice}. Ceiling: ${buyPrcCeiling}`
+                `Short posn @ avg sell price ${position.mAvgSellPrice}. Ceiling: ${buyPrcCeiling}. Tension between closing position and realising a loss.`
             );
         
         let orderCount=0;
@@ -151,11 +150,11 @@ async function placeNewOrders(symbol, position, balance, priceStats) {
 
     try { // Make offers.
         if(relativePosn > 0) console.log(
-                `long position and we do not want to realise a loss by selling at less than avg cost price ${ position.mAvgBuyPrice} Floor: ${sellPrcFloor}.` 
+                `Long posn @ ${position.mAvgBuyPrice}. Floor ${sellPrcFloor}.  Tension between closing position and realising a loss.` 
             );
         
         if(relativePosn < 0) console.log(
-                `Short posn so we  don't want to sell unless we are improving on our cost price ${position.mAvgSellPrice} Adjusted: ${sellPrcFloor}`
+                `Short posn @ avg sell price ${position.mAvgSellPrice}. Floor ${sellPrcFloor}. Sell more at higher price.`
             );
        
         let orderCount=0; 
