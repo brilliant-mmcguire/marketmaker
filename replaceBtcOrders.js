@@ -73,8 +73,6 @@ async function placeNewOrders(symbol, tradingPos, totalQty, priceStats) {
        quoteQty : totalQty * priceStats.weightedAvgPrice,
     }
 
-  //  assetTotal = totalQty * priceStats.weightedAvgPrice;  
-
     const dt = new Date();
     //console.log(`${symbol} current price ${priceStats.lastPrice} order quantity ${params.quantity} at ${dt.toLocaleString()}`);
     console.log(`Coin position:`, btcPos); 
@@ -90,15 +88,15 @@ async function placeNewOrders(symbol, tradingPos, totalQty, priceStats) {
     let sellPrcFloor = prcPct * tradingPos.mAvgSellPrice;
 
     console.log(`QQ balance: ${btcPos.quoteQty} ; posDeviation: ${relativePosn}` );
-    console.log(`Avg buy price: ${ tradingPos.mAvgBuyPrice} ; Avg sell price: ${tradingPos.mAvgSellPrice}.`);
+    console.log(`Avg buy price: ${tradingPos.mAvgBuyPrice} ; Avg sell price: ${tradingPos.mAvgSellPrice}.`);
     console.log(threshold);
    
     try {  // Make bids.
         if(relativePosn > 0)  console.log(
-                `Long posn @ avg buy price ${tradingPos.mAvgBuyPrice}. Ceiling: ${buyPrcCeiling}. Buy more at lower price.`
+                `Make bids. Long posn @ avg buy price ${tradingPos.mAvgBuyPrice}. Ceiling: ${buyPrcCeiling}. Buy more at lower price.`
             );
         if(relativePosn < 0) console.log(
-                `Short posn @ avg sell price ${tradingPos.mAvgSellPrice}. Ceiling: ${buyPrcCeiling}. Tension between closing position and realising a loss.`
+                `Make bids Short posn @ avg sell price ${tradingPos.mAvgSellPrice}. Ceiling: ${buyPrcCeiling}. Tension between closing position and realising a loss.`
             );
         
         let orderCount=0;
@@ -113,7 +111,7 @@ async function placeNewOrders(symbol, tradingPos, totalQty, priceStats) {
                 symbol, 
                 params.buy[i]
             );
-            console.log(`Placed: ${buyOrder.side} ${buyOrder.origQty} ${buyOrder.symbol} @ ${buyOrder.price}`);
+            console.log(`> Placed: ${buyOrder.side} ${buyOrder.origQty} ${buyOrder.symbol} @ ${buyOrder.price}`);
             if(++orderCount >= threshold.buyCount) break;
         }
     } catch (error) {
@@ -122,11 +120,11 @@ async function placeNewOrders(symbol, tradingPos, totalQty, priceStats) {
 
     try { // Make offers.
         if(relativePosn > 0) console.log(
-                `Long posn @ ${tradingPos.mAvgBuyPrice}. Floor ${sellPrcFloor}.  Tension between closing position and realising a loss.` 
+                `Make offers. Long posn @ ${tradingPos.mAvgBuyPrice}. Floor ${sellPrcFloor}.  Tension between closing position and realising a loss.` 
             );
         
         if(relativePosn < 0) console.log(
-                `Short posn @ avg sell price ${tradingPos.mAvgSellPrice}. Floor ${sellPrcFloor}. Sell more at higher price.`
+                `Make offers. Short posn @ avg sell price ${tradingPos.mAvgSellPrice}. Floor ${sellPrcFloor}. Sell more at higher price.`
             );
        
         let orderCount=0; 
@@ -143,7 +141,7 @@ async function placeNewOrders(symbol, tradingPos, totalQty, priceStats) {
                 symbol, 
                 params.sell[i]
             );
-            console.log(`Placed: ${sellOrder.side} ${sellOrder.origQty} ${sellOrder.symbol} @ ${sellOrder.price}`);
+            console.log(`> Placed: ${sellOrder.side} ${sellOrder.origQty} ${sellOrder.symbol} @ ${sellOrder.price}`);
             
             if(++orderCount>=threshold.sellCount) break;
         }
