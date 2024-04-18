@@ -126,19 +126,6 @@ async function placeNewOrders(symbol, position, balance, priceStats) {
                 console.log(`> Buy price ${params.buy[i]} is greater than ceiling ${buyPrcCeiling}. Ignore order`);
                 continue;
             } 
-
-            /*
-            if(assetTotal < threshold.overSold && params.buy[i] < threshold.overSoldPct * position.mAvgSellPrice) {
-                console.log(
-                    `oversold so buy back at ${params.buy[i]} to realise a loss.`);
-                //continue;
-            } else if((assetTotal< threshold.short) && params.buy[i] > (threshold.shortPct * position.mAvgSellPrice)) {
-                console.log(
-                    `short position and we do not want to buy at ${params.buy[i]}, which is more than cost price.`);
-                continue;
-            }
-            */
-
             const buyOrder = await placeOrder(
                 'BUY', 
                 params.quantity, 
@@ -169,20 +156,6 @@ async function placeNewOrders(symbol, position, balance, priceStats) {
                 continue;
             }
 
-            /*
-            if(assetTotal > threshold.overBought && params.sell[i] > threshold.overBoughtPct * position.mAvgBuyPrice) {
-                console.log(
-                    `Overbought so we may may need to sell back at a loss.`, 
-                    params.sell[i]);
-               // continue;
-            } else
-            if(assetTotal > threshold.long && params.sell[i] < threshold.longPct*position.mAvgBuyPrice) {
-                console.log(
-                    `long position and we do not want to sell at less than cost price.`, 
-                    params.sell[i]);
-                continue;
-            }
-            */
             const sellOrder = await placeOrder(
                 'SELL', 
                 params.quantity, 
