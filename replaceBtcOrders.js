@@ -186,14 +186,7 @@ async function replaceOrders(symbol)
     else throw 'Symbol not for BTC.'
 
     await cancelOpenOrders(symbol);
-/*
-    if(symbol.startsWith("ETH")) 
-        balance = noneZeroBalances.balances.filter(balance => (balance.asset=='ETH'))[0];
-
-    if(symbol.startsWith("XRP")) 
-        balance = noneZeroBalances.balances.filter(balance => (balance.asset=='XRP'))[0];
-*/
-
+    
     //console.log(`Targeting ${posnTarget} BTC with hi ${posnHi}, lo ${posnLo}, and lot size of ${lotSize}`)
     console.log(`Balance:`, balance);
 
