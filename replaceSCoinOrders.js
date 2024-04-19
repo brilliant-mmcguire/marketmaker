@@ -139,11 +139,11 @@ async function makeBids(bestBids, allOrders, position, balances) {
             );
         
         if(bid.price > prcCeiling || bid.price < prcFloor || quotaFull || freshOrders) {
-            console.log(`> Ignoring price level ${bid.price}`);
-            console.log(`> quotaFull: ${quotaFull}, breach: ${quotaBreach}`); 
-            console.log(`> freshOrders: ${freshOrders}`);
+            console.log(`> Ignore price level ${bid.price}`);
+            console.log(`>> quotaFull: ${quotaFull}, breach: ${quotaBreach}`); 
+            console.log(`>> freshOrders: ${freshOrders}`);
         } else {
-            console.log(`Placing buy order at price level ${bid.price}.`);
+            console.log(`> Place BUY at ${bid.price}`);
             try {
                 joinBid = await placeOrder(
                     'BUY', 
@@ -151,7 +151,7 @@ async function makeBids(bestBids, allOrders, position, balances) {
                     symbol, 
                     bid.price
                 );
-                console.log(`Buy order placed:`, joinBid);   
+                console.log(`Placed: ${joinBid.side} ${joinBid.origQty} @ ${joinBid.price}`);   
                 break;  // Throttle to only one order at a time.   
             } catch (error) {
                 console.error(error.message);
@@ -230,11 +230,11 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
         console.log(`We have ${orders.length} orders on price level ${offer.price} with volume ${offer.qty}.`);      
                
         if(offer.price < prcFloor || offer.price > prcCeiling || quotaFull || freshOrders) {
-            console.log(`> Ignoring price level ${offer.price}`);
-            console.log(`> quotaFull: ${quotaFull}, breach: ${quotaBreach}`); 
-            console.log(`> freshOrders: ${freshOrders}`);
+            console.log(`> Ignore price level ${offer.price}`);
+            console.log(`>> quotaFull: ${quotaFull}, breach: ${quotaBreach}`); 
+            console.log(`>> freshOrders: ${freshOrders}`);
         } else {
-            console.log(`Placing sell order at price level ${offer.price}.`);
+            console.log(`> Place SELL @ ${offer.price}`);
             try {
                 joinOffer = await placeOrder(
                     'SELL', 
@@ -242,7 +242,7 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
                     symbol, 
                     offer.price
                 );
-                console.log(`Sell order placed:`, joinOffer);   
+                console.log(`Placed: ${joinOffer.side} ${joinOffer.origQty} @ ${joinOffer.price}`); 
                 break;  // Throttle to only one order at a time.   
             } catch (error) {
                 console.error(error.message);
