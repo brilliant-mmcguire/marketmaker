@@ -98,19 +98,23 @@ async function placeNewOrders(symbol, tradingPos, totalQty, priceStats) {
         priceStats.weightedAvgPrice);
 
     guardRails = {
-        weightedAvgPrice : priceStats.weightedAvgPrice,
-        buyAvgPrc : tradingPos.mAvgBuyPrice,
-        buyAvgAge : tradingPos.mAvgBuyAge,
-        buyPrcCeiling : buyPrcCeiling,
-        sellAvgPrc : tradingPos.mAvgSellPrice,
-        sellAvgAge : tradingPos.mAvgSellAge,
-        sellPrcFloor : sellPrcFloor,
+        avgMktPrice : priceStats.weightedAvgPrice,
         quoteQty : btcPos.quoteQty,
         targetQuoteQty  : threshold.target,
         qtyDeviation : relativePosn,
-        prcTolerance : relativePosn*Math.abs(relativePosn)*threshold.pricePct
+        prcTolerance : relativePosn*Math.abs(relativePosn)*threshold.pricePct,
+        buys : {
+            avgPrc : tradingPos.mAvgBuyPrice,
+            avgAge : tradingPos.mAvgBuyAge,
+            prcCeiling : buyPrcCeiling,
+        },
+        sells : { 
+            avgPrc : tradingPos.mAvgSellPrice,
+            avgAge : tradingPos.mAvgSellAge,
+            prcFloor : sellPrcFloor,
+        } 
     }
-
+    
     console.log(`Guard rails: `, guardRails);
     //console.log(`QQ balance: ${btcPos.quoteQty} ; posDeviation: ${relativePosn}` );
     //console.log(`Avg buy price: ${tradingPos.mAvgBuyPrice} ; Avg sell price: ${tradingPos.mAvgSellPrice}.`);
