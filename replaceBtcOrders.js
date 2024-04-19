@@ -63,6 +63,13 @@ function getTradeSignals(priceStats) {
     }
 }
 
+function computeOrderPrice(avgTradePrice, avgTradeAage, mktPrice) {
+    const age = Math.max(7.0 - avgTradeAage,0)/7.0; 
+    console.assert(age<=1.0 && age >=0.0 ,`0 <= scaled trade age <= 1`);
+
+    return age*avgTradePrice + (1.0-age)*mktPrice; 
+}
+
 exports.placeNewOrders = placeNewOrders;
 async function placeNewOrders(symbol, tradingPos, totalQty, priceStats) {
     const tradeSignals = getTradeSignals(priceStats);
@@ -79,14 +86,24 @@ async function placeNewOrders(symbol, tradingPos, totalQty, priceStats) {
     let relativePosn = (btcPos.quoteQty-threshold.target)/threshold.deviation;
 
     let prcPct = 1.0 - relativePosn*Math.abs(relativePosn)*threshold.pricePct;  
+ 
+    let buyPrcCeiling = prcPct * computeOrderPrice(
+        tradingPos.mAvgBuyPrice,
+        tradingPos.mAvgBuyAge,
+        priceStats.weightedAvgPrice);
 
-    let buyPrcCeiling = prcPct * tradingPos.mAvgBuyPrice;
-    let sellPrcFloor = prcPct * tradingPos.mAvgSellPrice;
+    let sellPrcFloor = prcPct * computeOrderPrice(
+        tradingPos.mAvgSellPrice,
+        tradingPos.mAvgSellAge, 
+        priceStats.weightedAvgPrice);
 
     guardRails = {
+        weightedAvgPrice : priceStats.weightedAvgPrice,
         buyAvgPrc : tradingPos.mAvgBuyPrice,
+        buyAvgAge : tradingPos.mAvgBuyAge,
         buyPrcCeiling : buyPrcCeiling,
         sellAvgPrc : tradingPos.mAvgSellPrice,
+        sellAvgAge : tradingPos.mAvgSellAge,
         sellPrcFloor : sellPrcFloor,
         quoteQty : btcPos.quoteQty,
         targetQuoteQty  : threshold.target,
@@ -101,10 +118,10 @@ async function placeNewOrders(symbol, tradingPos, totalQty, priceStats) {
    
     try {  // Make bids.
         if(relativePosn > 0)  console.log(
-                `Make bids.Long posn @ avg buy price ${tradingPos.mAvgBuyPrice}. Ceiling: ${buyPrcCeiling}. Buy more at lower price.`
+                `Make bids. Long posn @ avg buy price ${tradingPos.mAvgBuyPrice}. Ceiling: ${buyPrcCeiling}. Buy more at lower price.`
             );
         if(relativePosn < 0) console.log(
-                `Make bids.Short posn @ avg sell price ${tradingPos.mAvgSellPrice}. Ceiling: ${buyPrcCeiling}. Tension between closing position and realising a loss.`
+                `Make bids. Short posn @ avg sell price ${tradingPos.mAvgSellPrice}. Ceiling: ${buyPrcCeiling}. Tension between closing position and realising a loss.`
             );
         
         let orderCount=0;
@@ -128,11 +145,11 @@ async function placeNewOrders(symbol, tradingPos, totalQty, priceStats) {
 
     try { // Make offers.
         if(relativePosn > 0) console.log(
-                `Make offers.Long posn @ ${tradingPos.mAvgBuyPrice}. Floor ${sellPrcFloor}.  Tension between closing position and realising a loss.` 
+                `Make offers. Long posn @ ${tradingPos.mAvgBuyPrice}. Floor ${sellPrcFloor}.  Tension between closing position and realising a loss.` 
             );
         
         if(relativePosn < 0) console.log(
-                `Make offers.Short posn @ avg sell price ${tradingPos.mAvgSellPrice}. Floor ${sellPrcFloor}. Sell more at higher price.`
+                `Make offers. Short posn @ avg sell price ${tradingPos.mAvgSellPrice}. Floor ${sellPrcFloor}. Sell more at higher price.`
             );
        
         let orderCount=0; 
