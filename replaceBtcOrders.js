@@ -28,7 +28,7 @@ const threshold = {
 
 function getTradeSignals(priceStats) {
 
-    // Base prices: midway between current price (close) and the high or low. 
+    // Base prices: midway between current price and the high or low. 
     const sellBasePrc = 0.5*(priceStats.lastPrice + priceStats.highPrice); 
     const buyBasePrice = 0.5*(priceStats.lastPrice + priceStats.lowPrice);
    
@@ -63,11 +63,13 @@ function getTradeSignals(priceStats) {
     }
 }
 
-function computeOrderPrice(avgTradePrice, avgTradeAage, mktPrice) {
+function computeOrderPrice(avgTradePrice, avgTradeAage, avgMktPrice) {
+    // Weight our avg trade price with the market price depending on the age of our trades. 
+    // If we have'd traded for a while (up to 7 hours), we tend to the hourly weighted market price.   
     const age = Math.max(7.0 - avgTradeAage,0)/7.0; 
     console.assert(age<=1.0 && age >=0.0 ,`0 <= scaled trade age <= 1`);
 
-    return age*avgTradePrice + (1.0-age)*mktPrice; 
+    return age*avgTradePrice + (1.0-age)*avgMktPrice; 
 }
 
 exports.placeNewOrders = placeNewOrders;
