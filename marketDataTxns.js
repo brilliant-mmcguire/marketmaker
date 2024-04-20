@@ -118,6 +118,7 @@ async function fetchKLines(symbol, interval, limit) {
     });
     return response.data.map(d => ({
         openTime: new Date(d[0]),
+        closeTime: new Date(d[6]),
         tradeCount: parseFloat(d[8]),
         open: parseFloat(d[1]),
         high: parseFloat(d[2]),
@@ -126,13 +127,12 @@ async function fetchKLines(symbol, interval, limit) {
         qty: parseFloat(d[5]),
         quoteQty: parseFloat(d[7]),
         avgPrice: parseFloat(d[7])/parseFloat(d[5]),
-        buyQty : parseFloat(d[9]),
-        buyQuoteQty : parseFloat(d[10]),
-        buyAvgPrice : parseFloat(d[10])/parseFloat(d[9]), 
-        sellQty : parseFloat(d[5])-parseFloat(d[9]),
-        sellQuoteQty : parseFloat(d[7])- parseFloat(d[10]),
-        sellAvgPrice : (parseFloat(d[7])- parseFloat(d[10])) / (parseFloat(d[5])-parseFloat(d[9])) 
-
+        sellQty : parseFloat(d[9]),  // Maker seller 
+        sellQuoteQty : parseFloat(d[10]),
+        sellAvgPrice : parseFloat(d[10])/parseFloat(d[9]), 
+        buyQty : parseFloat(d[5])-parseFloat(d[9]), // Maker buyer
+        buyQuoteQty : parseFloat(d[7])- parseFloat(d[10]),
+        buyAvgPrice : (parseFloat(d[7])- parseFloat(d[10])) / (parseFloat(d[5])-parseFloat(d[9])) 
     }));
 }
 exports.fetchPriceStats = fetchPriceStats;
