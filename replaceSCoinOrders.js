@@ -45,7 +45,7 @@ This is the help regulate the rate of exection of our orders.
 The more orders are in queue ahead of us, the more orders we need to keep in the queue.
 The goal is to maintin a steady rate of execution and to baclance to rate of buy and sell trades. 
 */
-const qtyQuanta = [212345, 712345 , 2523456, 6523456, 11123456, 100123456];
+const qtyQuanta = [212345, 1123456 , 3123456, 7123456, 15123456, 100123456];
 
 /*
 Target USDC balance uses a linear function between the upper and lower target quantities.
@@ -81,15 +81,15 @@ function targetQty(bestPrice) {
 }
 function sigmoid(x) {
     /*  Expected outputs:
-        1.0000	10
-        0.9933	5
-        0.9526	3
-        0.7311	1
-        0.5000	0
-        0.2689	-1
-        0.0474	-3
-        0.0067	-5
-        0.0000	-10 */
+        10	1.0000
+         5	0.9933
+         3	0.9526
+         1	0.7311
+         0	0.5000
+        -1	0.2689
+        -3	0.0474
+        -5	0.0067
+       -10	0.0000*/
     return 1 / (1 + Math.exp(-x));
 }
 
