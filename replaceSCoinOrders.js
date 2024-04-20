@@ -33,10 +33,10 @@ const tickSize = 0.0001;  // Tick Size is 1 basis point.
 const posLimit = 900  // aim to remain inside targetQ +- posLimit
 
 const target = {
-    hiPrice : 1.0010,
-    loPrice : 0.9990,
-    hiQty : 1200, // Hold less USDC when its price is high in anticipation of mean reversion.  
-    loQty : 2800, // Buy more USDC when its price is low. 
+    hiPrice : 1.0050,  // TODO: NOT BEING USED 
+    loPrice : 0.9950,  // TODO: NOT BEING USED
+    hiQty : 1000, // Hold less USDC when its price is high in anticipation of mean reversion.  
+    loQty : 3000, // Buy more USDC when its price is low. 
 };
 
 /* 
@@ -51,11 +51,21 @@ const qtyQuanta = [212345, 712345 , 2523456, 6523456, 11123456, 100123456];
 Target USDC balance uses a linear function between the upper and lower target quantities.
 At the upper target we can tolerate a smaller position in the expectation of prices falling again. 
 At the lower target we allow for a larger position, expecting a price increase in the near future.
+
+Try using a signmoid funtion instead?  
+Not sure if there is much benifit; can't think of a godd rationale but feels right.  
 */
 function targetQty(bestPrice) {
-    let qty = 0.5*(target.hiQty + target.loQty); 
-    let prc = bestPrice;
+    //let qty = 0.5*(target.hiQty + target.loQty); 
+    //let prc = bestPrice;
 
+    const prcDeviation = 0.25*(bestPrice-1.0)/tickSize; 
+    const sig = sigmoid(prcDeviation); 
+    const qZero =  target.loQty;
+    const qMax = target.hiQty - target.loQty;
+    const qty = qZero + qMax*sigmoid(prcDeviation);
+
+    /*
     prc = (bestPrice > target.hiPrice) ? target.hiPrice : bestPrice;
     prc = (bestPrice < target.loPrice) ?  target.loPrice : bestPrice;
     
@@ -64,8 +74,23 @@ function targetQty(bestPrice) {
             target.hiQty * (prc - target.loPrice) )
         /  (target.hiPrice-target.loPrice);
 
+    */
+
     console.log(`Target Qty: ${qty} based on best price ${bestPrice}` )
     return qty;
+}
+function sigmoid(x) {
+    /*  Expected outputs:
+        1.0000	10
+        0.9933	5
+        0.9526	3
+        0.7311	1
+        0.5000	0
+        0.2689	-1
+        0.0474	-3
+        0.0067	-5
+        0.0000	-10 */
+    return 1 / (1 + Math.exp(-x));
 }
 
 async function makeBids(bestBids, allOrders, position, balances) {
@@ -253,6 +278,33 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
 
 exports.placeSCoinOrders = placeSCoinOrders;
 async function placeSCoinOrders() {
+/*
+    console.log(targetQty(0.9990))
+    console.log(targetQty(0.9991))
+    console.log(targetQty(0.9992))
+    console.log(targetQty(0.9993))
+    console.log(targetQty(0.9994))
+    console.log(targetQty(0.9995))
+    console.log(targetQty(0.9996))
+    console.log(targetQty(0.9997))
+    console.log(targetQty(0.9998))
+    console.log(targetQty(0.9999))
+    
+    console.log(targetQty(1.0000))
+    console.log(targetQty(1.0001))
+    console.log(targetQty(1.0002))
+    console.log(targetQty(1.0003))
+    console.log(targetQty(1.0004))
+    console.log(targetQty(1.0005))
+    console.log(targetQty(1.0006))
+    console.log(targetQty(1.0007))
+    console.log(targetQty(1.0008))
+    console.log(targetQty(1.0009))
+    console.log(targetQty(1.0010))
+    
+    return; 
+*/
+
    try {
     console.log("Fetching best offer prices.");
     const prcDepth = await fetchPriceDepth(symbol);
