@@ -240,8 +240,8 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
         
         let freshOrders = false;
         if (orders.length>0) { 
-            const xxMinutes = 11; // Minimum number of minutes bewteen orders at a give price level.
-            const xxMilliSeconds = 11 * 60 * 1000; // Ten minutes in milliseconds
+            const xxMinutes = 16; // Minimum number of minutes bewteen orders at a give price level.
+            const xxMilliSeconds = xxMinutes * 60 * 1000; // Ten minutes in milliseconds
             freshOrders = ((Date.now() - orders[orders.length-1].time) < xxMilliSeconds);
         }
 
