@@ -13,9 +13,15 @@ const { cancelOpenOrders } = require('./orderTxns');
 const { fetchAccountInfo } = require('./accountTxns');
 
 const lotSize = 0.00033; //BTC
-//const posnTarget = 15*lotSize; 
-//const posnHi = posnTarget + 5*lotSize;  
-//const posnLo = posnTarget - 5*lotSize;
+const posnTarget = 15*lotSize; 
+const posnDeviation = 5*lotSize;
+const posnHi = 20*lotSize;  
+const posnLo = 10*lotSize;
+
+const target = { 
+    coinQty : 15*lotSize, 
+    coinQtyDeviation : 5*lotSize 
+}
 
 const threshold = { 
     target : 300, //USDT 
@@ -85,10 +91,11 @@ async function placeNewOrders(symbol, tradingPos, totalQty, priceStats) {
     console.log(`Coin position:`, btcPos); 
     console.log(`Trade signals:`, tradeSignals);
     
-    let relativePosn = (btcPos.quoteQty-threshold.target)/threshold.deviation;
+    let quoteQtyDeviation = (btcPos.quoteQty-threshold.target)/threshold.deviation;
+    let coinQtyDeviation = (btcPos.coinQty-posnTarget)/posnDeviation;
+    let relativePosn = coinQtyDeviation;
+    let prcPct = 1.0 - coinQtyDeviation*Math.abs(coinQtyDeviation)*threshold.pricePct;  
 
-    let prcPct = 1.0 - relativePosn*Math.abs(relativePosn)*threshold.pricePct;  
- 
     let buyPrcCeiling = prcPct * computeOrderPrice(
         tradingPos.mAvgBuyPrice,
         tradingPos.mAvgBuyAge,
@@ -99,12 +106,17 @@ async function placeNewOrders(symbol, tradingPos, totalQty, priceStats) {
         tradingPos.mAvgSellAge, 
         priceStats.weightedAvgPrice);
 
+   
     guardRails = {
         avgMktPrice : priceStats.weightedAvgPrice,
+        coinQty : btcPos.coinQty,
         quoteQty : btcPos.quoteQty,
+        targetQty : posnTarget,
         targetQuoteQty  : threshold.target,
-        qtyDeviation : relativePosn,
-        prcTolerance : relativePosn*Math.abs(relativePosn)*threshold.pricePct,
+        coinQtyDeviation : (btcPos.coinQty-posnTarget)/posnDeviation,
+        quoteQtyDeviation : (btcPos.quoteQty-threshold.target)/threshold.deviation,
+        prcTolerance : quoteQtyDeviation*Math.abs(quoteQtyDeviation)*threshold.pricePct,
+        prcTolerance2 : coinQtyDeviation * Math.abs(coinQtyDeviation) * threshold.pricePct,
         buys : {
             avgPrc : tradingPos.mAvgBuyPrice,
             avgAge : tradingPos.mAvgBuyAge,
