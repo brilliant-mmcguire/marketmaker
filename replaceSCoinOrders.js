@@ -93,32 +93,51 @@ function sigmoid(x) {
     return 1 / (1 + Math.exp(-x));
 }
 
+function taperTradePrice(avgTradePrice, avgTradeAage, mktPrice) {
+    // Weight our avg trade price with the market price depending on the age of our trades. 
+    // If we have'd traded for a while (up to 7 hours), we tend to the hourly weighted market price.   
+    const age = Math.max(3.0 - avgTradeAage,0)/3.0; 
+    console.assert(age<=1.0 && age >=0.0 ,`0 <= scaled trade age <= 1`);
+
+    return age*avgTradePrice + (1.0-age)*mktPrice; 
+}
 async function makeBids(bestBids, allOrders, position, balances) {
     
     console.log(`Making bids for ${symbol} at ${new Date()}`);
 
     let usdcTotal = balances.usdc.total;
     
-    let prcCeiling = position.mAvgSellPrice; // Avoid buying back at a loss relative to our recent sells. 
-
+    // let prcCeiling = position.mAvgSellPrice; // Avoid buying back at a loss relative to our recent sells. 
     let prcFloor = bestBids[2].price;
+    let prcCeiling = taperTradePrice( // Aim to improve on recent avg buy price. 
+        position.mAvgBuyPrice,
+        position.mAvgBuyAge,
+        bestBids[0].price);
+
     let targetQ = targetQty(bestBids[0].price);
-
-    let posn = (usdcTotal - targetQ)/posLimit;
-    let adjustment = 3*tickSize * posn * Math.abs(posn);
-
-    if ( posn >= 0) { // (usdcTotal > targetQ) { 
+    let deviation = (usdcTotal - targetQ)/posLimit;
+   
+    /*
+    if ( deviation >= 0.5) { // (usdcTotal > targetQ) { 
         // Long on USDC so aim to improve on recent avg buy price. 
         prcCeiling = Math.min(position.mAvgBuyPrice,bestBids[0].price); 
-        console.log(`Long posn of ${usdcTotal} at an recent avg price of ${position.mAvgBuyPrice} (${position.mAvgBuyAge} hrs)`);    
-    } else { // (usdcTotal < targetQ) { 
+        console.log(`Overbought at ${usdcTotal} at an recent avg price of ${position.mAvgBuyPrice} (${position.mAvgBuyAge} hrs)`);    
+    } 
+    */
+    if (deviation <= -0.5) { // (usdcTotal < targetQ) { 
         // Short on USDC so buy back, even if at cost or at a loss.
-        prcCeiling = position.mAvgSellPrice;    
-        console.log(`Short  posn of ${usdcTotal} at an recent avg price of ${position.mAvgSellPrice} (${position.mAvgSellAge} hrs)`);
+        //prcCeiling = position.mAvgSellPrice;    
+        prcCeiling = taperTradePrice( 
+            position.mAvgSellPrice,
+            position.mAvgSellAge,
+            bestBids[0].price);
+        console.log(`Oversold ${usdcTotal} at recent avg price of ${position.mAvgSellPrice} (${position.mAvgSellAge} hrs)`);
     }
 
+    // Adjust price ceiling to allow for position deviation. 
+    let adjustment = 3*tickSize * deviation * Math.abs(deviation); 
     prcCeiling -= adjustment; 
-    console.log(`Price ceiling ${prcCeiling} with an adjustment of ${adjustment}} and scaled posn ${posn}`);
+    console.log(`Price ceiling ${prcCeiling} with an adjustment of ${adjustment}} and posn deviation ${deviation}`);
     
     // Testing a strategy to:
     // a) encourage a short position when price pops up. 
@@ -191,26 +210,37 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
 
     let usdcTotal = balances.usdc.total;
 
-    let prcFloor = position.mAvgBuyPrice; // Avoid selling back at a loss relative to our recent trades.   
-
+    //let prcFloor = position.mAvgBuyPrice; // Avoid selling back at a loss relative to our recent trades.   
     let prcCeiling = bestOffers[2].price;
-    let targetQ = targetQty(bestOffers[0].price);
+    let prcFloor = taperTradePrice( // Aim to improve on recent avg sell price. 
+        position.mAvgSellPrice,
+        position.mAvgSellAge,
+        bestOffers[0].price);
     
-    let posn = (usdcTotal - targetQ)/posLimit;
-    let adjustment = 3*tickSize * posn * Math.abs(posn);
-
-    if ( posn >= 0 ) { //(usdcTotal < targetQ) {
+    let targetQ = targetQty(bestOffers[0].price);
+    let deviation = (usdcTotal - targetQ)/posLimit;
+   
+    if ( deviation > 0.5 ) { //(usdcTotal < targetQ) {
         // We are long so want to sell even if at cost or at a loss.
-        prcFloor = Math.max(position.mAvgBuyPrice,bestOffers[0].price);
-        console.log(`Long posn of ${usdcTotal} at an recent avg price of ${position.mAvgBuyPrice} (${position.mAvgBuyAge} hrs)`);
-    } else { // (usdcTotal >= targetQ) {
+        //prcFloor = Math.max(position.mAvgBuyPrice,bestOffers[0].price);
+        prcFloor = taperTradePrice( 
+            position.mAvgBuyPrice,
+            position.mAvgBuyAge,
+            bestOffers[0].price);
+        console.log(`Overbought at ${usdcTotal} at an recent avg price of ${position.mAvgBuyPrice} (${position.mAvgBuyAge} hrs)`);
+    } 
+    /*
+    if (deviation < -0.5) { // (usdcTotal >= targetQ) {
         // We are short already so want to match or improve on our average sell price.
         prcFloor = position.mAvgSellPrice;
-        console.log(`Short posn of ${usdcTotal} at an recent avg price of ${position.mAvgSellPrice} (${position.mAvgSellAge} hrs)`);
+        console.log(`Oversold at ${usdcTotal} at an recent avg price of ${position.mAvgSellPrice} (${position.mAvgSellAge} hrs)`);
     }
+    */
 
+    // Adjust price floor to allow for position deviation. 
+    let adjustment = 3*tickSize * deviation * Math.abs(deviation);
     prcFloor -= adjustment; 
-    console.log(`Price floor ${prcFloor} with an adjustment of ${adjustment} and scaled posn ${posn}`);
+    console.log(`Price floor ${prcFloor} with an adjustment of ${adjustment} and posn deviation ${deviation}`);
     
     // Testing a strategy to 
     // a) encourage a long position when price drops. 
