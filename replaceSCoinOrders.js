@@ -103,24 +103,16 @@ function taperTradePrice(avgTradePrice, avgTradeAage, mktPrice) {
 async function makeBids(bestBids, allOrders, position, params) {
     
     console.log(`Making bids for ${symbol} at ${new Date()}`);
-    console.log(params);
 
     let usdcTotal = params.coinQty;
     let targetQ = params.targetQty;
     let deviation = params.deviation;
     
-    // let prcCeiling = position.mAvgSellPrice; // Avoid buying back at a loss relative to our recent sells. 
     let prcFloor = bestBids[2].price;
-    let taperBuyPrice = taperTradePrice( // Aim to improve on recent avg buy price. 
-        position.mAvgBuyPrice,
-        position.mAvgBuyAge,
-        bestBids[0].price);
+  
+    taperBuyPrice = params.avgBuy.taperPrice;
+    taperSellPrice = params.avgSell.taperPrice; 
 
-     let taperSellPrice = taperTradePrice( 
-            position.mAvgSellPrice,
-            position.mAvgSellAge,
-            bestBids[0].price);
-       
     /*
     if ( deviation >= 0.5) { // (usdcTotal > targetQ) { 
         // Long on USDC so aim to improve on recent avg buy price. 
@@ -219,7 +211,6 @@ async function makeBids(bestBids, allOrders, position, params) {
 async function makeOffers(bestOffers, allOrders, position, params) {
 
     console.log(`Making offers for ${symbol} at ${new Date()}`);
-    console.log(params);
 
     let usdcTotal = params.coinQty;
     let targetQ = params.targetQty;
@@ -227,17 +218,10 @@ async function makeOffers(bestOffers, allOrders, position, params) {
    
     //let prcFloor = position.mAvgBuyPrice; // Avoid selling back at a loss relative to our recent trades.   
     let prcCeiling = bestOffers[2].price;
-    let taperSellPrice = taperTradePrice( // Aim to improve on recent avg sell price. 
-        position.mAvgSellPrice,
-        position.mAvgSellAge,
-        bestOffers[0].price);
+   
+    taperBuyPrice = params.avgBuy.taperPrice;
+    taperSellPrice = params.avgSell.taperPrice; 
 
-    let taperBuyPrice = taperTradePrice( 
-            position.mAvgBuyPrice,
-            position.mAvgBuyAge,
-            bestOffers[0].price);
-  
-    
     let prcFloor = taperSellPrice;
     if ( deviation > 0.5 ) { //(usdcTotal < targetQ) {
         // We are long so want to sell even if at cost or at a loss.
@@ -336,6 +320,7 @@ exports.placeSCoinOrders = placeSCoinOrders;
 async function placeSCoinOrders() {
     try {
         console.log("Fetching price depth, account info, open orders and trading position.");
+
         const prcDepth = await fetchPriceDepth(symbol);
         const noneZeroBalances =  await fetchAccountInfo();
         const allOrders = await fetchOpenOrders(symbol);
@@ -351,6 +336,16 @@ async function placeSCoinOrders() {
         let coinQty = balances.usdc.total;
         let deviation = (coinQty - targetQ)/posLimit;
 
+        let taperSellPrice = taperTradePrice(  
+            position.mAvgSellPrice,
+            position.mAvgSellAge,
+            mktMidPrice);
+            
+        let taperBuyPrice = taperTradePrice( 
+            position.mAvgBuyPrice,
+            position.mAvgBuyAge,
+            mktMidPrice);
+
         let params = {
             mktMidPrice: mktMidPrice,
             coinQty: coinQty, 
@@ -359,12 +354,14 @@ async function placeSCoinOrders() {
             avgBuy : { 
                 price : position.mAvgBuyPrice,
                 qty : position.mAvgBuyQty, 
-                age : position.mAvgBuyAge
+                age : position.mAvgBuyAge,
+                taperPrice : taperBuyPrice
             },
             avgSell : { 
                 price : position.mAvgSellPrice,
                 qty : position.mAvgSellQty,
-                age : position.mAvgSellAge
+                age : position.mAvgSellAge, 
+                taperPrice : taperSellPrice
             }
         };
         console.log(params); 
