@@ -100,12 +100,11 @@ function taperTradePrice(avgTradePrice, avgTradeAage, mktPrice) {
     console.assert(age<=1.0 && age >=0.0 ,`0 <= scaled trade age <= 1`);
     return age*avgTradePrice + (1.0-age)*mktPrice; 
 }
+
 async function makeBids(bestBids, allOrders, position, params) {
-    
     console.log(`Making bids for ${symbol} at ${new Date()}`);
 
     let usdcTotal = params.coinQty;
-    let targetQ = params.targetQty;
     let deviation = params.deviation;
     
     let prcFloor = bestBids[2].price;
@@ -120,17 +119,16 @@ async function makeBids(bestBids, allOrders, position, params) {
         console.log(`Overbought at ${usdcTotal} at an recent avg price of ${position.mAvgBuyPrice} (${position.mAvgBuyAge} hrs)`);    
     } 
     */
-    let prcCeiling = taperBuyPrice;
+    let taperPrice = taperBuyPrice;
     if (deviation < -0.5) { // (usdcTotal < targetQ) { 
         // Short on USDC so buy back, even if at cost or at a loss.
-        prcCeiling = taperSellPrice;
+        taperPrice = taperSellPrice;
         console.log(`Oversold ${usdcTotal} at recent avg price of ${position.mAvgSellPrice} (${position.mAvgSellAge} hrs)`);
     }
 
     // Adjust price ceiling to allow for position deviation. 
     let adjustment = 3*tickSize * deviation * Math.abs(deviation); 
-    prcCeiling -= adjustment; 
-   // console.log(`Price ceiling ${prcCeiling} with an adjustment of ${adjustment}} and posn deviation ${deviation}`);
+    prcCeiling = taperPrice - adjustment; 
     
     // Testing a strategy to:
     // a) encourage a short position when price pops up. 
@@ -141,16 +139,11 @@ async function makeBids(bestBids, allOrders, position, params) {
     }
 
     let stuff = { 
-        targetQty : targetQ,
-        deviation : deviation,
-        taperBuyPrice : taperBuyPrice, 
-        taperSellPrice : taperSellPrice, 
+        taperPrice : taperPrice,
         adjustment : adjustment,
         prcCeiling : prcCeiling,
         prcFloor : prcFloor
     }
-
-    // console.log(`Buy price ceiling: ${prcCeiling} and floor: ${prcFloor}`);
     console.log(stuff);
 
     //cancel any open orders exceeding the price ceiling and fallen under the price floor. 
@@ -213,7 +206,6 @@ async function makeOffers(bestOffers, allOrders, position, params) {
     console.log(`Making offers for ${symbol} at ${new Date()}`);
 
     let usdcTotal = params.coinQty;
-    let targetQ = params.targetQty;
     let deviation = params.deviation;
    
     //let prcFloor = position.mAvgBuyPrice; // Avoid selling back at a loss relative to our recent trades.   
@@ -222,11 +214,11 @@ async function makeOffers(bestOffers, allOrders, position, params) {
     taperBuyPrice = params.avgBuy.taperPrice;
     taperSellPrice = params.avgSell.taperPrice; 
 
-    let prcFloor = taperSellPrice;
+    let taperPrice = taperSellPrice;
     if ( deviation > 0.5 ) { //(usdcTotal < targetQ) {
         // We are long so want to sell even if at cost or at a loss.
         //prcFloor = Math.max(position.mAvgBuyPrice,bestOffers[0].price);
-        prcFloor = taperBuyPrice;
+        taperPrice = taperBuyPrice;
         console.log(`Overbought at ${usdcTotal} at an recent avg price of ${position.mAvgBuyPrice} (${position.mAvgBuyAge} hrs)`);
     } 
     /*
@@ -239,8 +231,7 @@ async function makeOffers(bestOffers, allOrders, position, params) {
 
     // Adjust price floor to allow for position deviation. 
     let adjustment = 3*tickSize * deviation * Math.abs(deviation);
-    prcFloor -= adjustment; 
-    // console.log(`Price floor ${prcFloor} with an adjustment of ${adjustment} and posn deviation ${deviation}`);
+    prcFloor = taperPrice - adjustment; 
     
     // Testing a strategy to 
     // a) encourage a long position when price drops. 
@@ -250,17 +241,12 @@ async function makeOffers(bestOffers, allOrders, position, params) {
         prcFloor = Math.max(bestOffers[0].price + tickSize, prcFloor);
     }
     let stuff = { 
-        targetQty : targetQ,
-        coinQty : usdcTotal,
-        deviation : deviation,
-        taperBuyPrice : taperBuyPrice, 
-        taperSellPrice : taperSellPrice, 
+        taperPrice : taperPrice, 
         adjustment : adjustment,
         prcCeiling : prcCeiling,
         prcFloor : prcFloor
     }
     console.log(stuff);
-    //console.log(`Sell price floor: ${prcFloor} and ceiling: ${prcCeiling}`)
     
     //cancel any open orders exceeding the price ceiling or fallen under the price floor. 
     let staleOrders = allOrders.filter(order => (
