@@ -65,7 +65,7 @@ function targetQty(bestPrice) {
     const qMax = target.hiQty - target.loQty;
     const qty = qZero + qMax*sigmoid(prcDeviation);
 
-    /*
+    /*  Linear function. 
     prc = (bestPrice > target.hiPrice) ? target.hiPrice : bestPrice;
     prc = (bestPrice < target.loPrice) ?  target.loPrice : bestPrice;
     
@@ -76,7 +76,7 @@ function targetQty(bestPrice) {
 
     */
 
-    console.log(`Target Qty: ${qty} based on best price ${bestPrice}` )
+   // console.log(`Target Qty: ${qty} based on best price ${bestPrice}` )
     return qty;
 }
 function sigmoid(x) {
@@ -96,9 +96,8 @@ function sigmoid(x) {
 function taperTradePrice(avgTradePrice, avgTradeAage, mktPrice) {
     // Weight our avg trade price with the market price depending on the age of our trades. 
     // If we have'd traded for a while (up to 7 hours), we tend to the hourly weighted market price.   
-    const age = Math.max(3.0 - avgTradeAage,0)/3.0; 
+    const age = Math.max(3.5 - avgTradeAage,0)/3.5; 
     console.assert(age<=1.0 && age >=0.0 ,`0 <= scaled trade age <= 1`);
-
     return age*avgTradePrice + (1.0-age)*mktPrice; 
 }
 async function makeBids(bestBids, allOrders, position, balances) {
@@ -109,11 +108,16 @@ async function makeBids(bestBids, allOrders, position, balances) {
     
     // let prcCeiling = position.mAvgSellPrice; // Avoid buying back at a loss relative to our recent sells. 
     let prcFloor = bestBids[2].price;
-    let prcCeiling = taperTradePrice( // Aim to improve on recent avg buy price. 
+    let taperBuyPrice = taperTradePrice( // Aim to improve on recent avg buy price. 
         position.mAvgBuyPrice,
         position.mAvgBuyAge,
         bestBids[0].price);
 
+     let taperSellPrice = taperTradePrice( 
+            position.mAvgSellPrice,
+            position.mAvgSellAge,
+            bestBids[0].price);
+       
     let targetQ = targetQty(bestBids[0].price);
     let deviation = (usdcTotal - targetQ)/posLimit;
    
@@ -124,20 +128,17 @@ async function makeBids(bestBids, allOrders, position, balances) {
         console.log(`Overbought at ${usdcTotal} at an recent avg price of ${position.mAvgBuyPrice} (${position.mAvgBuyAge} hrs)`);    
     } 
     */
-    if (deviation <= -0.5) { // (usdcTotal < targetQ) { 
+    let prcCeiling = taperBuyPrice;
+    if (deviation < -0.5) { // (usdcTotal < targetQ) { 
         // Short on USDC so buy back, even if at cost or at a loss.
-        //prcCeiling = position.mAvgSellPrice;    
-        prcCeiling = taperTradePrice( 
-            position.mAvgSellPrice,
-            position.mAvgSellAge,
-            bestBids[0].price);
+        prcCeiling = taperSellPrice;
         console.log(`Oversold ${usdcTotal} at recent avg price of ${position.mAvgSellPrice} (${position.mAvgSellAge} hrs)`);
     }
 
     // Adjust price ceiling to allow for position deviation. 
     let adjustment = 3*tickSize * deviation * Math.abs(deviation); 
     prcCeiling -= adjustment; 
-    console.log(`Price ceiling ${prcCeiling} with an adjustment of ${adjustment}} and posn deviation ${deviation}`);
+   // console.log(`Price ceiling ${prcCeiling} with an adjustment of ${adjustment}} and posn deviation ${deviation}`);
     
     // Testing a strategy to:
     // a) encourage a short position when price pops up. 
@@ -147,7 +148,18 @@ async function makeBids(bestBids, allOrders, position, balances) {
         prcCeiling = Math.min(bestBids[0].price - tickSize,prcCeiling);
     }
 
-    console.log(`Buy price ceiling: ${prcCeiling} and floor: ${prcFloor}`);
+    let stuff = { 
+        targetQty : targetQ,
+        deviation : deviation,
+        taperBuyPrice : taperBuyPrice, 
+        taperSellPrice : taperSellPrice, 
+        adjustment : adjustment,
+        prcCeiling : prcCeiling,
+        prcFloor : prcFloor
+    }
+
+    // console.log(`Buy price ceiling: ${prcCeiling} and floor: ${prcFloor}`);
+    console.log(stuff);
 
     //cancel any open orders exceeding the price ceiling and fallen under the price floor. 
     let staleOrders = allOrders.filter(order => (
@@ -209,24 +221,27 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
     console.log(`Making offers for ${symbol} at ${new Date()}`);
 
     let usdcTotal = balances.usdc.total;
-
-    //let prcFloor = position.mAvgBuyPrice; // Avoid selling back at a loss relative to our recent trades.   
-    let prcCeiling = bestOffers[2].price;
-    let prcFloor = taperTradePrice( // Aim to improve on recent avg sell price. 
-        position.mAvgSellPrice,
-        position.mAvgSellAge,
-        bestOffers[0].price);
-    
     let targetQ = targetQty(bestOffers[0].price);
     let deviation = (usdcTotal - targetQ)/posLimit;
    
-    if ( deviation > 0.5 ) { //(usdcTotal < targetQ) {
-        // We are long so want to sell even if at cost or at a loss.
-        //prcFloor = Math.max(position.mAvgBuyPrice,bestOffers[0].price);
-        prcFloor = taperTradePrice( 
+    //let prcFloor = position.mAvgBuyPrice; // Avoid selling back at a loss relative to our recent trades.   
+    let prcCeiling = bestOffers[2].price;
+    let taperSellPrice = taperTradePrice( // Aim to improve on recent avg sell price. 
+        position.mAvgSellPrice,
+        position.mAvgSellAge,
+        bestOffers[0].price);
+
+    let taperBuyPrice = taperTradePrice( 
             position.mAvgBuyPrice,
             position.mAvgBuyAge,
             bestOffers[0].price);
+  
+    
+    let prcFloor = taperSellPrice;
+    if ( deviation > 0.5 ) { //(usdcTotal < targetQ) {
+        // We are long so want to sell even if at cost or at a loss.
+        //prcFloor = Math.max(position.mAvgBuyPrice,bestOffers[0].price);
+        prcFloor = taperBuyPrice;
         console.log(`Overbought at ${usdcTotal} at an recent avg price of ${position.mAvgBuyPrice} (${position.mAvgBuyAge} hrs)`);
     } 
     /*
@@ -240,7 +255,7 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
     // Adjust price floor to allow for position deviation. 
     let adjustment = 3*tickSize * deviation * Math.abs(deviation);
     prcFloor -= adjustment; 
-    console.log(`Price floor ${prcFloor} with an adjustment of ${adjustment} and posn deviation ${deviation}`);
+    // console.log(`Price floor ${prcFloor} with an adjustment of ${adjustment} and posn deviation ${deviation}`);
     
     // Testing a strategy to 
     // a) encourage a long position when price drops. 
@@ -249,8 +264,18 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
     if((bestOffers[0].price) < target.loPrice) { 
         prcFloor = Math.max(bestOffers[0].price + tickSize, prcFloor);
     }
-
-    console.log(`Sell price floor: ${prcFloor} and ceiling: ${prcCeiling}`)
+    let stuff = { 
+        targetQty : targetQ,
+        coinQty : usdcTotal,
+        deviation : deviation,
+        taperBuyPrice : taperBuyPrice, 
+        taperSellPrice : taperSellPrice, 
+        adjustment : adjustment,
+        prcCeiling : prcCeiling,
+        prcFloor : prcFloor
+    }
+    console.log(stuff);
+    //console.log(`Sell price floor: ${prcFloor} and ceiling: ${prcCeiling}`)
     
     //cancel any open orders exceeding the price ceiling or fallen under the price floor. 
     let staleOrders = allOrders.filter(order => (
@@ -308,60 +333,56 @@ async function makeOffers(bestOffers, allOrders, position, balances) {
 
 exports.placeSCoinOrders = placeSCoinOrders;
 async function placeSCoinOrders() {
-/*
-    console.log(targetQty(0.9990))
-    console.log(targetQty(0.9991))
-    console.log(targetQty(0.9992))
-    console.log(targetQty(0.9993))
-    console.log(targetQty(0.9994))
-    console.log(targetQty(0.9995))
-    console.log(targetQty(0.9996))
-    console.log(targetQty(0.9997))
-    console.log(targetQty(0.9998))
-    console.log(targetQty(0.9999))
-    
-    console.log(targetQty(1.0000))
-    console.log(targetQty(1.0001))
-    console.log(targetQty(1.0002))
-    console.log(targetQty(1.0003))
-    console.log(targetQty(1.0004))
-    console.log(targetQty(1.0005))
-    console.log(targetQty(1.0006))
-    console.log(targetQty(1.0007))
-    console.log(targetQty(1.0008))
-    console.log(targetQty(1.0009))
-    console.log(targetQty(1.0010))
-    
-    return; 
-*/
+    try {
+        console.log("Fetching price depth, account info, open orders and trading position.");
+        const prcDepth = await fetchPriceDepth(symbol);
+        const noneZeroBalances =  await fetchAccountInfo();
+        const allOrders = await fetchOpenOrders(symbol);
+        const position = await fetchPositions(symbol, 1);
 
-   try {
-    console.log("Fetching best offer prices.");
-    const prcDepth = await fetchPriceDepth(symbol);
+        let balances = {
+            usdc : noneZeroBalances.balances.filter(balance => (balance.asset=='USDC'))[0],
+            usdt : noneZeroBalances.balances.filter(balance => (balance.asset=='USDT'))[0]
+        }    
+      
+        let mktMidPrice = 0.5*(prcDepth.bids[0].price + prcDepth.asks[0].price);
+        let targetQ = targetQty(mktMidPrice);
+        let coinQty = balances.usdc.total;
+        let deviation = (coinQty - targetQ)/posLimit;
 
-    const noneZeroBalances =  await fetchAccountInfo();
-    let balances = {
-       usdc : noneZeroBalances.balances.filter(balance => (balance.asset=='USDC'))[0],
-       usdt : noneZeroBalances.balances.filter(balance => (balance.asset=='USDT'))[0]
+        let params = {
+            mktMidPrice: mktMidPrice,
+            coinQty: coinQty, 
+            targetQty : targetQty(mktMidPrice),
+            deviation : deviation,
+            avgBuy : { 
+                price : position.mAvgBuyPrice,
+                qty : position.mAvgBuyQty, 
+                age : position.mAvgBuyAge
+            },
+            avgSell : { 
+                price : position.mAvgSellPrice,
+                qty : position.mAvgSellQty,
+                age : position.mAvgSellAge
+            }
+        };
+        console.log(params); 
+
+        makeBids(
+            prcDepth.bids, 
+            allOrders.filter(order => (order.side==='BUY')), 
+            position, 
+            balances);
+
+        makeOffers(
+            prcDepth.asks, 
+            allOrders.filter(order => (order.side==='SELL')), 
+            position,
+            balances); 
+
+    } catch (error) {
+        console.error(error.message);
     }
-    
-     console.log("Fetching open orders and position");
-     const allOrders = await fetchOpenOrders(symbol);
-     const position = await fetchPositions(symbol, 1);
-
-     makeBids(
-        prcDepth.bids, 
-        allOrders.filter(order => (order.side==='BUY')), 
-        position, 
-        balances);
-     makeOffers(
-        prcDepth.asks, 
-        allOrders.filter(order => (order.side==='SELL')), 
-        position,
-        balances); 
-   } catch (error) {
-     console.error(error.message);
-   }
 }
 
 if (require.main === module) placeSCoinOrders();
