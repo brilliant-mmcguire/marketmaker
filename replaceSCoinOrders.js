@@ -373,7 +373,6 @@ async function placeSCoinOrders() {
             prcDepth.bids, 
             allOrders.filter(order => (order.side==='BUY')), 
             position, 
-            balances, 
             params
         );
 
@@ -381,7 +380,6 @@ async function placeSCoinOrders() {
             prcDepth.asks, 
             allOrders.filter(order => (order.side==='SELL')), 
             position,
-            balances, 
             params
         ); 
 
