@@ -100,11 +100,14 @@ function taperTradePrice(avgTradePrice, avgTradeAage, mktPrice) {
     console.assert(age<=1.0 && age >=0.0 ,`0 <= scaled trade age <= 1`);
     return age*avgTradePrice + (1.0-age)*mktPrice; 
 }
-async function makeBids(bestBids, allOrders, position, balances) {
+async function makeBids(bestBids, allOrders, position, params) {
     
     console.log(`Making bids for ${symbol} at ${new Date()}`);
+    console.log(params);
 
-    let usdcTotal = balances.usdc.total;
+    let usdcTotal = params.coinQty;
+    let targetQ = params.targetQty;
+    let deviation = params.deviation;
     
     // let prcCeiling = position.mAvgSellPrice; // Avoid buying back at a loss relative to our recent sells. 
     let prcFloor = bestBids[2].price;
@@ -118,9 +121,6 @@ async function makeBids(bestBids, allOrders, position, balances) {
             position.mAvgSellAge,
             bestBids[0].price);
        
-    let targetQ = targetQty(bestBids[0].price);
-    let deviation = (usdcTotal - targetQ)/posLimit;
-   
     /*
     if ( deviation >= 0.5) { // (usdcTotal > targetQ) { 
         // Long on USDC so aim to improve on recent avg buy price. 
@@ -216,13 +216,14 @@ async function makeBids(bestBids, allOrders, position, balances) {
     };
 }
 
-async function makeOffers(bestOffers, allOrders, position, balances) {
+async function makeOffers(bestOffers, allOrders, position, params) {
 
     console.log(`Making offers for ${symbol} at ${new Date()}`);
+    console.log(params);
 
-    let usdcTotal = balances.usdc.total;
-    let targetQ = targetQty(bestOffers[0].price);
-    let deviation = (usdcTotal - targetQ)/posLimit;
+    let usdcTotal = params.coinQty;
+    let targetQ = params.targetQty;
+    let deviation = params.deviation;
    
     //let prcFloor = position.mAvgBuyPrice; // Avoid selling back at a loss relative to our recent trades.   
     let prcCeiling = bestOffers[2].price;
@@ -372,13 +373,17 @@ async function placeSCoinOrders() {
             prcDepth.bids, 
             allOrders.filter(order => (order.side==='BUY')), 
             position, 
-            balances);
+            balances, 
+            params
+        );
 
         makeOffers(
             prcDepth.asks, 
             allOrders.filter(order => (order.side==='SELL')), 
             position,
-            balances); 
+            balances, 
+            params
+        ); 
 
     } catch (error) {
         console.error(error.message);
