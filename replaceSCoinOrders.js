@@ -18,6 +18,7 @@ const { fetchPriceDepth } = require('./marketDataTxns');
 const { fetchPositions } = require('./fetchTrades');
 const { cancelOrders } = require('./orderTxns');
 const { fetchAccountInfo } = require('./accountTxns');
+const { fetchPriceStats } = require('./marketDataTxns');
 
 const symbol = 'USDCUSDT';
 
@@ -136,7 +137,7 @@ async function makeBids(bestBids, allOrders, position, params) {
 
     // If mkt price falls below recent buy price we want to switch to
     // ceiling based on mkt price and apply position adjustment to that.  
-    let prcCeiling = Math.min(taperPrice,params.mktMidPrice); 
+    let prcCeiling = Math.min(taperPrice,params.mktPrice); 
 
     // Adjust price ceiling to allow for position deviation.  
     // If we are overweight, we want to be more demanding on price improvement. 
@@ -243,7 +244,7 @@ async function makeOffers(bestOffers, allOrders, position, params) {
     */
 
     // Adjust price floor to allow for position deviation. 
-    let prcFloor = Math.max(taperPrice,params.mktMidPrice);
+    let prcFloor = Math.max(taperPrice,params.mktPrice);
     let adjustment = -3.0 * tickSize * deviation * Math.abs(deviation);
     prcFloor += adjustment; 
     
@@ -325,31 +326,33 @@ async function placeSCoinOrders() {
         const noneZeroBalances =  await fetchAccountInfo();
         const allOrders = await fetchOpenOrders(symbol);
         const position = await fetchPositions(symbol, 1);
+        const priceStats  = await fetchPriceStats(symbol, '15m');
 
         let balances = {
             usdc : noneZeroBalances.balances.filter(balance => (balance.asset=='USDC'))[0],
             usdt : noneZeroBalances.balances.filter(balance => (balance.asset=='USDT'))[0]
         }    
       
-        let mktMidPrice = 0.5*(prcDepth.bids[0].price + prcDepth.asks[0].price);
-        let targetQ = targetQty(mktMidPrice);
+        //let mktMidPrice = 0.5*(prcDepth.bids[0].price + prcDepth.asks[0].price);
+        let mktPrice = priceStats.weightedAvgPrice;
+        let targetQ = targetQty(mktPrice);
         let coinQty = balances.usdc.total;
         let deviation = (coinQty - targetQ)/posLimit;
 
         let taperSellPrice = taperTradePrice(  
             position.mAvgSellPrice,
             position.mAvgSellAge,
-            mktMidPrice);
+            mktPrice);
             
         let taperBuyPrice = taperTradePrice( 
             position.mAvgBuyPrice,
             position.mAvgBuyAge,
-            mktMidPrice);
+            mktPrice);
 
         let params = {
-            mktMidPrice: mktMidPrice,
+            mktPrice: mktPrice,
             coinQty: coinQty, 
-            targetQty : targetQty(mktMidPrice),
+            targetQty : targetQty(mktPrice),
             deviation : deviation,
             avgBuy : { 
                 price : position.mAvgBuyPrice,
