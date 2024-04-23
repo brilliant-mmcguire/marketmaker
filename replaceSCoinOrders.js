@@ -152,13 +152,12 @@ async function makeBids(bestBids, allOrders, position, params) {
         prcCeiling = Math.min(bestBids[0].price - tickSize,prcCeiling);
     }
 
-    let stuff = { 
+    console.log({ 
         taperPrice : taperPrice,
         adjustment : adjustment,
         prcCeiling : prcCeiling,
         prcFloor : prcFloor
-    }
-    console.log(stuff);
+    });
 
     //cancel any open orders exceeding the price ceiling and fallen under the price floor. 
     let staleOrders = allOrders.filter(order => (
@@ -255,13 +254,13 @@ async function makeOffers(bestOffers, allOrders, position, params) {
     if((bestOffers[0].price) < target.loPrice) { 
         prcFloor = Math.max(bestOffers[0].price + tickSize, prcFloor);
     }
-    let stuff = { 
+
+    console.log({ 
         taperPrice : taperPrice, 
         adjustment : adjustment,
         prcCeiling : prcCeiling,
         prcFloor : prcFloor
-    }
-    console.log(stuff);
+    });
     
     //cancel any open orders exceeding the price ceiling or fallen under the price floor. 
     let staleOrders = allOrders.filter(order => (
