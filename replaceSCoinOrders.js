@@ -102,12 +102,12 @@ function sigmoid(x) {
     return 1 / (1 + Math.exp(-x));
 }
 
-function taperTradePrice(avgTradePrice, avgTradeAage, mktPrice) {
+function taperTradePrice(tradePrice, tradeAage, mktPrice) {
     // Weight our avg trade price with the market price depending on the age of our trades. 
     // If we have'd traded for a while (up to 7 hours), we tend to the hourly weighted market price.   
-    const age = Math.max(3.5 - avgTradeAage,0)/3.5; 
+    const age = Math.max(3.5 - tradeAage,0)/3.5; 
     console.assert(age<=1.0 && age >=0.0 ,`0 <= scaled trade age <= 1`);
-    return age*avgTradePrice + (1.0-age)*mktPrice; 
+    return age*tradePrice + (1.0-age)*mktPrice; 
 }
 
 async function makeBids(bestBids, allOrders, position, params) {
@@ -148,7 +148,7 @@ async function makeBids(bestBids, allOrders, position, params) {
         taperPrice : taperPrice,
         adjustment : adjustment,
         prcCeiling : prcCeiling,
-        prcFloor : prcFloor
+        prcFloor   : prcFloor
     });
 
     //cancel any open orders exceeding the price ceiling and fallen under the price floor. 
