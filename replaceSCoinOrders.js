@@ -122,11 +122,18 @@ async function makeBids(bestBids, allOrders, position, params) {
     taperSellPrice = params.avgSell.taperPrice; 
 
     let taperPrice = taperBuyPrice;
+
+    /* 
+    Do we need this? 
+    The risk is the price moves up, we have a low avg buy price and so don't try to buy back. 
+    The adjustment and tapering should, between them, take care of it.  Shouldn't it? 
+
     if (deviation < -0.5) { // (usdcTotal < targetQ) { 
         // Short on USDC so buy back, even if at cost or at a loss.
         taperPrice = taperSellPrice;
         console.log(`Oversold ${usdcTotal} at recent avg price of ${position.mAvgSellPrice} (${position.mAvgSellAge} hrs)`);
     }
+    */
 
     // If mkt price falls below recent buy price we want to switch to
     // ceiling based on mkt price and apply position adjustment to that.  
@@ -220,12 +227,15 @@ async function makeOffers(bestOffers, allOrders, position, params) {
     taperSellPrice = params.avgSell.taperPrice; 
 
     let taperPrice = taperSellPrice;
+   
+    /* See comments in makeBids.
     if ( deviation > 0.5 ) { //(usdcTotal < targetQ) {
         // We are long so want to sell even if at cost or at a loss.
         //prcFloor = Math.max(position.mAvgBuyPrice,bestOffers[0].price);
         taperPrice = taperBuyPrice;
         console.log(`Overbought at ${usdcTotal} at an recent avg price of ${position.mAvgBuyPrice} (${position.mAvgBuyAge} hrs)`);
     } 
+    */
 
     // Adjust price floor to allow for position deviation. 
     let prcFloor = Math.max(taperPrice,params.mktPrice);
