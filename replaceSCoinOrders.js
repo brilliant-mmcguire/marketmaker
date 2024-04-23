@@ -121,13 +121,6 @@ async function makeBids(bestBids, allOrders, position, params) {
     taperBuyPrice = params.avgBuy.taperPrice;
     taperSellPrice = params.avgSell.taperPrice; 
 
-    /*
-    if ( deviation >= 0.5) { // (usdcTotal > targetQ) { 
-        // Long on USDC so aim to improve on recent avg buy price. 
-        prcCeiling = Math.min(position.mAvgBuyPrice,bestBids[0].price); 
-        console.log(`Overbought at ${usdcTotal} at an recent avg price of ${position.mAvgBuyPrice} (${position.mAvgBuyAge} hrs)`);    
-    } 
-    */
     let taperPrice = taperBuyPrice;
     if (deviation < -0.5) { // (usdcTotal < targetQ) { 
         // Short on USDC so buy back, even if at cost or at a loss.
@@ -151,7 +144,6 @@ async function makeBids(bestBids, allOrders, position, params) {
     if((bestBids[0].price) > target.hiPrice) { 
         prcCeiling = Math.min(bestBids[0].price - tickSize,prcCeiling);
     }
-
     console.log({ 
         taperPrice : taperPrice,
         adjustment : adjustment,
@@ -234,13 +226,6 @@ async function makeOffers(bestOffers, allOrders, position, params) {
         taperPrice = taperBuyPrice;
         console.log(`Overbought at ${usdcTotal} at an recent avg price of ${position.mAvgBuyPrice} (${position.mAvgBuyAge} hrs)`);
     } 
-    /*
-    if (deviation < -0.5) { // (usdcTotal >= targetQ) {
-        // We are short already so want to match or improve on our average sell price.
-        prcFloor = position.mAvgSellPrice;
-        console.log(`Oversold at ${usdcTotal} at an recent avg price of ${position.mAvgSellPrice} (${position.mAvgSellAge} hrs)`);
-    }
-    */
 
     // Adjust price floor to allow for position deviation. 
     let prcFloor = Math.max(taperPrice,params.mktPrice);
