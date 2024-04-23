@@ -56,6 +56,18 @@ Try using a signmoid funtion instead?
 Not sure if there is much benifit; can't think of a godd rationale but feels right.  
 */
 function targetQty(bestPrice) {
+    /*  Price	Target
+        1.0015	2954.0
+        1.0010	2848.3
+        1.0005	2554.6
+        1.0003	2358.4
+        1.0001	2124.4
+        1.0000	2000.0
+        0.9999	1875.6
+        0.9997	1641.6
+        0.9995	1445.4
+        0.9990	1151.7
+        0.9985	1046.0 */ 
     // 0.25 -> About 90% of hiQty at hiPrice. 
     const prcDeviation = 0.25*(bestPrice-1.0)/tickSize; 
     const qZero =  target.loQty;
