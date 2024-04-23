@@ -133,11 +133,15 @@ async function makeBids(bestBids, allOrders, position, params) {
         taperPrice = taperSellPrice;
         console.log(`Oversold ${usdcTotal} at recent avg price of ${position.mAvgSellPrice} (${position.mAvgSellAge} hrs)`);
     }
+
+    // If mkt price falls below recent buy price we want to switch to
+    // ceiling based on mkt price and apply position adjustment to that.  
     let prcCeiling = Math.min(taperPrice,params.mktMidPrice); 
 
-    // Adjust price ceiling to allow for position deviation. 
-    let adjustment = 3*tickSize * deviation * Math.abs(deviation); 
-    prcCeiling -= adjustment; 
+    // Adjust price ceiling to allow for position deviation.  
+    // If we are overweight, we want to be more demanding on price improvement. 
+    let adjustment = -3.0 * tickSize * deviation * Math.abs(deviation); 
+    prcCeiling += adjustment; 
     
     // Testing a strategy to:
     // a) encourage a short position when price pops up. 
@@ -240,8 +244,8 @@ async function makeOffers(bestOffers, allOrders, position, params) {
 
     // Adjust price floor to allow for position deviation. 
     let prcFloor = Math.max(taperPrice,params.mktMidPrice);
-    let adjustment = 3*tickSize * deviation * Math.abs(deviation);
-    prcFloor -= adjustment; 
+    let adjustment = -3.0 * tickSize * deviation * Math.abs(deviation);
+    prcFloor += adjustment; 
     
     // Testing a strategy to 
     // a) encourage a long position when price drops. 
