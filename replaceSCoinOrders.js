@@ -188,13 +188,13 @@ async function makeBids(bestBids, allOrders, position, params) {
         }
 
         console.log(
-            `We have ${orders.length} orders on price level ${bid.price} with volume ${bid.qty}.`
+            `${orders.length} orders @ ${bid.price} quotaFull: ${quotaFull} freshOrders: ${freshOrders}`
             );
         
         if(bid.price > prcCeiling || bid.price < prcFloor || quotaFull || freshOrders) {
-            console.log(`> Ignore price level ${bid.price}`);
-            console.log(`>> quotaFull: ${quotaFull}, breach: ${quotaBreach}`); 
-            console.log(`>> freshOrders: ${freshOrders}`);
+           // console.log(`> Ignore price level ${bid.price} `);
+           // console.log(`>> quotaFull: ${quotaFull}`); 
+           // console.log(`>> freshOrders: ${freshOrders}`);
         } else {
             console.log(`> Place BUY at ${bid.price}`);
             try {
@@ -287,12 +287,12 @@ async function makeOffers(bestOffers, allOrders, position, params) {
             console.log(`Quota breach ${offer.qty} and cancelling last order.`);
         }
 
-        console.log(`We have ${orders.length} orders on price level ${offer.price} with volume ${offer.qty}.`);      
+        console.log(`${orders.length} orders @ ${offer.price} quotaFull: ${quotaFull} freshOrders: ${freshOrders}`);      
                
         if(offer.price < prcFloor || offer.price > prcCeiling || quotaFull || freshOrders) {
-            console.log(`> Ignore price level ${offer.price}`);
-            console.log(`>> quotaFull: ${quotaFull}, breach: ${quotaBreach}`); 
-            console.log(`>> freshOrders: ${freshOrders}`);
+       //     console.log(`> Ignore price level ${offer.price}`);
+       //     console.log(`>> quotaFull: ${quotaFull}, breach: ${quotaBreach}`); 
+       //     console.log(`>> freshOrders: ${freshOrders}`);
         } else {
             console.log(`> Place SELL @ ${offer.price}`);
             try {
