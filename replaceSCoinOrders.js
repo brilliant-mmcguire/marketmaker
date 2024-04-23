@@ -102,10 +102,10 @@ function sigmoid(x) {
     return 1 / (1 + Math.exp(-x));
 }
 
-function taperTradePrice(tradePrice, tradeAage, mktPrice) {
+function taperTradePrice(tradePrice, tradeAge, mktPrice) {
     // Weight our avg trade price with the market price depending on the age of our trades. 
-    // If we have'd traded for a while (up to 7 hours), we tend to the hourly weighted market price.   
-    const age = Math.max(3.5 - tradeAage,0)/3.5; 
+    // If we have'd traded for a while (up to 3.5 hours), we tend to the hourly weighted market price.   
+    const age = Math.max(3.5 - tradeAge,0)/3.5; 
     console.assert(age<=1.0 && age >=0.0 ,`0 <= scaled trade age <= 1`);
     return age*tradePrice + (1.0-age)*mktPrice; 
 }
