@@ -56,16 +56,16 @@ Try using a signmoid funtion instead?
 Not sure if there is much benifit; can't think of a godd rationale but feels right.  
 */
 function targetQty(bestPrice) {
-    //let qty = 0.5*(target.hiQty + target.loQty); 
-    //let prc = bestPrice;
-
+    // 0.25 -> About 90% of hiQty at hiPrice. 
     const prcDeviation = 0.25*(bestPrice-1.0)/tickSize; 
-    const sig = sigmoid(prcDeviation); 
     const qZero =  target.loQty;
     const qMax = target.hiQty - target.loQty;
     const qty = qZero + qMax*sigmoid(prcDeviation);
-
-    /*  Linear function. 
+    return qty;
+}
+function pwLinear() {   // PIECEWISE LINEAR. 
+    //let qty = 0.5*(target.hiQty + target.loQty); 
+    //let prc = bestPrice;
     prc = (bestPrice > target.hiPrice) ? target.hiPrice : bestPrice;
     prc = (bestPrice < target.loPrice) ?  target.loPrice : bestPrice;
     
@@ -73,10 +73,6 @@ function targetQty(bestPrice) {
             + 
             target.hiQty * (prc - target.loPrice) )
         /  (target.hiPrice-target.loPrice);
-
-    */
-
-   // console.log(`Target Qty: ${qty} based on best price ${bestPrice}` )
     return qty;
 }
 function sigmoid(x) {
