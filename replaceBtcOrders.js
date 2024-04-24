@@ -116,7 +116,7 @@ async function placeNewOrders(symbol, tradingPos, totalQty, priceStats) {
         coinQtyDeviation : (btcPos.coinQty-posnTarget)/posnDeviation,
         //quoteQtyDeviation : (btcPos.quoteQty-threshold.target)/threshold.deviation,
         //prcTolerance : quoteQtyDeviation*Math.abs(quoteQtyDeviation)*threshold.pricePct,
-        prcTolerance2 : coinQtyDeviation * Math.abs(coinQtyDeviation) * threshold.pricePct,
+        prcTolerance : coinQtyDeviation * Math.abs(coinQtyDeviation) * threshold.pricePct,
         buys : {
             avgPrc : tradingPos.mAvgBuyPrice,
             avgAge : tradingPos.mAvgBuyAge,
