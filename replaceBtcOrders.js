@@ -91,7 +91,7 @@ async function placeNewOrders(symbol, tradingPos, totalQty, priceStats) {
     console.log(`Coin position:`, btcPos); 
     console.log(`Trade signals:`, tradeSignals);
     
-    let quoteQtyDeviation = (btcPos.quoteQty-threshold.target)/threshold.deviation;
+   // let quoteQtyDeviation = (btcPos.quoteQty-threshold.target)/threshold.deviation;
     let coinQtyDeviation = (btcPos.coinQty-posnTarget)/posnDeviation;
     let relativePosn = coinQtyDeviation;
     let prcPct = 1.0 - coinQtyDeviation*Math.abs(coinQtyDeviation)*threshold.pricePct;  
@@ -114,8 +114,8 @@ async function placeNewOrders(symbol, tradingPos, totalQty, priceStats) {
         targetQty : posnTarget,
         targetQuoteQty  : threshold.target,
         coinQtyDeviation : (btcPos.coinQty-posnTarget)/posnDeviation,
-        quoteQtyDeviation : (btcPos.quoteQty-threshold.target)/threshold.deviation,
-        prcTolerance : quoteQtyDeviation*Math.abs(quoteQtyDeviation)*threshold.pricePct,
+        //quoteQtyDeviation : (btcPos.quoteQty-threshold.target)/threshold.deviation,
+        //prcTolerance : quoteQtyDeviation*Math.abs(quoteQtyDeviation)*threshold.pricePct,
         prcTolerance2 : coinQtyDeviation * Math.abs(coinQtyDeviation) * threshold.pricePct,
         buys : {
             avgPrc : tradingPos.mAvgBuyPrice,
