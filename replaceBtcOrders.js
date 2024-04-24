@@ -69,7 +69,7 @@ function getTradeSignals(priceStats) {
     }
 }
 
-function computeOrderPrice(avgTradePrice, avgTradeAage, avgMktPrice) {
+function taperTradePrice(avgTradePrice, avgTradeAage, avgMktPrice) {
     // Weight our avg trade price with the market price depending on the age of our trades. 
     // If we have'd traded for a while (up to 7 hours), we tend to the hourly weighted market price.   
     const age = Math.max(7.0 - avgTradeAage,0)/7.0; 
@@ -96,12 +96,12 @@ async function placeNewOrders(symbol, tradingPos, totalQty, priceStats) {
     let relativePosn = coinQtyDeviation;
     let prcPct = 1.0 - coinQtyDeviation*Math.abs(coinQtyDeviation)*threshold.pricePct;  
 
-    let buyPrcCeiling = prcPct * computeOrderPrice(
+    let buyPrcCeiling = prcPct * taperTradePrice(
         tradingPos.mAvgBuyPrice,
         tradingPos.mAvgBuyAge,
         priceStats.weightedAvgPrice);
 
-    let sellPrcFloor = prcPct * computeOrderPrice(
+    let sellPrcFloor = prcPct * taperTradePrice(
         tradingPos.mAvgSellPrice,
         tradingPos.mAvgSellAge, 
         priceStats.weightedAvgPrice);
