@@ -15,8 +15,8 @@ const { fetchAccountInfo } = require('./accountTxns');
 const lotSize = 0.00033; //BTC
 const posnTarget = 15*lotSize; 
 const posnDeviation = 5*lotSize;
-const posnHi = 20*lotSize;  
-const posnLo = 10*lotSize;
+//const posnHi = 20*lotSize;  
+//const posnLo = 10*lotSize;
 
 const target = { 
     coinQty : 15*lotSize, 
@@ -91,9 +91,9 @@ async function placeNewOrders(symbol, tradingPos, totalQty, priceStats) {
     console.log(`Trade signals:`, tradeSignals);
     
    // let quoteQtyDeviation = (btcPos.quoteQty-threshold.target)/threshold.deviation;
-    let coinQtyDeviation = (btcPos.coinQty-posnTarget)/posnDeviation;
+    let coinDeviation = (btcPos.coinQty-target.coinQty)/target.coinQtyDeviation;
     //let relativePosn = coinQtyDeviation;
-    let prcPct = 1.0 - coinQtyDeviation*Math.abs(coinQtyDeviation)*threshold.pricePct;  
+    let prcPct = 1.0 - coinDeviation*Math.abs(coinDeviation)*threshold.pricePct;  
 
     let buyPrcCeiling = prcPct * taperTradePrice(
         tradingPos.mAvgBuyPrice,
@@ -112,10 +112,10 @@ async function placeNewOrders(symbol, tradingPos, totalQty, priceStats) {
         quoteQty : btcPos.quoteQty,
         targetQty : posnTarget,
        // targetQuoteQty  : threshold.target,
-        coinQtyDeviation : (btcPos.coinQty-posnTarget)/posnDeviation,
+        coinDeviation : (btcPos.coinQty-target.coinQty)/target.coinQtyDeviation,
         //quoteQtyDeviation : (btcPos.quoteQty-threshold.target)/threshold.deviation,
         //prcTolerance : quoteQtyDeviation*Math.abs(quoteQtyDeviation)*threshold.pricePct,
-        prcTolerance : coinQtyDeviation * Math.abs(coinQtyDeviation) * threshold.pricePct,
+        prcTolerance : coinDeviation * Math.abs(coinDeviation) * threshold.pricePct,
         buys : {
             avgPrc : tradingPos.mAvgBuyPrice,
             avgAge : tradingPos.mAvgBuyAge,
@@ -134,10 +134,10 @@ async function placeNewOrders(symbol, tradingPos, totalQty, priceStats) {
     //console.log(threshold);
    
     try {  // Make bids.
-        if(coinQtyDeviation > 0)  console.log(
+        if(coinDeviation > 0)  console.log(
                 `Make bids. Long posn @ avg buy price ${tradingPos.mAvgBuyPrice}. Ceiling: ${buyPrcCeiling}. Buy more at lower price.`
             );
-        if(coinQtyDeviation < 0) console.log(
+        if(coinDeviation < 0) console.log(
                 `Make bids. Short posn @ avg sell price ${tradingPos.mAvgSellPrice}. Ceiling: ${buyPrcCeiling}. Tension between closing position and realising a loss.`
             );
         
@@ -161,11 +161,11 @@ async function placeNewOrders(symbol, tradingPos, totalQty, priceStats) {
     }
 
     try { // Make offers.
-        if(coinQtyDeviation > 0) console.log(
+        if(coinDeviation > 0) console.log(
                 `Make offers. Long posn @ ${tradingPos.mAvgBuyPrice}. Floor ${sellPrcFloor}.  Tension between closing position and realising a loss.` 
             );
         
-        if(coinQtyDeviation < 0) console.log(
+        if(coinDeviation < 0) console.log(
                 `Make offers. Short posn @ avg sell price ${tradingPos.mAvgSellPrice}. Floor ${sellPrcFloor}. Sell more at higher price.`
             );
        
