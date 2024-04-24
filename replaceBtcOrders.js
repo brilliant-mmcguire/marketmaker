@@ -84,16 +84,16 @@ async function placeNewOrders(symbol, tradingPos, totalQty, priceStats) {
 
     btcPos = {
        coinQty  : totalQty,
-       quotePrc : priceStats.weightedAvgPrice, 
+       markPrice : priceStats.weightedAvgPrice,  // Mark to market price. 
        quoteQty : totalQty * priceStats.weightedAvgPrice,
     }
-   
+    
     console.log(`Coin position:`, btcPos); 
     console.log(`Trade signals:`, tradeSignals);
     
    // let quoteQtyDeviation = (btcPos.quoteQty-threshold.target)/threshold.deviation;
     let coinQtyDeviation = (btcPos.coinQty-posnTarget)/posnDeviation;
-    let relativePosn = coinQtyDeviation;
+    //let relativePosn = coinQtyDeviation;
     let prcPct = 1.0 - coinQtyDeviation*Math.abs(coinQtyDeviation)*threshold.pricePct;  
 
     let buyPrcCeiling = prcPct * taperTradePrice(
@@ -135,10 +135,10 @@ async function placeNewOrders(symbol, tradingPos, totalQty, priceStats) {
     //console.log(threshold);
    
     try {  // Make bids.
-        if(relativePosn > 0)  console.log(
+        if(coinQtyDeviation > 0)  console.log(
                 `Make bids. Long posn @ avg buy price ${tradingPos.mAvgBuyPrice}. Ceiling: ${buyPrcCeiling}. Buy more at lower price.`
             );
-        if(relativePosn < 0) console.log(
+        if(coinQtyDeviation < 0) console.log(
                 `Make bids. Short posn @ avg sell price ${tradingPos.mAvgSellPrice}. Ceiling: ${buyPrcCeiling}. Tension between closing position and realising a loss.`
             );
         
@@ -162,11 +162,11 @@ async function placeNewOrders(symbol, tradingPos, totalQty, priceStats) {
     }
 
     try { // Make offers.
-        if(relativePosn > 0) console.log(
+        if(coinQtyDeviation > 0) console.log(
                 `Make offers. Long posn @ ${tradingPos.mAvgBuyPrice}. Floor ${sellPrcFloor}.  Tension between closing position and realising a loss.` 
             );
         
-        if(relativePosn < 0) console.log(
+        if(coinQtyDeviation < 0) console.log(
                 `Make offers. Short posn @ avg sell price ${tradingPos.mAvgSellPrice}. Floor ${sellPrcFloor}. Sell more at higher price.`
             );
        
