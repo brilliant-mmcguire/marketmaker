@@ -28,7 +28,8 @@ This is to reduce the impact of sharp price moves where the proce shoots through
 remains at high/low levels for some period of time.  In this scenario we become 
 oversold/overbought too quickly. 
 */
-const qtyLadder = [211, 199, 149, 43, 29, 13, 11];  
+//const qtyLadder = [211, 199, 149, 43, 29, 13, 11];  
+const qtyLadder = [127, 109, 67, 31, 19, 13, 11];  
 
 const tickSize = 0.0001;  // Tick Size is 1 basis point.
 const posLimit = 900  // aim to remain inside targetQ +- posLimit
@@ -46,7 +47,7 @@ This is the help regulate the rate of exection of our orders.
 The more orders are in queue ahead of us, the more orders we need to keep in the queue.
 The goal is to maintin a steady rate of execution and to baclance to rate of buy and sell trades. 
 */
-const qtyQuanta = [212345, 1123456 , 3123456, 7123456, 15123456, 100123456];
+const qtyQuanta = [212345, 623456 , 1123456, 5123456, 11123456, 100123456];
 
 /*
 Target USDC balance uses a linear function between the upper and lower target quantities.
