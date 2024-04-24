@@ -69,24 +69,23 @@ function getTradeSignals(priceStats) {
     }
 }
 
-function taperTradePrice(avgTradePrice, avgTradeAage, avgMktPrice) {
+function taperTradePrice(avgTradePrice, avgTradeAage, markPrice) {
     // Weight our avg trade price with the market price depending on the age of our trades. 
     // If we have'd traded for a while (up to 7 hours), we tend to the hourly weighted market price.   
     const age = Math.max(7.0 - avgTradeAage,0)/7.0; 
     console.assert(age<=1.0 && age >=0.0 ,`0 <= scaled trade age <= 1`);
 
-    return age*avgTradePrice + (1.0-age)*avgMktPrice; 
+    return age*avgTradePrice + (1.0-age)*markPrice; 
 }
 
 exports.placeNewOrders = placeNewOrders;
 async function placeNewOrders(symbol, tradingPos, totalQty, priceStats) {
     const tradeSignals = getTradeSignals(priceStats);
-
-    btcPos = {
-       coinQty  : totalQty,
-       markPrice : priceStats.weightedAvgPrice,  // Mark to market price. 
-       quoteQty : totalQty * priceStats.weightedAvgPrice,
-    }
+    const btcPos = {
+        coinQty  : totalQty,
+        markPrice : priceStats.weightedAvgPrice,  // Mark to market price. 
+        quoteQty : totalQty * priceStats.weightedAvgPrice,
+     }
     
     console.log(`Coin position:`, btcPos); 
     console.log(`Trade signals:`, tradeSignals);
@@ -108,11 +107,11 @@ async function placeNewOrders(symbol, tradingPos, totalQty, priceStats) {
 
    
     guardRails = {
-        avgMktPrice : priceStats.weightedAvgPrice,
+        markPrice : priceStats.weightedAvgPrice,
         coinQty : btcPos.coinQty,
         quoteQty : btcPos.quoteQty,
         targetQty : posnTarget,
-        targetQuoteQty  : threshold.target,
+       // targetQuoteQty  : threshold.target,
         coinQtyDeviation : (btcPos.coinQty-posnTarget)/posnDeviation,
         //quoteQtyDeviation : (btcPos.quoteQty-threshold.target)/threshold.deviation,
         //prcTolerance : quoteQtyDeviation*Math.abs(quoteQtyDeviation)*threshold.pricePct,
