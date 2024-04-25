@@ -207,7 +207,7 @@ async function makeBids(bestBids, allOrders, position, params) {
         
         if(quotaBreach) {
             cancelOrders([orders[orders.length-1]]);
-            console.log(`Quota breach ${bid.qty} and cancelling last order.`);
+            console.log(`Quota breach @ ${bid.price} (${bid.qty})and cancelling last order.`);
         }
 
         if (bid.price > prcCeiling || bid.price < prcFloor) 
@@ -216,7 +216,7 @@ async function makeBids(bestBids, allOrders, position, params) {
         console.log(
             `${orders.length} orders @ ${bid.price} (${bid.qty}) quota: ${quoteQuota(bid.qty)} orders freshOrders: ${freshOrders}`
         );
-        
+
         if(bid.price > prcCeiling || bid.price < prcFloor || quotaFull || freshOrders) {
            // console.log(`> Ignore price level ${bid.price} `);
            // console.log(`>> quotaFull: ${quotaFull}`); 
@@ -313,7 +313,7 @@ async function makeOffers(bestOffers, allOrders, position, params) {
            
         if(quotaBreach) {
             cancelOrders([orders[orders.length-1]]);
-            console.log(`Quota breach ${offer.qty} and cancelling last order.`);
+            console.log(`Quota breach @ ${offer.price} (${offer.qty}) and cancelling last order.`);
         }
         
         if (offer.price > prcCeiling || offer.price < prcFloor) 
