@@ -47,8 +47,7 @@ This is the help regulate the rate of exection of our orders.
 The more orders are in queue ahead of us, the more orders we need to keep in the queue.
 The goal is to maintin a steady rate of execution and to baclance to rate of buy and sell trades. 
 */
-const qtyQuanta = [212345, 623456 , 1123456, 5123456, 11123456, 100123456];
-
+// const qtyQuanta = [212345, 623456 , 1123456, 5123456, 11123456, 100123456];
 
 /*
 Target USDC balance uses a linear function between the upper and lower target quantities.
@@ -114,9 +113,10 @@ function quoteQuota(mktQuoteSize) {
     // 700,000 2
     // 100M    5
     // 102M    6  
+    const qtyQuanta = [212345, 623456 , 1123456, 5123456, 11123456, 100123456];
     let max = 0; 
     for(let i = 0; i < qtyQuanta.length-1; i++) {
-        if (mktQuoteSize >= qtyQuanta[i]) max = i;
+        if (mktQuoteSize >= qtyQuanta[i]) max = i+1;
     };
     return max;
    // return Math.log2(mktQuoteSize / 78901);
