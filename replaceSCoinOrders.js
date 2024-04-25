@@ -35,8 +35,8 @@ const tickSize = 0.0001;  // Tick Size is 1 basis point.
 const posLimit = 900  // aim to remain inside targetQ +- posLimit
 
 const target = {
-    hiPrice : 1.0050,  // TODO: NOT BEING USED 
-    loPrice : 0.9950,  // TODO: NOT BEING USED
+  //  hiPrice : 1.0050,  // TODO: NOT BEING USED 
+  //  loPrice : 0.9950,  // TODO: NOT BEING USED
     hiQty : 1000, // Hold less USDC when its price is high in anticipation of mean reversion.  
     loQty : 3000, // Buy more USDC when its price is low. 
 };
@@ -77,6 +77,7 @@ function targetQty(bestPrice) {
     const qty = qZero + qMax*sigmoid(prcDeviation);
     return qty;
 }
+/*
 function pwLinear() {   // PIECEWISE LINEAR. 
     //let qty = 0.5*(target.hiQty + target.loQty); 
     //let prc = bestPrice;
@@ -89,6 +90,7 @@ function pwLinear() {   // PIECEWISE LINEAR.
         /  (target.hiPrice-target.loPrice);
     return qty;
 }
+*/
 function sigmoid(x) {
     /*  Expected outputs:
         10	1.0000
@@ -176,7 +178,7 @@ async function makeBids(bestBids, allOrders, position, params) {
  
         let freshOrders = false;
         if (orders.length>0) { 
-            const xxMinutes = 27; // Minimum number of minutes bewteen orders at a give price level.
+            const xxMinutes = orders.length*13; // Minimum number of minutes bewteen orders at a given price level.
             const xxMilliSeconds = xxMinutes * 60 * 1000; 
             freshOrders = ((Date.now() - orders[orders.length-1].time) < xxMilliSeconds);
         }
@@ -279,7 +281,7 @@ async function makeOffers(bestOffers, allOrders, position, params) {
         
         let freshOrders = false;
         if (orders.length>0) { 
-            const xxMinutes = 27; // Minimum number of minutes bewteen orders at a give price level.
+            const xxMinutes = orders.length*13; // Minimum number of minutes bewteen orders at a give price level.
             const xxMilliSeconds = xxMinutes * 60 * 1000; // Ten minutes in milliseconds
             freshOrders = ((Date.now() - orders[orders.length-1].time) < xxMilliSeconds);
         }
