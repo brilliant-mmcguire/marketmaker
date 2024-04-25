@@ -116,15 +116,15 @@ function taperTradePrice(tradePrice, tradeAge, mktPrice) {
 async function makeBids(bestBids, allOrders, position, params) {
     console.log(`Making bids for ${symbol} at ${new Date()}`);
 
-    let usdcTotal = params.coinQty;
+   // let usdcTotal = params.coinQty;
     let deviation = params.deviation;
     
     let prcFloor = bestBids[2].price;
   
-    taperBuyPrice = params.avgBuy.taperPrice;
-    taperSellPrice = params.avgSell.taperPrice; 
+  //  taperBuyPrice = params.avgBuy.taperPrice;
+  //  taperSellPrice = params.avgSell.taperPrice; 
 
-    let taperPrice = taperBuyPrice;
+    let taperPrice = params.avgBuy.taperPrice;
 
     /* 
     Do we need this? 
@@ -223,16 +223,16 @@ async function makeOffers(bestOffers, allOrders, position, params) {
 
     console.log(`Making offers for ${symbol} at ${new Date()}`);
 
-    let usdcTotal = params.coinQty;
+    // let usdcTotal = params.coinQty;
     let deviation = params.deviation;
    
     //let prcFloor = position.mAvgBuyPrice; // Avoid selling back at a loss relative to our recent trades.   
     let prcCeiling = bestOffers[2].price;
-   
-    taperBuyPrice = params.avgBuy.taperPrice;
-    taperSellPrice = params.avgSell.taperPrice; 
-
-    let taperPrice = taperSellPrice;
+    
+    //taperBuyPrice = params.avgBuy.taperPrice;
+    //taperSellPrice = params.avgSell.taperPrice; 
+    
+    let taperPrice = params.avgSell.taperPrice;
    
     /* See comments in makeBids.
     if ( deviation > 0.5 ) { //(usdcTotal < targetQ) {
