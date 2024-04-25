@@ -49,6 +49,7 @@ The goal is to maintin a steady rate of execution and to baclance to rate of buy
 */
 const qtyQuanta = [212345, 623456 , 1123456, 5123456, 11123456, 100123456];
 
+
 /*
 Target USDC balance uses a linear function between the upper and lower target quantities.
 At the upper target we can tolerate a smaller position in the expectation of prices falling again. 
@@ -103,6 +104,22 @@ function sigmoid(x) {
         -5	0.0067
        -10	0.0000*/
     return 1 / (1 + Math.exp(-x));
+}
+
+// qtyQuanta = [212345, 623456 , 1123456, 5123456, 11123456, 100123456];
+function quoteQuota(mktQuoteSize) {
+    // 200,000 0
+    // 220,000 1 
+    // 600,000 1 
+    // 700,000 2
+    // 100M    5
+    // 102M    6  
+    let max = 0; 
+    for(let i = 0; i < qtyQuanta.length-1; i++) {
+        if (mktQuoteSize >= qtyQuanta[i]) max = i;
+    };
+    return max;
+   // return Math.log2(mktQuoteSize / 78901);
 }
 
 function taperTradePrice(tradePrice, tradeAge, mktPrice) {
@@ -183,8 +200,11 @@ async function makeBids(bestBids, allOrders, position, params) {
             freshOrders = ((Date.now() - orders[orders.length-1].time) < xxMilliSeconds);
         }
         
-        let quotaFull = (bid.qty < qtyQuanta[orders.length]);
-        let quotaBreach = orders.length > 0 ? (bid.qty < qtyQuanta[orders.length-1]) : false;
+        let quotaFull = orders.length >= quoteQuota(bid.qty);
+        //let quotaFull = (bid.qty < qtyQuanta[orders.length]);
+        let quotaBreach = orders.length > quoteQuota(bid.qty);
+        //let quotaBreach = orders.length > 0 ? (bid.qty < qtyQuanta[orders.length-1]) : false;
+        
         if(quotaBreach) {
             cancelOrders([orders[orders.length-1]]);
             console.log(`Quota breach ${bid.qty} and cancelling last order.`);
@@ -194,9 +214,9 @@ async function makeBids(bestBids, allOrders, position, params) {
             continue; 
 
         console.log(
-            `${orders.length} orders @ ${bid.price} quotaFull: ${quotaFull} freshOrders: ${freshOrders}`
-            );
-
+            `${orders.length} orders @ ${bid.price} (${bid.qty}) quota: ${quoteQuota(bid.qty)} orders freshOrders: ${freshOrders}`
+        );
+        
         if(bid.price > prcCeiling || bid.price < prcFloor || quotaFull || freshOrders) {
            // console.log(`> Ignore price level ${bid.price} `);
            // console.log(`>> quotaFull: ${quotaFull}`); 
@@ -231,7 +251,7 @@ async function makeOffers(bestOffers, allOrders, position, params) {
     
     //taperBuyPrice = params.avgBuy.taperPrice;
     //taperSellPrice = params.avgSell.taperPrice; 
-    
+
     let taperPrice = params.avgSell.taperPrice;
    
     /* See comments in makeBids.
@@ -286,18 +306,21 @@ async function makeOffers(bestOffers, allOrders, position, params) {
             freshOrders = ((Date.now() - orders[orders.length-1].time) < xxMilliSeconds);
         }
 
-        let quotaFull = (offer.qty < qtyQuanta[orders.length]);
-        let quotaBreach = orders.length > 0 ? (offer.qty < qtyQuanta[orders.length-1]) : false;
+        let quotaFull = orders.length >= quoteQuota(offer.qty);
+        //let quotaFull = (offer.qty < qtyQuanta[orders.length]);
+        let quotaBreach = orders.length > quoteQuota(offer.qty);
+        //let quotaBreach = orders.length > 0 ? (offer.qty < qtyQuanta[orders.length-1]) : false;
+           
         if(quotaBreach) {
             cancelOrders([orders[orders.length-1]]);
             console.log(`Quota breach ${offer.qty} and cancelling last order.`);
         }
-
+        
         if (offer.price > prcCeiling || offer.price < prcFloor) 
             continue; 
-
-        console.log(`${orders.length} orders @ ${offer.price} quotaFull: ${quotaFull} freshOrders: ${freshOrders}`);      
-               
+        
+        console.log(`${orders.length} orders @ ${offer.price} (${offer.qty}) quota: ${quoteQuota(offer.qty)} orders freshOrders: ${freshOrders}`);      
+            
         if(offer.price < prcFloor || offer.price > prcCeiling || quotaFull || freshOrders) {
        //     console.log(`> Ignore price level ${offer.price}`);
        //     console.log(`>> quotaFull: ${quotaFull}, breach: ${quotaBreach}`); 
