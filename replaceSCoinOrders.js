@@ -118,7 +118,7 @@ function quoteQuota(mktQuoteSize) {
     const scaleQuoteSize = 80000; 
     const normalisedQuoteSize = mktQuoteSize / scaleQuoteSize; 
     if(normalisedQuoteSize < 1) return 0;
-    return Math.log(normalisedQuoteSize);
+    return Math.round(Math.log(normalisedQuoteSize) + 0.5);
 
     /*
     const qtyQuanta = [212345, 623456 , 1123456, 5123456, 11123456, 100123456];
