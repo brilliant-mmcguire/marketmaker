@@ -107,20 +107,27 @@ function sigmoid(x) {
 
 // qtyQuanta = [212345, 623456 , 1123456, 5123456, 11123456, 100123456];
 function quoteQuota(mktQuoteSize) {
-    // 200,000 0
-    // 220,000 1 
-    // 600,000 1 
-    // 700,000 2
-    // 100M    5
-    // 102M    6  
+/*  217,463     1
+    591,124     2
+    1,606,843	3
+    4,367,852	4
+    11,873,053	5
+    32,274,303	6
+    87,730,653	7 */
+    
+    const scaleQuoteSize = 80000; 
+    const normalisedQuoteSize = mktQuoteSize / scaleQuoteSize; 
+    if(normalisedQuoteSize < 1) return 0;
+    return Math.log(normalisedQuoteSize);
+
+    /*
     const qtyQuanta = [212345, 623456 , 1123456, 5123456, 11123456, 100123456];
     let max = 0; 
     for(let i = 0; i < qtyQuanta.length-1; i++) {
         if (mktQuoteSize >= qtyQuanta[i]) max = i+1;
     };
     return max;
-   // return Math.log(mktQuoteSize / 78901);
-   
+    */
 }
 
 function taperTradePrice(tradePrice, tradeAge, mktPrice) {
