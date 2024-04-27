@@ -107,19 +107,22 @@ function sigmoid(x) {
 
 // qtyQuanta = [212345, 623456 , 1123456, 5123456, 11123456, 100123456];
 function quoteQuota(mktQuoteSize) {
-/*  217,463     1
-    591,124     2
-    1,606,843	3
-    4,367,852	4
-    11,873,053	5
-    32,274,303	6
-    87,730,653	7 */
+/*  108,731	    1
+    295,562	    2
+    803,421	    3
+    2,183,926	4
+    5,936,526	5
+    16,137,152	6
+    43,865,326	7
+    119,238,319	8 */
     
-    const scaleQuoteSize = 80000; 
+    const scaleQuoteSize = 40000; 
     const normalisedQuoteSize = mktQuoteSize / scaleQuoteSize; 
     if(normalisedQuoteSize < 1) return 0;
-    return Math.round(Math.log(normalisedQuoteSize) - 0.5);
-
+    return Math.round(
+        Math.log(normalisedQuoteSize) 
+        - 0.5);
+        
     /*
     const qtyQuanta = [212345, 623456 , 1123456, 5123456, 11123456, 100123456];
     let max = 0; 
@@ -147,8 +150,7 @@ function quotePriceAdjustment(normalisedDeviation) {
         -0.5 +0.75 +0.25
         -1.0 +3.00 +2.00
 -       -1.5 +6.75 +6.75 */
-    const d = normalisedDeviation;
-    return -2.0 * tickSize * d**3;
+    return -2.0 * tickSize * normalisedDeviation**3;
 }
 
 async function makeBids(bestBids, allOrders, position, params) {
