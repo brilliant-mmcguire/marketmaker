@@ -119,10 +119,10 @@ function quoteQuota(mktQuoteSize) {
     const scaleQuoteSize = 40000; 
     const normalisedQuoteSize = mktQuoteSize / scaleQuoteSize; 
     if(normalisedQuoteSize < 1) return 0;
-    return Math.round(
+    return Math.round( // round up
         Math.log(normalisedQuoteSize) 
         - 0.5);
-        
+
     /*
     const qtyQuanta = [212345, 623456 , 1123456, 5123456, 11123456, 100123456];
     let max = 0; 
@@ -325,7 +325,7 @@ async function makeOffers(bestOffers, allOrders, position, params) {
         
         let freshOrders = false;
         if (orders.length>0) { 
-            const xxMinutes = orders.length*13; // Minimum number of minutes bewteen orders at a give price level.
+            const xxMinutes = orders.length*7; // Minimum number of minutes bewteen orders at a give price level.
             const xxMilliSeconds = xxMinutes * 60 * 1000; // Ten minutes in milliseconds
             freshOrders = ((Date.now() - orders[orders.length-1].time) < xxMilliSeconds);
         }
@@ -369,7 +369,7 @@ async function makeOffers(bestOffers, allOrders, position, params) {
 
 exports.placeSCoinOrders = placeSCoinOrders;
 async function placeSCoinOrders() {
-    try {
+    try {        
         console.log("Fetching price depth, account info, open orders and trading position.");
 
         const prcDepth = await fetchPriceDepth(symbol);
