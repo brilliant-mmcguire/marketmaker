@@ -138,9 +138,18 @@ function taperTradePrice(tradePrice, tradeAge, mktPrice) {
     return age*tradePrice + (1.0-age)*mktPrice; 
 }
 
-function quotePriceAdjustment() { 
-    return -3.0 * tickSize * deviation * Math.abs(deviation);
-} 
+function quotePriceAdjustment(normalisedDeviation) { 
+    /*  DEV   OLD   NEW ADJUSTMENT  
+        +1.5 -6.75 -6.75
+        +1.0 -3.00 -2.00 
+        +0.5 -0.75 -0.25
+        +0.0 +0.00 +0.00
+        -0.5 +0.75 +0.25
+        -1.0 +3.00 +2.00
+-       -1.5 +6.75 +6.75 */
+    const d = normalisedDeviation;
+    return -2.0 * tickSize * d**3;
+}
 
 async function makeBids(bestBids, allOrders, position, params) {
     console.log(`Making bids for ${symbol} at ${new Date()}`);
