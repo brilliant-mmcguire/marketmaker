@@ -138,6 +138,10 @@ function taperTradePrice(tradePrice, tradeAge, mktPrice) {
     return age*tradePrice + (1.0-age)*mktPrice; 
 }
 
+function quotePriceAdjustment() { 
+    return -3.0 * tickSize * deviation * Math.abs(deviation);
+} 
+
 async function makeBids(bestBids, allOrders, position, params) {
     console.log(`Making bids for ${symbol} at ${new Date()}`);
 
@@ -169,7 +173,7 @@ async function makeBids(bestBids, allOrders, position, params) {
 
     // Adjust price ceiling to allow for position deviation.  
     // If we are overweight, we want to be more demanding on price improvement. 
-    let adjustment = -3.0 * tickSize * deviation * Math.abs(deviation); 
+    let adjustment = quotePriceAdjustment(deviation); 
     prcCeiling += adjustment; 
     
     // Testing a strategy to:
@@ -190,6 +194,7 @@ async function makeBids(bestBids, allOrders, position, params) {
     let staleOrders = allOrders.filter(order => (
         (parseFloat(order.price)>prcCeiling) || (parseFloat(order.price)<prcFloor)
         ));
+    
     if(staleOrders.length>0) {
          console.log(`Cancel orders above price ceiling`);
          await cancelOrders(staleOrders);
@@ -273,7 +278,7 @@ async function makeOffers(bestOffers, allOrders, position, params) {
 
     // Adjust price floor to allow for position deviation. 
     let prcFloor = Math.max(taperPrice,params.mktPrice);
-    let adjustment = -3.0 * tickSize * deviation * Math.abs(deviation);
+    let adjustment = quotePriceAdjustment(deviation); 
     prcFloor += adjustment; 
     
     // Testing a strategy to 
