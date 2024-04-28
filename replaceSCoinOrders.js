@@ -29,7 +29,7 @@ remains at high/low levels for some period of time.  In this scenario we become
 oversold/overbought too quickly. 
 */
 //const qtyLadder = [211, 199, 149, 43, 29, 13, 11];  
-const qtyLadder = [127, 109, 67, 31, 19, 13, 11];  
+const qtyLadder = [113, 109, 107, 31, 19, 13, 11];  
 
 const tickSize = 0.0001;  // Tick Size is 1 basis point.
 const posLimit = 900  // aim to remain inside targetQ +- posLimit
