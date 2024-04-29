@@ -107,7 +107,7 @@ function sigmoid(x) {
 
 // qtyQuanta = [212345, 623456 , 1123456, 5123456, 11123456, 100123456];
 function quoteQuota(mktQuoteSize) {
-/*  108,731	    1
+/*  108,731	    0 (from 1)
     295,562	    2
     803,421	    3
     2,183,926	4
@@ -215,7 +215,10 @@ async function makeBids(bestBids, allOrders, position, params) {
     for(let i = 0; i< bestBids.length; i++) {
         let bid = bestBids[i];
         let qty = qtyLadder[i];
-        
+
+        // Reduce quote for quote levels that are away from best. 
+        let quota = Math.max(0,quoteQuota(bid.qty)-i);
+
         let orders = allOrders.filter(order => parseFloat(order.price) === bid.price ); 
  
         let freshOrders = false;
@@ -225,9 +228,9 @@ async function makeBids(bestBids, allOrders, position, params) {
             freshOrders = ((Date.now() - orders[orders.length-1].time) < xxMilliSeconds);
         }
         
-        let quotaFull = orders.length >= quoteQuota(bid.qty);
+        let quotaFull = orders.length >= quota
         //let quotaFull = (bid.qty < qtyQuanta[orders.length]);
-        let quotaBreach = orders.length > quoteQuota(bid.qty);
+        let quotaBreach = orders.length > quota;
         //let quotaBreach = orders.length > 0 ? (bid.qty < qtyQuanta[orders.length-1]) : false;
         
         if(quotaBreach) {
@@ -239,7 +242,7 @@ async function makeBids(bestBids, allOrders, position, params) {
             continue; 
 
         console.log(
-            `${orders.length} orders @ ${bid.price} (${bid.qty}) quota: ${quoteQuota(bid.qty)} orders freshOrders: ${freshOrders}`
+            `${orders.length} orders @ ${bid.price} (${bid.qty}) quota: ${quota} orders freshOrders: ${freshOrders}`
         );
 
         if(bid.price > prcCeiling || bid.price < prcFloor || quotaFull || freshOrders) {
@@ -322,6 +325,10 @@ async function makeOffers(bestOffers, allOrders, position, params) {
         let offer = bestOffers[i];
         let qty = qtyLadder[i];
 
+        // Reduce quote for quote levels that are away from best. 
+        let quota = Math.max(0,quoteQuota(offer.qty)-i);
+
+
         let orders = allOrders.filter(order => parseFloat(order.price) === offer.price ); 
         
         let freshOrders = false;
@@ -331,9 +338,9 @@ async function makeOffers(bestOffers, allOrders, position, params) {
             freshOrders = ((Date.now() - orders[orders.length-1].time) < xxMilliSeconds);
         }
 
-        let quotaFull = orders.length >= quoteQuota(offer.qty);
+        let quotaFull = orders.length >= quota;
         //let quotaFull = (offer.qty < qtyQuanta[orders.length]);
-        let quotaBreach = orders.length > quoteQuota(offer.qty);
+        let quotaBreach = orders.length > quota;
         //let quotaBreach = orders.length > 0 ? (offer.qty < qtyQuanta[orders.length-1]) : false;
            
         if(quotaBreach) {
@@ -344,7 +351,7 @@ async function makeOffers(bestOffers, allOrders, position, params) {
         if (offer.price > prcCeiling || offer.price < prcFloor) 
             continue; 
         
-        console.log(`${orders.length} orders @ ${offer.price} (${offer.qty}) quota: ${quoteQuota(offer.qty)} orders freshOrders: ${freshOrders}`);      
+        console.log(`${orders.length} orders @ ${offer.price} (${offer.qty}) quota: ${quota} orders freshOrders: ${freshOrders}`);      
             
         if(offer.price < prcFloor || offer.price > prcCeiling || quotaFull || freshOrders) {
        //     console.log(`> Ignore price level ${offer.price}`);
