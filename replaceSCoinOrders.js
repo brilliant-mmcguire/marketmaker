@@ -225,7 +225,7 @@ async function makeBids(bestBids, allOrders, position, params) {
  
         let freshOrders = false;
         if (orders.length>0) { 
-            const xxMinutes = orders.length*5; // Minimum number of minutes bewteen orders at a given price level.
+            const xxMinutes = orders.length*3.0; // Minimum number of minutes bewteen orders at a given price level.
             const xxMilliSeconds = xxMinutes * 60 * 1000; 
             freshOrders = ((Date.now() - orders[orders.length-1].time) < xxMilliSeconds);
         }
@@ -335,7 +335,7 @@ async function makeOffers(bestOffers, allOrders, position, params) {
         
         let freshOrders = false;
         if (orders.length>0) { 
-            const xxMinutes = orders.length*5; // Minimum number of minutes bewteen orders at a give price level.
+            const xxMinutes = orders.length*3; // Minimum number of minutes bewteen orders at a give price level.
             const xxMilliSeconds = xxMinutes * 60 * 1000; // Ten minutes in milliseconds
             freshOrders = ((Date.now() - orders[orders.length-1].time) < xxMilliSeconds);
         }
