@@ -155,9 +155,11 @@ function quotePriceAdjustment(normalisedDeviation) {
     return -2.0 * tickSize * normalisedDeviation**3;
 }
 
-function hasFreshOrders(orderCount, lastOrderTime ) {
+function hasFreshOrders(orders) {
+    const orderCount = orders.length;
     let freshOrders = false;
     if (orderCount>0) { 
+        const lastOrderTime = orders[orderCount].time;
         const xxMinutes = orderCount*3; // Minimum number of minutes bewteen orders at a give price level.
         const xxMilliSeconds = xxMinutes * 60 * 1000; // Ten minutes in milliseconds
         freshOrders = ((Date.now() - lastOrderTime) < xxMilliSeconds);
@@ -233,7 +235,7 @@ async function makeBids(bestBids, allOrders, position, params) {
 
         let orders = allOrders.filter(order => parseFloat(order.price) === bid.price ); 
  
-        let freshOrders = hasFreshOrders(orders.length, orders[orders.length-1].time);
+        let freshOrders = hasFreshOrders(orders);
         //if (orders.length>0) { 
         //    const xxMinutes = orders.length*3.0; // Minimum number of minutes bewteen orders at a given price level.
         //    const xxMilliSeconds = xxMinutes * 60 * 1000; 
@@ -343,8 +345,7 @@ async function makeOffers(bestOffers, allOrders, position, params) {
 
         let orders = allOrders.filter(order => parseFloat(order.price) === offer.price ); 
         
-
-        let freshOrders = hasFreshOrders(orders.length, orders[orders.length-1].time);
+        let freshOrders = hasFreshOrders(orders);
         //let freshOrders = false;
         //if (orders.length>0) { 
         //    const xxMinutes = orders.length*3; // Minimum number of minutes bewteen orders at a give price level.
