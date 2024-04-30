@@ -81,6 +81,12 @@ async function fetchPositions(symbol, days) {
     return computePositions(symbol, trades);
 }
 
+function VWAX(Q0, X0, tQ, tX) {
+    Q1 = Q0*0.6 + tQ*0.4;
+    X1 = (Q0*X0*0.6 + tQ*tX*0.4)/Q1;
+    return { Q1: Q1, X1: X1 };
+}
+
 function computePositions(symbol,trades,rows = []) {
     try {
         const pos = {
@@ -109,13 +115,47 @@ function computePositions(symbol,trades,rows = []) {
         for(let i = 0; i < trades.length; i++) {
             let t = trades[i];
             if(t.isBuyer) {
-                pos.mAvgBuyPrice = pos.mAvgBuyPrice*0.6 + t.price*0.4;
-                pos.mAvgBuyAge = pos.mAvgBuyAge*0.6 + ((Date.now() - t.time)/(60*60*1000))*0.4;
-                pos.mAvgBuyQty = pos.mAvgBuyQty*0.6 + t.qty*0.4;
+                // WANT TO WEIGHT PRICES IN A VWAP FASHION. SO THAT 
+                // SMALL TRADES DO NOT SKEW moving averages. 
+                let price1 = VWAX(
+                    pos.mAvgBuyQty, 
+                    pos.mAvgBuyPrice,
+                    t.qty, 
+                    t.price);
+                    
+                let age = VWAX(
+                    pos.mAvgBuyQty, 
+                    pos.mAvgBuyAge,
+                    t.qty, 
+                    ((Date.now() - t.time)/(60*60*1000)));
+                    
+                pos.mAvgBuyQty = price1.Q1;
+                pos.mAvgBuyPrice = price1.X1;
+                pos.mAvgBuyAge = age.X1; 
+
+             //   pos.mAvgBuyQty = pos.mAvgBuyQty*0.6 + t.qty*0.4;
+             //   pos.mAvgBuyAge = pos.mAvgBuyAge*0.6 + ((Date.now() - t.time)/(60*60*1000))*0.4;
+             //   pos.mAvgBuyPrice = pos.mAvgBuyPrice*0.6 + t.price*0.4; 
             } else {
-                pos.mAvgSellPrice = pos.mAvgSellPrice*0.6 + t.price*0.4;
-                pos.mAvgSellAge = pos.mAvgSellAge*0.6 + ((Date.now() - t.time)/(60*60*1000))*0.4;
-                pos.mAvgSellQty = pos.mAvgSellQty*0.6 + t.qty*0.4;
+                let price1 = VWAX(
+                    pos.mAvgSellQty, 
+                    pos.mAvgSellPrice,
+                    t.qty, 
+                    t.price);
+                    
+                let age = VWAX(
+                    pos.mAvgSellQty, 
+                    pos.mAvgSellAge,
+                    t.qty, 
+                    ((Date.now() - t.time)/(60*60*1000)));
+         
+                pos.mAvgSellQty = price1.Q1;
+                pos.mAvgSellPrice = price1.X1;
+                pos.mAvgSellAge = age.X1; 
+
+               // pos.mAvgSellQty = pos.mAvgSellQty*0.6 + t.qty*0.4;
+               // pos.mAvgSellAge = pos.mAvgSellAge*0.6 + ((Date.now() - t.time)/(60*60*1000))*0.4; 
+               // pos.mAvgSellPrice = pos.mAvgSellPrice*0.6 + t.price*0.4;
             };
 
             pos.commision += t.commission; 
