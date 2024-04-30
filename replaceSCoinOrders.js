@@ -138,7 +138,7 @@ function quoteQuota(mktQuoteSize) {
 function taperTradePrice(tradePrice, tradeAge, mktPrice) {
     // Weight our avg trade price with the market price depending on the age of our trades. 
     // If we have'd traded for a while (up to 3.5 hours), we tend to the hourly weighted market price.   
-    const age = Math.max(2.5 - tradeAge,0)/2.5; 
+    const age = Math.max(2.0 - tradeAge,0)/2.0; 
     console.assert(age<=1.0 && age >=0.0 ,`0 <= scaled trade age <= 1`);
     return age*tradePrice + (1.0-age)*mktPrice; 
 }
