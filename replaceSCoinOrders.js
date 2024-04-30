@@ -155,6 +155,16 @@ function quotePriceAdjustment(normalisedDeviation) {
     return -2.0 * tickSize * normalisedDeviation**3;
 }
 
+function hasFreshOrders(orderCount, lastOrderTime ) {
+    let freshOrders = false;
+    if (orderCount>0) { 
+        const xxMinutes = orderCount*3; // Minimum number of minutes bewteen orders at a give price level.
+        const xxMilliSeconds = xxMinutes * 60 * 1000; // Ten minutes in milliseconds
+        freshOrders = ((Date.now() - lastOrderTime) < xxMilliSeconds);
+    }
+    return freshOrders
+}
+
 async function makeBids(bestBids, allOrders, position, params) {
     console.log(`Making bids for ${symbol} at ${new Date()}`);
 
@@ -223,12 +233,12 @@ async function makeBids(bestBids, allOrders, position, params) {
 
         let orders = allOrders.filter(order => parseFloat(order.price) === bid.price ); 
  
-        let freshOrders = false;
-        if (orders.length>0) { 
-            const xxMinutes = orders.length*3.0; // Minimum number of minutes bewteen orders at a given price level.
-            const xxMilliSeconds = xxMinutes * 60 * 1000; 
-            freshOrders = ((Date.now() - orders[orders.length-1].time) < xxMilliSeconds);
-        }
+        let freshOrders = hasFreshOrders(orders.length, orders[orders.length-1].time);
+        //if (orders.length>0) { 
+        //    const xxMinutes = orders.length*3.0; // Minimum number of minutes bewteen orders at a given price level.
+        //    const xxMilliSeconds = xxMinutes * 60 * 1000; 
+        //    freshOrders = ((Date.now() - orders[orders.length-1].time) < xxMilliSeconds);
+        //}
         
         let quotaFull = orders.length >= quota
         //let quotaFull = (bid.qty < qtyQuanta[orders.length]);
@@ -333,12 +343,14 @@ async function makeOffers(bestOffers, allOrders, position, params) {
 
         let orders = allOrders.filter(order => parseFloat(order.price) === offer.price ); 
         
-        let freshOrders = false;
-        if (orders.length>0) { 
-            const xxMinutes = orders.length*3; // Minimum number of minutes bewteen orders at a give price level.
-            const xxMilliSeconds = xxMinutes * 60 * 1000; // Ten minutes in milliseconds
-            freshOrders = ((Date.now() - orders[orders.length-1].time) < xxMilliSeconds);
-        }
+
+        let freshOrders = hasFreshOrders(orders.length, orders[orders.length-1].time);
+        //let freshOrders = false;
+        //if (orders.length>0) { 
+        //    const xxMinutes = orders.length*3; // Minimum number of minutes bewteen orders at a give price level.
+        //    const xxMilliSeconds = xxMinutes * 60 * 1000; // Ten minutes in milliseconds
+        //    freshOrders = ((Date.now() - orders[orders.length-1].time) < xxMilliSeconds);
+        //}
 
         let quotaFull = orders.length >= quota;
         //let quotaFull = (offer.qty < qtyQuanta[orders.length]);
