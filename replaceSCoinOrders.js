@@ -217,8 +217,9 @@ async function makeBids(bestBids, allOrders, position, params) {
         let bid = bestBids[i];
         let qty = qtyLadder[i];
 
-        // Reduce quote for quote levels that are away from best. 
+        // Reduce quota for quote levels that are away from best. 
         let quota = Math.max(0,quoteQuota(bid.qty)-i);
+        if(i==0 && deviation < -0.33) quota++; // Add to quota if we are in a short position.  
 
         let orders = allOrders.filter(order => parseFloat(order.price) === bid.price ); 
  
@@ -328,7 +329,7 @@ async function makeOffers(bestOffers, allOrders, position, params) {
 
         // Reduce quote for quote levels that are away from best. 
         let quota = Math.max(0,quoteQuota(offer.qty)-i);
-
+        if(i==0 && deviation > 0.33) quota++; // Add to quota if we are in a long position.  
 
         let orders = allOrders.filter(order => parseFloat(order.price) === offer.price ); 
         
