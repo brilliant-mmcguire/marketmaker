@@ -28,7 +28,6 @@ This is to reduce the impact of sharp price moves where the proce shoots through
 remains at high/low levels for some period of time.  In this scenario we become 
 oversold/overbought too quickly. 
 */
-//const qtyLadder = [211, 199, 149, 43, 29, 13, 11];  
 const qtyLadder = [113, 109, 107, 31, 19, 13, 11];  
 
 const tickSize = 0.0001;  // Tick Size is 1 basis point.
@@ -124,15 +123,6 @@ function quoteQuota(mktQuoteSize) {
 
     if (logQuoteSize<2) return 0; // avoid placing orders into small quote sizes.
     return Math.round(logQuoteSize - 0.5); /*round up*/
-
-    /*
-    const qtyQuanta = [212345, 623456 , 1123456, 5123456, 11123456, 100123456];
-    let max = 0; 
-    for(let i = 0; i < qtyQuanta.length-1; i++) {
-        if (mktQuoteSize >= qtyQuanta[i]) max = i+1;
-    };
-    return max;
-    */
 }
 
 function taperTradePrice(tradePrice, tradeAge, mktPrice) {
@@ -174,25 +164,8 @@ async function makeBids(bestBids, allOrders, position, params) {
 
    // let usdcTotal = params.coinQty;
     let deviation = params.deviation;
-    
     let prcFloor = bestBids[2].price;
-  
-  //  taperBuyPrice = params.avgBuy.taperPrice;
-  //  taperSellPrice = params.avgSell.taperPrice; 
-
     let taperPrice = params.avgBuy.taperPrice;
-
-    /* 
-    Do we need this? 
-    The risk is the price moves up, we have a low avg buy price and so don't try to buy back. 
-    The adjustment and tapering should, between them, take care of it.  Shouldn't it? 
-
-    if (deviation < -0.5) { // (usdcTotal < targetQ) { 
-        // Short on USDC so buy back, even if at cost or at a loss.
-        taperPrice = taperSellPrice;
-        console.log(`Oversold ${usdcTotal} at recent avg price of ${position.mAvgSellPrice} (${position.mAvgSellAge} hrs)`);
-    }
-    */
 
     // If mkt price falls below recent buy price we want to switch to
     // ceiling based on mkt price and apply position adjustment to that.  
@@ -238,16 +211,8 @@ async function makeBids(bestBids, allOrders, position, params) {
         let orders = allOrders.filter(order => parseFloat(order.price) === bid.price ); 
  
         let freshOrders = hasFreshOrders(orders);
-        //if (orders.length>0) { 
-        //    const xxMinutes = orders.length*3.0; // Minimum number of minutes bewteen orders at a given price level.
-        //    const xxMilliSeconds = xxMinutes * 60 * 1000; 
-        //    freshOrders = ((Date.now() - orders[orders.length-1].time) < xxMilliSeconds);
-        //}
-        
         let quotaFull = orders.length >= quota
-        //let quotaFull = (bid.qty < qtyQuanta[orders.length]);
         let quotaBreach = orders.length > quota;
-        //let quotaBreach = orders.length > 0 ? (bid.qty < qtyQuanta[orders.length-1]) : false;
         
         if(quotaBreach) {
             cancelOrders([orders[orders.length-1]]);
@@ -287,26 +252,10 @@ async function makeOffers(bestOffers, allOrders, position, params) {
 
     console.log(`Making offers for ${symbol} at ${new Date()}`);
 
-    // let usdcTotal = params.coinQty;
     let deviation = params.deviation;
-   
-    //let prcFloor = position.mAvgBuyPrice; // Avoid selling back at a loss relative to our recent trades.   
     let prcCeiling = bestOffers[2].price;
-    
-    //taperBuyPrice = params.avgBuy.taperPrice;
-    //taperSellPrice = params.avgSell.taperPrice; 
-
     let taperPrice = params.avgSell.taperPrice;
    
-    /* See comments in makeBids.
-    if ( deviation > 0.5 ) { //(usdcTotal < targetQ) {
-        // We are long so want to sell even if at cost or at a loss.
-        //prcFloor = Math.max(position.mAvgBuyPrice,bestOffers[0].price);
-        taperPrice = taperBuyPrice;
-        console.log(`Overbought at ${usdcTotal} at an recent avg price of ${position.mAvgBuyPrice} (${position.mAvgBuyAge} hrs)`);
-    } 
-    */
-
     // Adjust price floor to allow for position deviation. 
     let prcFloor = Math.max(taperPrice,params.mktPrice);
     let adjustment = quotePriceAdjustment(deviation); 
@@ -348,17 +297,8 @@ async function makeOffers(bestOffers, allOrders, position, params) {
         let orders = allOrders.filter(order => parseFloat(order.price) === offer.price ); 
         
         let freshOrders = hasFreshOrders(orders);
-        //let freshOrders = false;
-        //if (orders.length>0) { 
-        //    const xxMinutes = orders.length*3; // Minimum number of minutes bewteen orders at a give price level.
-        //    const xxMilliSeconds = xxMinutes * 60 * 1000; // Ten minutes in milliseconds
-        //    freshOrders = ((Date.now() - orders[orders.length-1].time) < xxMilliSeconds);
-        //}
-
         let quotaFull = orders.length >= quota;
-        //let quotaFull = (offer.qty < qtyQuanta[orders.length]);
         let quotaBreach = orders.length > quota;
-        //let quotaBreach = orders.length > 0 ? (offer.qty < qtyQuanta[orders.length-1]) : false;
            
         if(quotaBreach) {
             cancelOrders([orders[orders.length-1]]);
@@ -408,7 +348,6 @@ async function placeSCoinOrders() {
             usdt : noneZeroBalances.balances.filter(balance => (balance.asset=='USDT'))[0]
         }    
       
-        //let mktMidPrice = 0.5*(prcDepth.bids[0].price + prcDepth.asks[0].price);
         let mktPrice = priceStats.weightedAvgPrice;
         let targetQ = targetQty(mktPrice);
         let coinQty = balances.usdc.total;
