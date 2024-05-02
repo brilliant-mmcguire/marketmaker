@@ -152,7 +152,7 @@ function hasFreshOrders(orders) {
     let freshOrders = false;
     if (orderCount>0) { 
         const lastOrderTime = orders[orderCount-1].time;
-        const xxMinutes = orderCount*3; // Minimum number of minutes bewteen orders at a give price level.
+        const xxMinutes = orderCount*randomisedMinuteCount(); // Minimum number of minutes bewteen orders at a give price level.
         const xxMilliSeconds = xxMinutes * 60 * 1000; // Ten minutes in milliseconds
         freshOrders = ((Date.now() - lastOrderTime) < xxMilliSeconds);
     }
@@ -160,7 +160,7 @@ function hasFreshOrders(orders) {
 }
 
 function randomisedMinuteCount() {
-    let rnd = Math.ceil(Math.random()*7);
+    let rnd = Math.ceil(Math.random()*5);
     console.log(`Random number ${rnd}`);
     return rnd;
 }
