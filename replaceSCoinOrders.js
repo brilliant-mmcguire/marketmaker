@@ -159,12 +159,18 @@ function hasFreshOrders(orders) {
     return freshOrders;
 }
 
-async function makeBids(bestBids, allOrders, position, params) {
+function randomisedMinuteCount() {
+    let rnd = Math.ceil(Math.random()*7);
+    console.log(`Random number ${rnd}`);
+    return rnd;
+}
+
+async function makeBids(mktQuotes, allOrders, position, params) {
     console.log(`Making bids for ${symbol} at ${new Date()}`);
 
    // let usdcTotal = params.coinQty;
     let deviation = params.deviation;
-    let prcFloor = bestBids[2].price;
+    let prcFloor = mktQuotes[2].price;
     let taperPrice = params.avgBuy.taperPrice;
 
     // If mkt price falls below recent buy price we want to switch to
@@ -180,8 +186,8 @@ async function makeBids(bestBids, allOrders, position, params) {
     // a) encourage a short position when price pops up. 
     // b) avoid buying at very high prices, when for example there is a short lived liquidity hole.
     // Enforce bid to be at least one tick away from the current best bid. 
-    if((bestBids[0].price) > target.hiPrice) { 
-        prcCeiling = Math.min(bestBids[0].price - tickSize,prcCeiling);
+    if((mktQuotes[0].price) > target.hiPrice) { 
+        prcCeiling = Math.min(mktQuotes[0].price - tickSize,prcCeiling);
     }
     console.log({ 
         taperPrice : taperPrice,
@@ -200,8 +206,8 @@ async function makeBids(bestBids, allOrders, position, params) {
          await cancelOrders(staleOrders);
     }
     
-    for(let i = 0; i< bestBids.length; i++) {
-        let bid = bestBids[i];
+    for(let i = 0; i< mktQuotes.length; i++) {
+        let bid = mktQuotes[i];
         let qty = qtyLadder[i];
 
         // Reduce quota for quote levels that are away from best. 
@@ -248,12 +254,12 @@ async function makeBids(bestBids, allOrders, position, params) {
     };
 }
 
-async function makeOffers(bestOffers, allOrders, position, params) {
+async function makeOffers(mktQuotes, allOrders, position, params) {
 
     console.log(`Making offers for ${symbol} at ${new Date()}`);
 
     let deviation = params.deviation;
-    let prcCeiling = bestOffers[2].price;
+    let prcCeiling = mktQuotes[2].price;
     let taperPrice = params.avgSell.taperPrice;
    
     // Adjust price floor to allow for position deviation. 
@@ -265,8 +271,8 @@ async function makeOffers(bestOffers, allOrders, position, params) {
     // a) encourage a long position when price drops. 
     // b) avoid selling at very low prices, when for example there is a short lived liquidity hole.
     // Default bid is one tick away from the current best bid. 
-    if((bestOffers[0].price) < target.loPrice) { 
-        prcFloor = Math.max(bestOffers[0].price + tickSize, prcFloor);
+    if((mktQuotes[0].price) < target.loPrice) { 
+        prcFloor = Math.max(mktQuotes[0].price + tickSize, prcFloor);
     }
 
     console.log({ 
@@ -286,8 +292,8 @@ async function makeOffers(bestOffers, allOrders, position, params) {
          await cancelOrders(staleOrders);
     }    
     
-    for(let i = 0; i< bestOffers.length; i++) {
-        let offer = bestOffers[i];
+    for(let i = 0; i< mktQuotes.length; i++) {
+        let offer = mktQuotes[i];
         let qty = qtyLadder[i];
 
         // Reduce quote for quote levels that are away from best. 
