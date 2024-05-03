@@ -113,15 +113,24 @@ function quoteQuota(mktQuoteSize) {
     5,936,526	5
     16,137,152	6
     43,865,326	7
-    119,238,319	8 */
+    119,238,319	8 
+    27,183      0 (1)
+    73,891      0 (2)
+    200,855	    3
+    545,982	    4
+    1,484,132	5
+    4,034,288	6
+    10,966,332	7
+    29,809,580	8
+    81,030,839	9*/
     
-    const scaleQuoteSize = 30000; 
+    const scaleQuoteSize = 10000; 
     const normalisedQuoteSize = mktQuoteSize / scaleQuoteSize; 
     
     const logQuoteSize =
         normalisedQuoteSize >= 1 ?  Math.log(normalisedQuoteSize) : 0;
 
-    if (logQuoteSize<2) return 0; // avoid placing orders into small quote sizes.
+    if (mktQuoteSize < 200000) return 0; // avoid placing orders into small quote sizes.
     return Math.round(logQuoteSize - 0.5); /*round up*/
 }
 
