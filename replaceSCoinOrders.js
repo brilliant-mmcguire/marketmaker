@@ -265,26 +265,23 @@ async function makeBids(mktQuotes, allOrders, position, params) {
             `${orders.length} orders @ ${bid.price} (${bid.qty}) quota: ${quota} orders freshOrders: ${freshOrders}`
         );
 
-        if(quotaFull) {
-           // console.log(`> Ignore price level ${bid.price} `);
-           // console.log(`>> quotaFull: ${quotaFull}`); 
-           // console.log(`>> freshOrders: ${freshOrders}`);
-        } else {
-            if( ! stochasticDecision(orders.length)) continue;
+        if(quotaFull) continue; 
         
-            console.log(`> Place BUY at ${bid.price}`);
-            try {
-                joinBid = await placeOrder(
-                    'BUY', 
-                    qty, 
-                    symbol, 
-                    bid.price
-                );
-                console.log(`Placed: ${joinBid.side} ${joinBid.origQty} @ ${joinBid.price}`);   
-                break;  // Throttle to only one order at a time.
-            } catch (error) {
-                console.error(error.message);
-            }
+        if( ! stochasticDecision(orders.length)) continue;
+    
+        console.log(`> Place BUY at ${bid.price}`);
+
+        try {
+            joinBid = await placeOrder(
+                'BUY', 
+                qty, 
+                symbol, 
+                bid.price
+            );
+            console.log(`Placed: ${joinBid.side} ${joinBid.origQty} @ ${joinBid.price}`);   
+            break;  // Throttle to only one order at a time.
+        } catch (error) {
+            console.error(error.message);
         }
     };
 }
@@ -352,28 +349,24 @@ async function makeOffers(mktQuotes, allOrders, position, params) {
             `${orders.length} orders @ ${offer.price} (${offer.qty}) quota: ${quota} orders freshOrders: ${freshOrders}`
         );      
             
-        if(quotaFull) {
-       //     console.log(`> Ignore price level ${offer.price}`);
-       //     console.log(`>> quotaFull: ${quotaFull}, breach: ${quotaBreach}`); 
-       //     console.log(`>> freshOrders: ${freshOrders}`);
-        } else {
-            if( ! stochasticDecision(orders.length)) continue;
+        if(quotaFull) continue;
+        if( ! stochasticDecision(orders.length)) continue;
         
-            console.log(`> Place SELL @ ${offer.price}`);
-            try {
-                joinOffer = await placeOrder(
-                    'SELL', 
-                    qty, 
-                    symbol, 
-                    offer.price
-                );
-                console.log(`Placed: ${joinOffer.side} ${joinOffer.origQty} @ ${joinOffer.price}`); 
-                break;  // Throttle to only one order at a time.   
-            } catch (error) {
-                console.error(error.message);
-            }
-        } 
-    };
+        console.log(`> Place SELL @ ${offer.price}`);
+
+        try {
+            joinOffer = await placeOrder(
+                'SELL', 
+                qty, 
+                symbol, 
+                offer.price
+            );
+            console.log(`Placed: ${joinOffer.side} ${joinOffer.origQty} @ ${joinOffer.price}`); 
+            break;  // Throttle to only one order at a time.   
+        } catch (error) {
+            console.error(error.message);
+        }
+    }
 }
 
 exports.placeSCoinOrders = placeSCoinOrders;
