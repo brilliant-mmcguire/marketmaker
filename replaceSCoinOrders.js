@@ -179,8 +179,17 @@ function randomisedInterval(activeOrderCount) {
 
 // Want to place an order ever xx Minutes on average.  
 // Rather than place an order after at set intervals we use a random number 
-// to space out order placement with an average interval of xx minutes.
-// This will assume a polling period of 1 minute. 
+//  to space out order placement with an average interval of xx minutes.
+// Assume a polling period of 1 minute. 
+/* active orders count v random variable bar 
+    0	0.33
+    1	0.17
+    2	0.11
+    3	0.08
+    4	0.07
+    5	0.06
+    6	0.05
+    7	0.04 */ 
 function stochasticDecision(orderCount) { 
     const x = Math.random();
     const bar = 1.0/(3.0*(1+orderCount)); 
@@ -250,20 +259,19 @@ async function makeBids(mktQuotes, allOrders, position, params) {
             console.log(`Quota breach @ ${bid.price} (${bid.qty})and cancelling last order.`);
         }
 
-        if (bid.price > prcCeiling || bid.price < prcFloor) 
-            continue; 
+        if (bid.price > prcCeiling || bid.price < prcFloor) continue; 
 
         console.log(
             `${orders.length} orders @ ${bid.price} (${bid.qty}) quota: ${quota} orders freshOrders: ${freshOrders}`
         );
 
-
-        if( ! stochasticDecision(orders.length)) continue;
         if(bid.price > prcCeiling || bid.price < prcFloor || quotaFull) {
            // console.log(`> Ignore price level ${bid.price} `);
            // console.log(`>> quotaFull: ${quotaFull}`); 
            // console.log(`>> freshOrders: ${freshOrders}`);
         } else {
+            if( ! stochasticDecision(orders.length)) continue;
+        
             console.log(`> Place BUY at ${bid.price}`);
             try {
                 joinBid = await placeOrder(
@@ -273,7 +281,7 @@ async function makeBids(mktQuotes, allOrders, position, params) {
                     bid.price
                 );
                 console.log(`Placed: ${joinBid.side} ${joinBid.origQty} @ ${joinBid.price}`);   
-                break;  // Throttle to only one order at a time.   
+                break;  // Throttle to only one order at a time.
             } catch (error) {
                 console.error(error.message);
             }
@@ -339,14 +347,18 @@ async function makeOffers(mktQuotes, allOrders, position, params) {
         }
         
         if (offer.price > prcCeiling || offer.price < prcFloor) continue; 
-        console.log(`${orders.length} orders @ ${offer.price} (${offer.qty}) quota: ${quota} orders freshOrders: ${freshOrders}`);      
+
+        console.log(
+            `${orders.length} orders @ ${offer.price} (${offer.qty}) quota: ${quota} orders freshOrders: ${freshOrders}`
+        );      
             
-        if( ! stochasticDecision(orders.length)) continue;
         if(offer.price < prcFloor || offer.price > prcCeiling || quotaFull) {
        //     console.log(`> Ignore price level ${offer.price}`);
        //     console.log(`>> quotaFull: ${quotaFull}, breach: ${quotaBreach}`); 
        //     console.log(`>> freshOrders: ${freshOrders}`);
         } else {
+            if( ! stochasticDecision(orders.length)) continue;
+        
             console.log(`> Place SELL @ ${offer.price}`);
             try {
                 joinOffer = await placeOrder(
