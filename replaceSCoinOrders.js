@@ -173,7 +173,7 @@ function randomisedInterval(activeOrderCount) {
     let rnd = Math.ceil(
         Math.random() * xxMilliSeconds * Math.max(1,activeOrderCount)
         );
-    console.log(`Randomised Order Interval ${(rnd/60/1000).toFixed(2)} minutes`);
+    //console.log(`Randomised Order Interval ${(rnd/60/1000).toFixed(2)} minutes`);
     return rnd;
 }
 
@@ -183,10 +183,11 @@ function randomisedInterval(activeOrderCount) {
 // This will assume a polling period of 1 minute. 
 function stochasticDecision(orderCount) { 
     const x = Math.random();
-    const barrier = 1.0/(3.0*(1+orderCount)); 
-    
-    if(x<=barrier) console.log(`Stochastic decision. x ${x} threshold ${barrier}`)
-    return x <= barrier;
+    const bar = 1.0/(3.0*(1+orderCount)); 
+    const decision = x <= bar
+
+    console.log(`> Stochastic decision: ${decision} (x: ${x.toFixed(4)} bar: ${bar.toFixed(4)})`)
+    return decision;
 }
 
 async function makeBids(mktQuotes, allOrders, position, params) {
