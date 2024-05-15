@@ -265,7 +265,7 @@ async function makeBids(mktQuotes, allOrders, position, params) {
             `${orders.length} orders @ ${bid.price} (${bid.qty}) quota: ${quota} orders freshOrders: ${freshOrders}`
         );
 
-        if(bid.price > prcCeiling || bid.price < prcFloor || quotaFull) {
+        if(quotaFull) {
            // console.log(`> Ignore price level ${bid.price} `);
            // console.log(`>> quotaFull: ${quotaFull}`); 
            // console.log(`>> freshOrders: ${freshOrders}`);
@@ -352,7 +352,7 @@ async function makeOffers(mktQuotes, allOrders, position, params) {
             `${orders.length} orders @ ${offer.price} (${offer.qty}) quota: ${quota} orders freshOrders: ${freshOrders}`
         );      
             
-        if(offer.price < prcFloor || offer.price > prcCeiling || quotaFull) {
+        if(quotaFull) {
        //     console.log(`> Ignore price level ${offer.price}`);
        //     console.log(`>> quotaFull: ${quotaFull}, breach: ${quotaBreach}`); 
        //     console.log(`>> freshOrders: ${freshOrders}`);
