@@ -177,6 +177,18 @@ function randomisedInterval(activeOrderCount) {
     return rnd;
 }
 
+// Want to place an order ever xx Minutes on average.  
+// Rather than place an order after at set intervals we use a random number 
+// to space out order placement with an average interval of xx minutes.
+// This will assume a polling period of 1 minute. 
+function stochasticDecision(orderCount) { 
+    const x = Math.random();
+    const barrier = 1.0/(3.0*(1+orderCount)); 
+    
+    if(x<=barrier) console.log(`Stochastic decision. x ${x} threshold ${barrier}`)
+    return x <= barrier;
+}
+
 async function makeBids(mktQuotes, allOrders, position, params) {
     console.log(`Making bids for ${symbol} at ${new Date()}`);
 
@@ -187,7 +199,7 @@ async function makeBids(mktQuotes, allOrders, position, params) {
 
     // If mkt price falls below recent buy price we want to switch to
     // ceiling based on mkt price and apply position adjustment to that.  
-    let prcCeiling = Math.min(taperPrice,params.mktPrice); 
+    let prcCeiling = Math.min(taperPrice,params.mktPrice);
 
     // Adjust price ceiling to allow for position deviation.  
     // If we are overweight, we want to be more demanding on price improvement. 
@@ -244,7 +256,9 @@ async function makeBids(mktQuotes, allOrders, position, params) {
             `${orders.length} orders @ ${bid.price} (${bid.qty}) quota: ${quota} orders freshOrders: ${freshOrders}`
         );
 
-        if(bid.price > prcCeiling || bid.price < prcFloor || quotaFull || freshOrders) {
+
+        if( ! stochasticDecision(orders.length)) continue;
+        if(bid.price > prcCeiling || bid.price < prcFloor || quotaFull) {
            // console.log(`> Ignore price level ${bid.price} `);
            // console.log(`>> quotaFull: ${quotaFull}`); 
            // console.log(`>> freshOrders: ${freshOrders}`);
@@ -323,12 +337,11 @@ async function makeOffers(mktQuotes, allOrders, position, params) {
             console.log(`Quota breach @ ${offer.price} (${offer.qty}) and cancelling last order.`);
         }
         
-        if (offer.price > prcCeiling || offer.price < prcFloor) 
-            continue; 
-        
+        if (offer.price > prcCeiling || offer.price < prcFloor) continue; 
         console.log(`${orders.length} orders @ ${offer.price} (${offer.qty}) quota: ${quota} orders freshOrders: ${freshOrders}`);      
             
-        if(offer.price < prcFloor || offer.price > prcCeiling || quotaFull || freshOrders) {
+        if( ! stochasticDecision(orders.length)) continue;
+        if(offer.price < prcFloor || offer.price > prcCeiling || quotaFull) {
        //     console.log(`> Ignore price level ${offer.price}`);
        //     console.log(`>> quotaFull: ${quotaFull}, breach: ${quotaBreach}`); 
        //     console.log(`>> freshOrders: ${freshOrders}`);
