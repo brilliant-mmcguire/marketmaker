@@ -129,8 +129,9 @@ function quoteQuota(mktQuoteSize) {
     
     let logQuoteSize =
         normalisedQuoteSize >= 1 ?  Math.log(normalisedQuoteSize) : 0;
-    logQuoteSize*=1.3;
     
+    logQuoteSize*=1.3; // Scale up order count. 
+
     if (mktQuoteSize < 200000) return 0; // avoid placing orders into small quote sizes.
     return Math.round(logQuoteSize - 0.5); /*round up*/
 }
@@ -183,18 +184,19 @@ function randomisedInterval(activeOrderCount) {
 //  to space out order placement with an average interval of xx minutes.
 // Assume a polling period of 1 minute. 
 /* active orders count v random variable bar 
-    0	0.33
-    1	0.17
-    2	0.11
-    3	0.08
-    4	0.07
-    5	0.06
-    6	0.05
-    7	0.04 */ 
+    0	0.50
+    1	0.25
+    2	0.17
+    3	0.13
+    4	0.10
+    5	0.08
+    6	0.07
+    7	0.06 */ 
 function stochasticDecision(orderCount) { 
     const x = Math.random();
-    const bar = 1.0/(3.0*(1+orderCount)); 
-    const decision = x <= bar
+    const timeScaleFactor = 2.0; 
+    const bar = 1.0/(timeScaleFactor*(1+orderCount)); 
+    const decision = x <= bar;
 
     console.log(`> Stochastic decision: ${decision} (x: ${x.toFixed(4)} bar: ${bar.toFixed(4)})`)
     return decision;
