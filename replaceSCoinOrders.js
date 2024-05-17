@@ -130,6 +130,8 @@ function quoteQuota(mktQuoteSize) {
     const logQuoteSize =
         normalisedQuoteSize >= 1 ?  Math.log(normalisedQuoteSize) : 0;
 
+    logQuoteSize*=1.3; // Scale up number of orders.  
+
     if (mktQuoteSize < 200000) return 0; // avoid placing orders into small quote sizes.
     return Math.round(logQuoteSize - 0.5); /*round up*/
 }
