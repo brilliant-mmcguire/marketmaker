@@ -183,7 +183,7 @@ function randomisedInterval(activeOrderCount) {
 // Rather than place an order after at set intervals we use a random number 
 //  to space out order placement with an average interval of xx minutes.
 // Assume a polling period of 1 minute. 
-/* active orders count v random variable bar 
+/* active orders count v random variable bar when timeFactor is 2.0 
     0	0.50
     1	0.25
     2	0.17
@@ -194,7 +194,7 @@ function randomisedInterval(activeOrderCount) {
     7	0.06 */ 
 function stochasticDecision(orderCount) { 
     const x = Math.random();
-    const timeScaleFactor = 1.5; 
+    const timeScaleFactor = 1.25; 
     const bar = 1.0/(timeScaleFactor*(1+orderCount)); 
     const decision = x <= bar;
 
