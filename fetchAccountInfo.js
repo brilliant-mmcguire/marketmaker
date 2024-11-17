@@ -26,13 +26,14 @@ async function main() {
     try {
         const prcWindow = '3d';
         const noneZeroBalances =  await fetchAccountInfo();
+        const prcUSDC = 1.00 // await fetchPriceStats('USDCUSDT', prcWindow);
         const prcETH = await fetchPriceStats('ETHUSDT', prcWindow);
         const prcBTC = await fetchPriceStats('BTCUSDT', prcWindow);
         const prcBNB = await fetchPriceStats('BNBUSDT', prcWindow);
         const prcXRP = await fetchPriceStats('XRPUSDT', prcWindow);
 
         let balances = {
-           USDC : filterByAsset('USDC', 1.00, noneZeroBalances),
+           USDC : filterByAsset('USDC', prcUSDC, noneZeroBalances),
            USDT : filterByAsset('USDT', 1.00, noneZeroBalances), 
            ETH  : filterByAsset('ETH', prcETH.weightedAvgPrice, noneZeroBalances),
            BTC  : filterByAsset('BTC', prcBTC.weightedAvgPrice, noneZeroBalances), 
