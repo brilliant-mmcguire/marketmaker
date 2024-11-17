@@ -43,12 +43,15 @@ async function main() {
         
         var b = Object.values(balances)
         let totalUsd = b.reduce((acc, item) => acc + item.usd, 0);
-        totalUsd =  Math.round(100*totalUsd)/100;
+        totalUsd =  Math.round(100*totalUsd)/100;   
+        let usdAssetTotal = balances.USDT.usd + balances.USDC.usd;
+        usdAssetTotal = Math.round(100*usdAssetTotal)/100;  
 
         console.log(`Balances for uid ${noneZeroBalances.uid} @ `, new Date());
         console.log(`total: ${totalUsd}`);
+        console.log(`usd assets: ${usdAssetTotal}`);
         console.log(balances);
-
+        
     } catch (error) {
         console.error(`Error fetching Account Info ${error}`);
     }
