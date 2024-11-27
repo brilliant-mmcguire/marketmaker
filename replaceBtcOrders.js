@@ -12,11 +12,9 @@ const { fetchPriceStats } = require('./marketDataTxns');
 const { cancelOpenOrders } = require('./orderTxns');
 const { fetchAccountInfo } = require('./accountTxns');
 
-const lotSize = 0.00033; //BTC
+const lotSize = 0.1; //SOL
 const posnTarget = 15*lotSize; 
 const posnDeviation = 5*lotSize;
-//const posnHi = 20*lotSize;  
-//const posnLo = 10*lotSize;
 
 const target = { 
     coinQty : 15*lotSize, 
@@ -24,7 +22,7 @@ const target = {
 }
 
 const threshold = { 
-    target : 300, //USDT 
+    target : 300,     //USDT 
     deviation : 100,  //USDT
     pricePct : 0.032, // at one deviation.
 
@@ -47,24 +45,24 @@ function getTradeSignals(priceStats) {
         sellBasePrc : sellBasePrc,
         buyBasePrice : buyBasePrice,
         sell : [
-            Math.round((sellBasePrc * 1.0360) * 100) / 100,
-            Math.round((sellBasePrc * 1.0280) * 100) / 100,
-            Math.round((sellBasePrc * 1.0210) * 100) / 100,
-            Math.round((sellBasePrc * 1.0150) * 100) / 100,
-            Math.round((sellBasePrc * 1.0100) * 100) / 100,
-            Math.round((sellBasePrc * 1.0060) * 100) / 100,
-            Math.round((sellBasePrc * 1.0030) * 100) / 100,
-            Math.round((sellBasePrc * 1.0010) * 100) / 100
+            Math.round((sellBasePrc * 1.0350) * 1000000) / 1000000,
+            Math.round((sellBasePrc * 1.0300) * 1000000) / 1000000,
+            Math.round((sellBasePrc * 1.0250) * 1000000) / 1000000,
+            Math.round((sellBasePrc * 1.0200) * 1000000) / 1000000,
+            Math.round((sellBasePrc * 1.0150) * 1000000) / 1000000,
+            Math.round((sellBasePrc * 1.0100) * 1000000) / 1000000,
+            Math.round((sellBasePrc * 1.0070) * 1000000) / 1000000,
+            Math.round((sellBasePrc * 1.0050) * 1000000) / 1000000
         ],
         buy : [
-            Math.round((buyBasePrice * 0.9640) * 100) / 100,
-            Math.round((buyBasePrice * 0.9720) * 100) / 100,
-            Math.round((buyBasePrice * 0.9790) * 100) / 100,
-            Math.round((buyBasePrice * 0.9850) * 100) / 100,
-            Math.round((buyBasePrice * 0.9900) * 100) / 100,
-            Math.round((buyBasePrice * 0.9940) * 100) / 100, 
-            Math.round((buyBasePrice * 0.9970) * 100) / 100, 
-            Math.round((buyBasePrice * 0.9990) * 100) / 100
+            Math.round((buyBasePrice * 0.9650) * 1000000) / 1000000,
+            Math.round((buyBasePrice * 0.9700) * 1000000) / 1000000,
+            Math.round((buyBasePrice * 0.9750) * 1000000) / 1000000,
+            Math.round((buyBasePrice * 0.9800) * 1000000) / 1000000,
+            Math.round((buyBasePrice * 0.9850) * 1000000) / 1000000,
+            Math.round((buyBasePrice * 0.9900) * 1000000) / 1000000, 
+            Math.round((buyBasePrice * 0.9930) * 1000000) / 1000000, 
+            Math.round((buyBasePrice * 0.9950) * 1000000) / 1000000
         ]
     }
 }
@@ -80,18 +78,20 @@ function taperTradePrice(avgTradePrice, avgTradeAage, markPrice) {
 
 exports.placeNewOrders = placeNewOrders;
 async function placeNewOrders(symbol, tradingPos, totalQty, priceStats) {
+
     const tradeSignals = getTradeSignals(priceStats);
-    const btcPos = {
+    const coinPos = {
         coinQty  : totalQty,
         markPrice : priceStats.weightedAvgPrice,  // Mark to market price. 
         quoteQty : totalQty * priceStats.weightedAvgPrice,
-     }
-    
-    console.log(`Coin position:`, btcPos); 
+    }
+
+    console.log(`Coin position:`, coinPos); 
     console.log(`Trade signals:`, tradeSignals);
     
-   // let quoteQtyDeviation = (btcPos.quoteQty-threshold.target)/threshold.deviation;
-    let coinDeviation = (btcPos.coinQty-target.coinQty)/target.coinQtyDeviation;
+    // let quoteQtyDeviation = (btcPos.quoteQty-threshold.target)/threshold.deviation;
+    let coinDeviation = (coinPos.coinQty-target.coinQty)/target.coinQtyDeviation;
+    
     //let relativePosn = coinQtyDeviation;
     let prcPct = 1.0 - coinDeviation*Math.abs(coinDeviation)*threshold.pricePct;  
 
@@ -108,11 +108,11 @@ async function placeNewOrders(symbol, tradingPos, totalQty, priceStats) {
    
     guardRails = {
         markPrice : priceStats.weightedAvgPrice,
-        coinQty : btcPos.coinQty,
-        quoteQty : btcPos.quoteQty,
+        coinQty : coinPos.coinQty,
+        quoteQty : coinPos.quoteQty,
         targetQty : posnTarget,
        // targetQuoteQty  : threshold.target,
-        coinDeviation : (btcPos.coinQty-target.coinQty)/target.coinQtyDeviation,
+        coinDeviation : (coinPos.coinQty-target.coinQty)/target.coinQtyDeviation,
         //quoteQtyDeviation : (btcPos.quoteQty-threshold.target)/threshold.deviation,
         //prcTolerance : quoteQtyDeviation*Math.abs(quoteQtyDeviation)*threshold.pricePct,
         prcTolerance : coinDeviation * Math.abs(coinDeviation) * threshold.pricePct,
@@ -132,7 +132,7 @@ async function placeNewOrders(symbol, tradingPos, totalQty, priceStats) {
     //console.log(`QQ balance: ${btcPos.quoteQty} ; posDeviation: ${relativePosn}` );
     //console.log(`Avg buy price: ${tradingPos.mAvgBuyPrice} ; Avg sell price: ${tradingPos.mAvgSellPrice}.`);
     //console.log(threshold);
-   
+
     try {  // Make bids.
         if(coinDeviation > 0)  console.log(
                 `Make bids. Long posn @ avg buy price ${tradingPos.mAvgBuyPrice}. Ceiling: ${buyPrcCeiling}. Buy more at lower price.`
@@ -200,21 +200,20 @@ async function replaceOrders(symbol)
     const priceStats  = await fetchPriceStats(symbol, '1h');
     const noneZeroBalances =  await fetchAccountInfo();
 
-    let btcBalance = {};
-    if(symbol.startsWith("BTC")) 
-        btcBalance = noneZeroBalances.balances.filter(balance => (balance.asset=='BTC'))[0];
-    else throw 'Symbol not for BTC.'
+    let assetBalance = {};
+    if(symbol.startsWith("SOL")) 
+        assetBalance = noneZeroBalances.balances.filter(balance => (balance.asset=='SOL'))[0];
+    else throw 'Symbol not for SOL.'
 
-    await cancelOpenOrders(symbol);
-
+   // await cancelOpenOrders(symbol);
     //console.log(`Targeting ${posnTarget} BTC with hi ${posnHi}, lo ${posnLo}, and lot size of ${lotSize}`)
 
-    await placeNewOrders(symbol, tradingPos, btcBalance.total, priceStats); 
+    await placeNewOrders(symbol, tradingPos, assetBalance.total, priceStats); 
 }
 
 async function main() {
     let symbol = process.argv[2];
-    if(!symbol) symbol = 'BTCUSDT'; 
+    if(!symbol) symbol = 'SOLBTC'; 
 
     console.log(`replace ${symbol} orders ${new Date().toLocaleString()}`);
 
