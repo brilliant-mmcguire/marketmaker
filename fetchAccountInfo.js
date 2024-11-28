@@ -16,42 +16,47 @@ const { fetchAccountInfo } = require('./accountTxns');
 
 function filterByAsset(asset, price, accountInfo){
     let b = accountInfo.balances.filter(balance => (balance.asset==asset))[0];
+    let q = b ? b.total : 0;
     return {
-        qty  : b.total, 
-        usd : Math.round(100*b.total*price)/100,
-        free : Math.round(100*b.free*price)/100
+        qty  : q, 
+        usd : Math.round(100*q*price)/100,
+        free : Math.round(100*q*price)/100
     };
 }
 async function main() {
     try {
         const prcWindow = '3d';
         const noneZeroBalances =  await fetchAccountInfo();
-        const prcUSDC = 1.00 // await fetchPriceStats('USDCUSDT', prcWindow);
+
+        const prcUSDC = await fetchPriceStats('USDCUSDT', prcWindow);
         const prcETH = await fetchPriceStats('ETHUSDT', prcWindow);
         const prcBTC = await fetchPriceStats('BTCUSDT', prcWindow);
         const prcBNB = await fetchPriceStats('BNBUSDT', prcWindow);
         const prcXRP = await fetchPriceStats('XRPUSDT', prcWindow);
+        const prcSOL = await fetchPriceStats('SOLUSDT', prcWindow);
 
         let balances = {
-           USDC : filterByAsset('USDC', prcUSDC, noneZeroBalances),
            USDT : filterByAsset('USDT', 1.00, noneZeroBalances), 
-           ETH  : filterByAsset('ETH', prcETH.weightedAvgPrice, noneZeroBalances),
+           USDC : filterByAsset('USDC', prcUSDC.weightedAvgPrice, noneZeroBalances),
+           //USDC : filterByAsset('USDC', 1.0, noneZeroBalances),
            BTC  : filterByAsset('BTC', prcBTC.weightedAvgPrice, noneZeroBalances), 
-           BNB  : filterByAsset('BNB', prcBNB.weightedAvgPrice, noneZeroBalances),
-           XRP  : filterByAsset('XRP', prcXRP.weightedAvgPrice, noneZeroBalances)
+           SOL  : filterByAsset('SOL', prcSOL.weightedAvgPrice, noneZeroBalances),
+           ETH  : filterByAsset('ETH', prcETH.weightedAvgPrice, noneZeroBalances),
+           XRP  : filterByAsset('XRP', prcXRP.weightedAvgPrice, noneZeroBalances),
+           BNB  : filterByAsset('BNB', prcBNB.weightedAvgPrice, noneZeroBalances)
         }
         
         var b = Object.values(balances)
         let totalUsd = b.reduce((acc, item) => acc + item.usd, 0);
         totalUsd =  Math.round(100*totalUsd)/100;   
-        let usdAssetTotal = balances.USDT.usd + balances.USDC.usd;
-        usdAssetTotal = Math.round(100*usdAssetTotal)/100;  
-
+       
         console.log(`Balances for uid ${noneZeroBalances.uid} @ `, new Date());
-        console.log(`total: ${totalUsd}`);
-        console.log(`usd assets: ${usdAssetTotal}`);
+        console.log(`total:     usd:${totalUsd}`);
+        console.log(`usdt+usdc: usd:${balances.USDT.usd + balances.USDC.usd} qty:${balances.USDT.qty + balances.USDC.qty}` );
+        console.log(`btc+sol:   usd:${balances.SOL.usd+balances.BTC.usd}`);
+        console.log(`eth+xrp:   usd:${balances.XRP.usd+balances.ETH.usd}`);
         console.log(balances);
-        
+
     } catch (error) {
         console.error(`Error fetching Account Info ${error}`);
     }
