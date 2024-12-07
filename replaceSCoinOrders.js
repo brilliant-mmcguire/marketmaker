@@ -210,7 +210,7 @@ async function makeBids(mktQuotes, allOrders, position, params) {
 
    // let usdcTotal = params.coinQty;
     let deviation = params.deviation;
-    let prcFloor = mktQuotes[2].price;
+    let prcFloor = mktQuotes[1].price;
     let taperPrice = params.avgBuy.taperPrice;
 
     // If mkt price falls below recent buy price we want to switch to
@@ -297,7 +297,7 @@ async function makeOffers(mktQuotes, allOrders, position, params) {
     console.log(`Making offers for ${symbol} at ${new Date()}`);
 
     let deviation = params.deviation;
-    let prcCeiling = mktQuotes[2].price;
+    let prcCeiling = mktQuotes[1].price;
     let taperPrice = params.avgSell.taperPrice;
    
     // Adjust price floor to allow for position deviation. 
