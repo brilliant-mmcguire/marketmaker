@@ -45,7 +45,7 @@ https://binance-docs.github.io/apidocs/spot/en/#new-order-trade
 exports.placeOrder = placeOrder;
 async function placeOrder(side, quantity, symbol, price, test=false) {
     const timestamp = Date.now();
-    const query = `symbol=${symbol}&side=${side}&type=LIMIT&timeInForce=GTC&quantity=${quantity}&price=${price.toFixed(4)}&timestamp=${timestamp}`;
+    const query = `symbol=${symbol}&side=${side}&type=LIMIT&timeInForce=GTC&quantity=${quantity}&price=${price}&timestamp=${timestamp}`;
     const signature = crypto.createHmac('sha256', API_SECRET).update(query).digest('hex');
     ep = test ? TEST_ENDPOINT: ORDER_ENDPOINT; 
     const url = `${BASE_URL}${ep}?${query}&signature=${signature}`;
