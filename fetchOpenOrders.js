@@ -47,14 +47,14 @@ function calculateTotalQuantity(orders) {
         buyQty += parseFloat(order.origQty);
         buyCost += parseFloat(order.origQty)*parseFloat(order.price);
         buyCumAge += (Date.now() - order.time)* parseFloat(order.origQty);
-        buyOrders.push(calcuateAge(order) + ": " + parseFloat(order.origQty) + " @ " + parseFloat(order.price).toFixed(4));
+        buyOrders.push(calcuateAge(order) + ": " + parseFloat(order.origQty) + " @ " + parseFloat(order.price).toFixed(7));
 
       } else if (order.side === 'SELL') {
         sellCount++;
         sellQty += parseFloat(order.origQty);
         sellCost += parseFloat(order.origQty)*parseFloat(order.price)    
         sellCumAge += (Date.now() - order.time)* parseFloat(order.origQty);
-        sellOrders.push(calcuateAge(order) + ": " + parseFloat(order.origQty) + " @ " + parseFloat(order.price).toFixed(4));
+        sellOrders.push(calcuateAge(order) + ": " + parseFloat(order.origQty) + " @ " + parseFloat(order.price).toFixed(7));
       }
     });
 
