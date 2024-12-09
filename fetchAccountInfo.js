@@ -25,7 +25,7 @@ function filterByAsset(asset, price, accountInfo){
 }
 async function main() {
     try {
-        const prcWindow = '3d';
+        const prcWindow = '4h';
         const noneZeroBalances =  await fetchAccountInfo();
 
         const prcUSDC = await fetchPriceStats('USDCUSDT', prcWindow);
