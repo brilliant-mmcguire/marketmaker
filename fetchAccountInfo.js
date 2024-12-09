@@ -33,6 +33,7 @@ async function main() {
         const prcBTC = await fetchPriceStats('BTCUSDT', prcWindow);
         const prcBNB = await fetchPriceStats('BNBUSDT', prcWindow);
         const prcXRP = await fetchPriceStats('XRPUSDT', prcWindow);
+        const prcADA = await fetchPriceStats('ADAUSDT', prcWindow);
         const prcSOL = await fetchPriceStats('SOLUSDT', prcWindow);
 
         let balances = {
@@ -43,6 +44,7 @@ async function main() {
            SOL  : filterByAsset('SOL', prcSOL.weightedAvgPrice, noneZeroBalances),
            ETH  : filterByAsset('ETH', prcETH.weightedAvgPrice, noneZeroBalances),
            XRP  : filterByAsset('XRP', prcXRP.weightedAvgPrice, noneZeroBalances),
+           ADA  : filterByAsset('ADA', prcADA.weightedAvgPrice, noneZeroBalances),
            BNB  : filterByAsset('BNB', prcBNB.weightedAvgPrice, noneZeroBalances)
         }
         
@@ -51,10 +53,10 @@ async function main() {
         totalUsd =  Math.round(100*totalUsd)/100;   
        
         console.log(`Balances for uid ${noneZeroBalances.uid} @ `, new Date());
-        console.log(`total:     usd:${totalUsd}`);
-        console.log(`usdt+usdc: usd:${balances.USDT.usd + balances.USDC.usd} qty:${balances.USDT.qty + balances.USDC.qty}` );
-        console.log(`btc+sol:   usd:${balances.SOL.usd+balances.BTC.usd}`);
-        console.log(`eth+xrp:   usd:${balances.XRP.usd+balances.ETH.usd}`);
+        console.log(`total:      usd:${totalUsd}`);
+        console.log(`usdt+usdc:  usd:${balances.USDT.usd + balances.USDC.usd} qty:${balances.USDT.qty + balances.USDC.qty}` );
+        console.log(`btc+sol:    usd:${balances.SOL.usd+balances.BTC.usd}`);
+        console.log(`eth+xrp+ada:usd:${balances.XRP.usd+balances.ADA.usd+balances.ETH.usd}`);
         console.log(balances);
 
     } catch (error) {
