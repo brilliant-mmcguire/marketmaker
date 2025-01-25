@@ -28,7 +28,7 @@ This is to reduce the impact of sharp price moves where the proce shoots through
 remains at high/low levels for some period of time.  In this scenario we become 
 oversold/overbought too quickly. 
 */
-const qtyLadder = [83, 99, 53, 31, 19, 13, 11];  
+const qtyLadder = [98, 59, 53, 31, 19, 13, 11];  
 
 const tickSize = 0.0001;  // Tick Size is 1 basis point.
 const posLimit = 900  // aim to remain inside targetQ +- posLimit
