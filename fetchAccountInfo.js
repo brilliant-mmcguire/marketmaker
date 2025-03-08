@@ -38,8 +38,8 @@ async function main() {
 
         let balances = {
            USDT : filterByAsset('USDT', 1.00, noneZeroBalances), 
-           USDC : filterByAsset('USDC', prcUSDC.weightedAvgPrice, noneZeroBalances),
-           //USDC : filterByAsset('USDC', 1.0, noneZeroBalances),
+           //USDC : filterByAsset('USDC', prcUSDC.weightedAvgPrice, noneZeroBalances),
+           USDC : filterByAsset('USDC', 1.0, noneZeroBalances),
            BTC  : filterByAsset('BTC', prcBTC.weightedAvgPrice, noneZeroBalances), 
            SOL  : filterByAsset('SOL', prcSOL.weightedAvgPrice, noneZeroBalances),
            ETH  : filterByAsset('ETH', prcETH.weightedAvgPrice, noneZeroBalances),
@@ -55,8 +55,8 @@ async function main() {
         console.log(`Balances for uid ${noneZeroBalances.uid} @ `, new Date());
         console.log(`total:      usd:${totalUsd}`);
         console.log(`usdt+usdc:  usd:${balances.USDT.usd + balances.USDC.usd} qty:${balances.USDT.qty + balances.USDC.qty}` );
-        console.log(`btc+sol:    usd:${balances.SOL.usd+balances.BTC.usd}`);
-        console.log(`eth+xrp+ada:usd:${balances.XRP.usd+balances.ADA.usd+balances.ETH.usd}`);
+        console.log(`btc+sol+xrp:    usd:${balances.XRP.usd+balances.SOL.usd+balances.BTC.usd}`);
+        console.log(`eth+ada:usd:${balances.ADA.usd+balances.ETH.usd}`);
         console.log(balances);
 
     } catch (error) {
