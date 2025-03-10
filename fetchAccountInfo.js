@@ -38,8 +38,8 @@ async function main() {
 
         let balances = {
            USDT : filterByAsset('USDT', 1.00, noneZeroBalances), 
-           //USDC : filterByAsset('USDC', prcUSDC.weightedAvgPrice, noneZeroBalances),
-           USDC : filterByAsset('USDC', 1.0, noneZeroBalances),
+           USDC : filterByAsset('USDC', prcUSDC.weightedAvgPrice, noneZeroBalances),
+           //USDC : filterByAsset('USDC', 1.0, noneZeroBalances),
            BTC  : filterByAsset('BTC', prcBTC.weightedAvgPrice, noneZeroBalances), 
            SOL  : filterByAsset('SOL', prcSOL.weightedAvgPrice, noneZeroBalances),
            ETH  : filterByAsset('ETH', prcETH.weightedAvgPrice, noneZeroBalances),
