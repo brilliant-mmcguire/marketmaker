@@ -6,6 +6,7 @@ async function fetchCurrentPrice(symbol, i, s) {
     console.log(lastPrice);
     return lastPrice;
 }
+
 async function main() {
     //['BTCUSDC', 'ETHUSDC'].forEach(fetchCurrentPrice);
     if (require.main !== module) return;

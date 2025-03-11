@@ -224,7 +224,7 @@ function computePositions(symbol,trades,rows = []) {
             }
             pos.costHigh = Math.max(pos.costHigh, pos.cost);
             pos.costLow = Math.min(pos.costLow, pos.cost);
-            pos.commisionUSD = pos.commision * 400;
+            pos.commisionUSD = pos.commision * 700;
 
             rows.push(convertPositionToCSVRow(t, pos));
         };
