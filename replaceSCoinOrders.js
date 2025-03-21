@@ -41,8 +41,8 @@ const target = {
 };
 
 /* 
-Quntity Quantum is used to place orders in proportion to the volume of orders at a given price level.
-This is the help regulate the rate of exection of our orders. 
+Quantity Quantum is used to place orders in proportion to the volume of orders at a given price level.
+This is the help regulate the rate of execution of our orders. 
 The more orders are in queue ahead of us, the more orders we need to keep in the queue.
 The goal is to maintin a steady rate of execution and to baclance to rate of buy and sell trades. 
 */
@@ -122,7 +122,7 @@ function quoteQuota(mktQuoteSize) {
     4,034,288	6
     10,966,332	7
     29,809,580	8
-    81,030,839	9*/
+    81,030,839	9 */
     
     const scaleQuoteSize = 10000; 
     const normalisedQuoteSize = mktQuoteSize / scaleQuoteSize; 
@@ -156,6 +156,13 @@ function quotePriceAdjustment(normalisedDeviation) {
         -1.0 +3.00 +2.00
 -       -1.5 +6.75 +6.75 */
     return -2.0 * tickSize * normalisedDeviation**3;
+}
+
+
+function scaleOrderQty(q, balances) {
+    let scaleFactor = 2.0*Math.min(balances.usdc.total, balances.usdt.total) /(balances.usdc.total+balances.usdt.total);
+    let qty = Math.round(Math.max(11.00,q * scaleFactor)); 
+    return qty;
 }
 
 function hasFreshOrders(orders) {
@@ -205,7 +212,7 @@ function stochasticDecision(orderCount) {
     return decision;
 }
 
-async function makeBids(mktQuotes, allOrders, position, params) {
+async function makeBids(mktQuotes, allOrders, balances, params) {
     console.log(`Making bids for ${symbol} at ${new Date()}`);
 
    // let usdcTotal = params.coinQty;
@@ -248,7 +255,8 @@ async function makeBids(mktQuotes, allOrders, position, params) {
     
     for(let i = 0; i< mktQuotes.length; i++) {
         let bid = mktQuotes[i];
-        let qty = qtyLadder[i];
+        //let qty = qtyLadder[i];
+        let qty = scaleOrderQty(qtyLadder[i], balances);
 
         // Reduce quota for quote levels that are away from best. 
         let quota = Math.max(0,quoteQuota(bid.qty)-i);
@@ -292,7 +300,7 @@ async function makeBids(mktQuotes, allOrders, position, params) {
     };
 }
 
-async function makeOffers(mktQuotes, allOrders, position, params) {
+async function makeOffers(mktQuotes, allOrders, balances, params) {
 
     console.log(`Making offers for ${symbol} at ${new Date()}`);
 
@@ -332,7 +340,8 @@ async function makeOffers(mktQuotes, allOrders, position, params) {
     
     for(let i = 0; i< mktQuotes.length; i++) {
         let offer = mktQuotes[i];
-        let qty = qtyLadder[i];
+        //let qty = qtyLadder[i];
+        let qty = scaleOrderQty(qtyLadder[i], balances);
 
         // Reduce quote for quote levels that are away from best. 
         let quota = Math.max(0,quoteQuota(offer.qty)-i);
@@ -429,14 +438,14 @@ async function placeSCoinOrders() {
         makeBids(
             prcDepth.bids, 
             allOrders.filter(order => (order.side==='BUY')), 
-            position, 
+            balances, 
             params
         );
 
         makeOffers(
             prcDepth.asks, 
             allOrders.filter(order => (order.side==='SELL')), 
-            position,
+            balances,
             params
         ); 
 
@@ -446,3 +455,4 @@ async function placeSCoinOrders() {
 }
 
 if (require.main === module) placeSCoinOrders();
+
