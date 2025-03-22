@@ -160,7 +160,7 @@ function quotePriceAdjustment(normalisedDeviation) {
 
 
 function scaleOrderQty(q, balances) {
-    let scaleFactor = 2.0*Math.min(balances.usdc.total, balances.usdt.total) /(balances.usdc.total+balances.usdt.total);
+    let scaleFactor = 2.0*Math.min(balances.usdc.free, balances.usdt.free) /(balances.usdc.total+balances.usdt.total);
     let qty = Math.round(Math.max(11.00,q * scaleFactor)); 
     return qty;
 }
