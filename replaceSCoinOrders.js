@@ -159,9 +159,9 @@ function quotePriceAdjustment(normalisedDeviation) {
 }
 
 
-function scaleOrderQty(q, balances) {
+function scaleOrderQty(balances) {
     let scaleFactor = 2.0*Math.min(balances.usdc.free, balances.usdt.free) /(balances.usdc.total+balances.usdt.total);
-    let qty = Math.round(Math.max(11.00,q * scaleFactor)); 
+    let qty = Math.round(Math.max(11.00,qtyMax * scaleFactor)); 
     return qty;
 }
 
@@ -255,7 +255,7 @@ async function makeBids(mktQuotes, allOrders, balances, params) {
     
     for(let i = 0; i< mktQuotes.length; i++) {
         let bid = mktQuotes[i];
-        let qty = scaleOrderQty(qtyMax, balances);
+        let qty = scaleOrderQty(balances);
 
         // Reduce quota for quote levels that are away from best. 
         let quota = Math.max(0,quoteQuota(bid.qty)-i);
@@ -339,7 +339,7 @@ async function makeOffers(mktQuotes, allOrders, balances, params) {
     
     for(let i = 0; i< mktQuotes.length; i++) {
         let offer = mktQuotes[i];
-        let qty = scaleOrderQty(qtyMax, balances);
+        let qty = scaleOrderQty(balances);
 
         // Reduce quote for quote levels that are away from best. 
         let quota = Math.max(0,quoteQuota(offer.qty)-i);
