@@ -23,12 +23,12 @@ const { fetchPriceStats } = require('./marketDataTxns');
 const symbol = 'USDCUSDT';
 
 /*
-Use a quantity ladder to place smaller orers away from the current touch price. 
+Use a quantity maximum and scale back as we run low on coinage.  
 This is to reduce the impact of sharp price moves where the proce shoots through and 
 remains at high/low levels for some period of time.  In this scenario we become 
 oversold/overbought too quickly. 
 */
-const qtyLadder = [89, 98, 53, 31, 19, 13, 11];  
+const qtyMax = 99;
 
 const tickSize = 0.0001;  // Tick Size is 1 basis point.
 const posLimit = 900  // aim to remain inside targetQ +- posLimit
@@ -255,8 +255,7 @@ async function makeBids(mktQuotes, allOrders, balances, params) {
     
     for(let i = 0; i< mktQuotes.length; i++) {
         let bid = mktQuotes[i];
-        //let qty = qtyLadder[i];
-        let qty = scaleOrderQty(qtyLadder[i], balances);
+        let qty = scaleOrderQty(qtyMax, balances);
 
         // Reduce quota for quote levels that are away from best. 
         let quota = Math.max(0,quoteQuota(bid.qty)-i);
@@ -340,8 +339,7 @@ async function makeOffers(mktQuotes, allOrders, balances, params) {
     
     for(let i = 0; i< mktQuotes.length; i++) {
         let offer = mktQuotes[i];
-        //let qty = qtyLadder[i];
-        let qty = scaleOrderQty(qtyLadder[i], balances);
+        let qty = scaleOrderQty(qtyMax, balances);
 
         // Reduce quote for quote levels that are away from best. 
         let quota = Math.max(0,quoteQuota(offer.qty)-i);
