@@ -16,11 +16,12 @@ const { fetchAccountInfo } = require('./accountTxns');
 
 function filterByAsset(asset, price, accountInfo){
     let b = accountInfo.balances.filter(balance => (balance.asset==asset))[0];
-    let q = b ? b.total : 0;
+    let qt = b ? b.total : 0;
+    let qf = b ? b.free : 0;
     return {
-        qty  : q, 
-        usd : Math.round(100*q*price)/100,
-        free : Math.round(100*q*price)/100
+        qty  : qt, 
+        usd  : Math.round(100*qt*price)/100,
+        free : qf
     };
 }
 async function main() {
