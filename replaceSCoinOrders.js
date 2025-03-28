@@ -29,6 +29,7 @@ remains at high/low levels for some period of time.  In this scenario we become
 oversold/overbought too quickly. 
 */
 const qtyMax = 149;
+const qtyMin =  11;
 
 const tickSize = 0.0001;  // Tick Size is 1 basis point.
 const posLimit = 900  // aim to remain inside targetQ +- posLimit
@@ -161,7 +162,7 @@ function quotePriceAdjustment(normalisedDeviation) {
 
 function scaleOrderQty(balances) {
     let scaleFactor = 2.0*Math.min(balances.usdc.free, balances.usdt.free) /(balances.usdc.total+balances.usdt.total);
-    let qty = Math.round(Math.max(11.00,qtyMax * scaleFactor)); 
+    let qty = Math.round(Math.max(qtyMin,qtyMax * scaleFactor)); 
     return qty;
 }
 
