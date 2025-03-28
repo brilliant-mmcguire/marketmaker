@@ -14,6 +14,24 @@ const API_SECRET = process.env.API_SECRET;
 
 const { fetchAccountInfo } = require('./accountTxns');
 
+// Asset configuration
+const SUPPORTED_ASSETS = {
+    USDT: { 
+        pair: 'USDTUSDT', 
+        fixedPrice: 1.00  // Special case for USDT with fixed price
+    },
+    USDC: { pair: 'USDCUSDT' },
+    BTC: { pair: 'BTCUSDT' },
+    SOL: { pair: 'SOLUSDT' },
+    ETH: { pair: 'ETHUSDT' },
+    XRP: { pair: 'XRPUSDT' },
+    ADA: { pair: 'ADAUSDT' },
+    BNB: { pair: 'BNBUSDT' }
+};
+
+// Configuration constants
+const PRICE_WINDOW = '4h';
+
 function filterByAsset(asset, price, accountInfo){
     let b = accountInfo.balances.filter(balance => (balance.asset==asset))[0];
     let qt = b ? b.total : 0;
@@ -24,34 +42,36 @@ function filterByAsset(asset, price, accountInfo){
         free : qf
     };
 }
+
+async function fetchAssetPrices() {
+    const prices = {};
+    for (const [asset, config] of Object.entries(SUPPORTED_ASSETS)) {
+        if (config.fixedPrice) {
+            prices[asset] = { weightedAvgPrice: config.fixedPrice };
+        } else {
+            prices[asset] = await fetchPriceStats(config.pair, PRICE_WINDOW);
+        }
+    }
+    return prices;
+}
+
 async function main() {
     try {
-        const prcWindow = '4h';
-        const noneZeroBalances =  await fetchAccountInfo();
+        const noneZeroBalances = await fetchAccountInfo();
+        const prices = await fetchAssetPrices();
 
-        const prcUSDC = await fetchPriceStats('USDCUSDT', prcWindow);
-        const prcETH = await fetchPriceStats('ETHUSDT', prcWindow);
-        const prcBTC = await fetchPriceStats('BTCUSDT', prcWindow);
-        const prcBNB = await fetchPriceStats('BNBUSDT', prcWindow);
-        const prcXRP = await fetchPriceStats('XRPUSDT', prcWindow);
-        const prcADA = await fetchPriceStats('ADAUSDT', prcWindow);
-        const prcSOL = await fetchPriceStats('SOLUSDT', prcWindow);
-
-        let balances = {
-           USDT : filterByAsset('USDT', 1.00, noneZeroBalances), 
-           USDC : filterByAsset('USDC', prcUSDC.weightedAvgPrice, noneZeroBalances),
-           //USDC : filterByAsset('USDC', 1.0, noneZeroBalances),
-           BTC  : filterByAsset('BTC', prcBTC.weightedAvgPrice, noneZeroBalances), 
-           SOL  : filterByAsset('SOL', prcSOL.weightedAvgPrice, noneZeroBalances),
-           ETH  : filterByAsset('ETH', prcETH.weightedAvgPrice, noneZeroBalances),
-           XRP  : filterByAsset('XRP', prcXRP.weightedAvgPrice, noneZeroBalances),
-           ADA  : filterByAsset('ADA', prcADA.weightedAvgPrice, noneZeroBalances),
-           BNB  : filterByAsset('BNB', prcBNB.weightedAvgPrice, noneZeroBalances)
+        let balances = {};
+        for (const [asset, config] of Object.entries(SUPPORTED_ASSETS)) {
+            balances[asset] = filterByAsset(
+                asset, 
+                prices[asset].weightedAvgPrice,
+                noneZeroBalances
+            );
         }
         
-        var b = Object.values(balances)
+        var b = Object.values(balances);
         let totalUsd = b.reduce((acc, item) => acc + item.usd, 0);
-        totalUsd =  Math.round(100*totalUsd)/100;   
+        totalUsd = Math.round(100*totalUsd)/100;   
        
         console.log(`Balances for uid ${noneZeroBalances.uid} @ `, new Date());
         console.log(`total:      usd:${totalUsd}`);
