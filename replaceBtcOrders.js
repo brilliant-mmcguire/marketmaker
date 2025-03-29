@@ -129,10 +129,7 @@ async function placeNewOrders(symbol, tradingPos, totalQty, priceStats) {
         coinQty : coinPos.coinQty,
         quoteQty : coinPos.quoteQty,
         targetQty : posnTarget,
-       // targetQuoteQty  : threshold.target,
         coinDeviation : (coinPos.coinQty-target.coinQty)/target.coinQtyDeviation,
-        //quoteQtyDeviation : (btcPos.quoteQty-threshold.target)/threshold.deviation,
-        //prcTolerance : quoteQtyDeviation*Math.abs(quoteQtyDeviation)*threshold.pricePct,
         prcTolerance : coinDeviation * Math.abs(coinDeviation) * threshold.pricePct,
         buys : {
             avgPrc : tradingPos.mAvgBuyPrice,
@@ -147,9 +144,6 @@ async function placeNewOrders(symbol, tradingPos, totalQty, priceStats) {
     }
     
     console.log(`Guard rails: `, guardRails);
-    //console.log(`QQ balance: ${btcPos.quoteQty} ; posDeviation: ${relativePosn}` );
-    //console.log(`Avg buy price: ${tradingPos.mAvgBuyPrice} ; Avg sell price: ${tradingPos.mAvgSellPrice}.`);
-    //console.log(threshold);
 
     try {  // Make bids.
         if(coinDeviation > 0)  console.log(
