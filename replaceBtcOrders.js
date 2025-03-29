@@ -242,15 +242,8 @@ async function replaceOrders(symbol)
      default: throw 'Symbol not recognised.';
     }
 
-   // const tradingPos = await fetchPositions(symbol, 3);
     const priceStats  = await fetchPriceStats(symbol, '2h');
-    // const nonZeroBalances =  await fetchAccountInfo();
     const tradeSignals = getTradeSignals(priceStats, tickSize);
-
-    // let assetBalance = {};
-    // if(symbol.startsWith("SOL")) 
-    //     assetBalance = nonZeroBalances.balances.filter(balance => (balance.asset=='SOL'))[0];
-    // else throw 'Symbol not for SOL.'
    
     await cancelOpenOrders(symbol);
     await placeOrders(symbol, 'BUY',  lotSize, tradeSignals.buy);
@@ -267,7 +260,6 @@ async function main() {
     try {
         await replaceOrders(symbol);
     } catch (error) {    
-       // console.log(error);
         console.error(`Error replacing orders: ${error}`);
     }
 }
