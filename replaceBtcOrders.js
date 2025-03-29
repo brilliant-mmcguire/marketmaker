@@ -215,7 +215,6 @@ async function placeNewOrders(symbol, tradingPos, totalQty, priceStats) {
 */
 
 
-
 exports.placeNewOrders = placeNewOrders;
 async function placeNewOrders(symbol, tradingPos, totalQty, priceStats) {
 
@@ -232,7 +231,6 @@ async function placeNewOrders(symbol, tradingPos, totalQty, priceStats) {
     // Deviation from target position. 
     let coinDeviation = (coinPos.coinQty-target.coinQty)/target.coinQty;
     
-
     let prcPct = 1.0 - coinDeviation*Math.abs(coinDeviation)*threshold.pricePct;  
 
     let buyPrcCeiling = prcPct * taperTradePrice(
@@ -271,7 +269,6 @@ async function placeNewOrders(symbol, tradingPos, totalQty, priceStats) {
     //console.log(`QQ balance: ${btcPos.quoteQty} ; posDeviation: ${relativePosn}` );
     //console.log(`Avg buy price: ${tradingPos.mAvgBuyPrice} ; Avg sell price: ${tradingPos.mAvgSellPrice}.`);
     //console.log(threshold);
-
 
     try {  // Make bids.
         if(coinDeviation > 0)  console.log(
@@ -360,6 +357,7 @@ async function replaceOrders(symbol)
      case "XRPBTC": lotSize =  5.00;  break;
      case "ADAETH": lotSize = 15.00;  tickSize = 0.0000001; break; 
      case "ADABTC": lotSize = 15.00;  tickSize = 0.0000001; break; 
+     case "XLMETH": lotSize = 40.00;  tickSize = 0.0000001; break; 
      default: throw 'Symbol not recognised.';
     }
 
