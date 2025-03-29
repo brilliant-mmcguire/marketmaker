@@ -36,6 +36,73 @@ const { fetchPriceStats } = require('./marketDataTxns');
 const { cancelOpenOrders } = require('./orderTxns');
 const { fetchAccountInfo } = require('./accountTxns');
 
+// Custom Error Classes
+class TradingError extends Error {
+    constructor(message, code, details = {}) {
+        super(message);
+        this.name = 'TradingError';
+        this.code = code;
+        this.details = details;
+        this.timestamp = new Date();
+    }
+}
+
+class ValidationError extends TradingError {
+    constructor(message, details) {
+        super(message, 'VALIDATION_ERROR', details);
+    }
+}
+
+class OrderPlacementError extends TradingError {
+    constructor(message, details) {
+        super(message, 'ORDER_PLACEMENT_ERROR', details);
+    }
+}
+
+// Validation Functions
+function validateSymbol(symbol) {
+    const validSymbols = ["SOLBTC", "ETHBTC", "XRPETH", "XRPBTC", "ADAETH", "ADABTC", "XLMETH"];
+    if (!symbol) {
+        throw new ValidationError('Symbol is required');
+    }
+    if (!validSymbols.includes(symbol)) {
+        throw new ValidationError('Invalid trading pair', { symbol, validSymbols });
+    }
+}
+
+function validatePriceStats(priceStats) {
+    const requiredFields = ['weightedAvgPrice', 'lastPrice', 'highPrice', 'lowPrice'];
+    const missingFields = requiredFields.filter(field => !priceStats[field]);
+    
+    if (missingFields.length > 0) {
+        throw new ValidationError('Invalid price stats', { missingFields });
+    }
+}
+
+// Retry Utility
+async function withRetry(operation, maxRetries = 3) {
+    let lastError;
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            return await operation();
+        } catch (error) {
+            lastError = error;
+            if (attempt === maxRetries) break;
+            
+            const delay = Math.min(1000 * Math.pow(2, attempt), 10000);
+            console.log(`Retry attempt ${attempt} after ${delay}ms`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
+    }
+    
+    throw new TradingError(
+        `Operation failed after ${maxRetries} attempts`,
+        'RETRY_EXHAUSTED',
+        { originalError: lastError }
+    );
+}
+
 /* 
 At time of writing SOL is trading at around $230 so the chosen lot size is about £23, the target position is about $350.
 The position deviation of 5 lots is about £115. Need an explaination of tolerance.  
@@ -206,55 +273,114 @@ async function placeNewOrders(symbol, tradingPos, totalQty, priceStats) {
 }
 
 async function placeOrders(symbol, orderSide, lotSize, priceLevels) {
-    for (let i = priceLevels.length-1; i >= 0;  i--) {
-   
-        console.log(`place order ${orderSide} ${lotSize} ${symbol} @ ${priceLevels[i]}`)
-        const o = await placeOrder(
-            orderSide, 
-            lotSize, 
-            symbol, 
-            priceLevels[i]
-        );
-        console.log(`> Placed: ${o.side} ${o.origQty} ${o.symbol} @ ${o.price}`);
+    const orders = [];
+    const errors = [];
+
+    for (const price of priceLevels) {
+        try {
+            const order = await withRetry(() => 
+                placeOrder(orderSide, lotSize, symbol, price)
+            );
+            orders.push(order);
+            console.log(`Placed ${orderSide} order: ${symbol} ${lotSize} @ ${price}`);
+        } catch (error) {
+            errors.push({ price, error: error.message });
+            console.error(`Failed ${orderSide} order: ${symbol} ${lotSize} @ ${price} - ${error.message}`);
+        }
     }
+
+    if (errors.length > 0) {
+        throw new OrderPlacementError(
+            `Failed to place ${errors.length} ${orderSide} orders for ${symbol}`,
+            { failedOrders: errors }
+        );
+    }
+
+    return orders;
 }
 
 exports.replaceOrders = replaceOrders;
-async function replaceOrders(symbol) 
-{
-    let lotSize = 0.0;
-    let tickSize = 0.0000001;
+async function replaceOrders(symbol) {
+    try {
+        validateSymbol(symbol);
+        
+        let lotSize = 0.0;
+        let tickSize = 0.0000001;
 
-    switch(symbol) {
-     case "SOLBTC": lotSize =  0.08;  tickSize = 0.0000001; break; 
-     case "ETHBTC": lotSize =  0.005; tickSize = 0.0001; break; 
-     case "XRPETH": lotSize =  5.00;  break; 
-     case "XRPBTC": lotSize =  5.00;  break;
-     case "ADAETH": lotSize = 15.00;  tickSize = 0.0000001; break; 
-     case "ADABTC": lotSize = 15.00;  tickSize = 0.0000001; break; 
-     case "XLMETH": lotSize = 40.00;  tickSize = 0.0000001; break; 
-     default: throw 'Symbol not recognised.';
+        switch(symbol) {
+         case "SOLBTC": lotSize =  0.08;  tickSize = 0.0000001; break; 
+         case "ETHBTC": lotSize =  0.005; tickSize = 0.0001; break; 
+         case "XRPETH": lotSize =  5.00;  break; 
+         case "XRPBTC": lotSize =  5.00;  break;
+         case "ADAETH": lotSize = 15.00;  tickSize = 0.0000001; break; 
+         case "ADABTC": lotSize = 15.00;  tickSize = 0.0000001; break; 
+         case "XLMETH": lotSize = 40.00;  tickSize = 0.0000001; break; 
+         default: throw new ValidationError('Symbol not recognised', { symbol });
+        }
+
+        const priceStats = await withRetry(() => fetchPriceStats(symbol, '2h'));
+        validatePriceStats(priceStats);
+
+        const tradeSignals = getTradeSignals(priceStats, tickSize);
+        
+        await withRetry(() => cancelOpenOrders(symbol));
+        console.log(`Cancelled existing orders for ${symbol}`);
+        
+        await Promise.all([
+            placeOrders(symbol, 'BUY', lotSize, tradeSignals.buy),
+            placeOrders(symbol, 'SELL', lotSize, tradeSignals.sell)
+        ]);
+        
+    } catch (error) {
+        if (error instanceof OrderPlacementError) {
+            console.error(`Order placement failed: ${error.message}`);
+            console.error('Failed orders:', error.details.failedOrders.map(
+                o => `${symbol} @ ${o.price} - ${o.error}`
+            ).join('\n'));
+        } else if (error instanceof TradingError) {
+            console.error(`Trading error: ${error.code} - ${error.message}`);
+        } else {
+            console.error(`Unexpected error: ${error.message}`);
+        }
+        throw error;
     }
-
-    const priceStats  = await fetchPriceStats(symbol, '2h');
-    const tradeSignals = getTradeSignals(priceStats, tickSize);
-   
-    await cancelOpenOrders(symbol);
-    await placeOrders(symbol, 'BUY',  lotSize, tradeSignals.buy);
-    await placeOrders(symbol, 'SELL', lotSize, tradeSignals.sell);
-    
 }
 
 async function main() {
-    let symbol = process.argv[2];
-    if(!symbol) throw 'Symbol not defined.'  
+    let cleanup = false;
+    
+    async function handleShutdown() {
+        if (cleanup) return;
+        cleanup = true;
+        
+        console.log('Shutting down gracefully...');
+        try {
+            const symbol = process.argv[2];
+            if (symbol) {
+                await cancelOpenOrders(symbol);
+                console.log('Cancelled open orders');
+            }
+        } catch (error) {
+            console.error(`Shutdown error: ${error.message}`);
+        }
+        process.exit(0);
+    }
 
-    console.log(`replace ${symbol} orders ${new Date().toLocaleString()}`);
+    process.on('SIGINT', handleShutdown);
+    process.on('SIGTERM', handleShutdown);
 
     try {
+        const symbol = process.argv[2];
+        if (!symbol) {
+            throw new ValidationError('Symbol not defined');
+        }
+
+        console.log(`Starting order replacement for ${symbol}`);
         await replaceOrders(symbol);
-    } catch (error) {    
-        console.error(`Error replacing orders: ${error}`);
+    } catch (error) {
+        console.error(`Fatal error: ${error.message}`);
+        process.exit(1);
     }
 }
+
 if (require.main === module) main();
