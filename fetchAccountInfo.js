@@ -14,6 +14,58 @@ const API_SECRET = process.env.API_SECRET;
 
 const { fetchAccountInfo } = require('./accountTxns');
 
+// Custom Error Classes
+class AccountError extends Error {
+    constructor(message, code, details = {}) {
+        super(message);
+        this.name = 'AccountError';
+        this.code = code;
+        this.details = details;
+        this.timestamp = new Date();
+    }
+}
+
+// Retry Utility
+async function withRetry(operation, maxRetries = 3) {
+    let lastError;
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            return await operation();
+        } catch (error) {
+            lastError = error;
+            
+            // Check for 401 authentication error
+            const isAuthError = error.response?.status === 401 || 
+                              error.code === -2015 ||  // Binance invalid API-key
+                              error.code === 401;
+                              
+            if (isAuthError) {
+                console.error(`Authentication error (attempt ${attempt}/${maxRetries}):`, error.response?.data || error.message);
+                // Add longer delay for auth errors to allow for token refresh
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                continue;
+            }
+            
+            if (attempt === maxRetries) break;
+            
+            const delay = Math.min(1000 * Math.pow(2, attempt), 10000);
+            console.log(`Retry attempt ${attempt}/${maxRetries} after ${delay}ms`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
+    }
+    
+    throw new AccountError(
+        `Operation failed after ${maxRetries} attempts`,
+        'RETRY_EXHAUSTED',
+        { 
+            originalError: lastError,
+            errorResponse: lastError.response?.data,
+            errorCode: lastError.code || lastError.response?.status
+        }
+    );
+}
+
 // Asset configuration
 const SUPPORTED_ASSETS = {
     USDT: { 
@@ -46,10 +98,15 @@ function filterByAsset(asset, price, accountInfo){
 async function fetchAssetPrices() {
     const prices = {};
     for (const [asset, config] of Object.entries(SUPPORTED_ASSETS)) {
-        if (config.fixedPrice) {
-            prices[asset] = { weightedAvgPrice: config.fixedPrice };
-        } else {
-            prices[asset] = await fetchPriceStats(config.pair, PRICE_WINDOW);
+        try {
+            if (config.fixedPrice) {
+                prices[asset] = { weightedAvgPrice: config.fixedPrice };
+            } else {
+                prices[asset] = await withRetry(() => fetchPriceStats(config.pair, PRICE_WINDOW));
+            }
+        } catch (error) {
+            console.error(`Failed to fetch price for ${asset}:`, error.message);
+            throw error;
         }
     }
     return prices;
@@ -57,7 +114,7 @@ async function fetchAssetPrices() {
 
 async function main() {
     try {
-        const noneZeroBalances = await fetchAccountInfo();
+        const noneZeroBalances = await withRetry(() => fetchAccountInfo());
         const prices = await fetchAssetPrices();
 
         let balances = {};
@@ -81,7 +138,19 @@ async function main() {
         console.log(balances);
 
     } catch (error) {
-        console.error(`Error fetching Account Info ${error}`);
+        if (error instanceof AccountError) {
+            console.error('Account error:', {
+                message: error.message,
+                code: error.code,
+                details: error.details
+            });
+        } else {
+            console.error('Unexpected error:', error.message);
+            if (error.response?.data) {
+                console.error('API Response:', error.response.data);
+            }
+        }
+        process.exit(1);
     }
 }
 
