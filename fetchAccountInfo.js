@@ -11,8 +11,19 @@ const { fetchPriceStats } = require('./marketDataTxns');
 const crypto = require('crypto');
 const cfg = require('dotenv').config();
 const API_SECRET = process.env.API_SECRET;
-
 const { fetchAccountInfo } = require('./accountTxns');
+const https = require('https');
+
+// Function to get public IP address
+async function getPublicIP() {
+    return new Promise((resolve, reject) => {
+        https.get('https://api.ipify.org', (res) => {
+            let data = '';
+            res.on('data', (chunk) => data += chunk);
+            res.on('end', () => resolve(data.trim()));
+        }).on('error', reject);
+    });
+}
 
 // Custom Error Classes
 class AccountError extends Error {
@@ -41,7 +52,16 @@ async function withRetry(operation, maxRetries = 3) {
                               error.code === 401;
                               
             if (isAuthError) {
-                console.error(`Authentication error (attempt ${attempt}/${maxRetries}):`, error.response?.data || error.message);
+                try {
+                    const ip = await getPublicIP();
+                    console.error(`Authentication error (attempt ${attempt}/${maxRetries}) from IP ${ip}:`, 
+                        error.response?.data || error.message
+                    );
+                } catch (ipError) {
+                    console.error(`Authentication error (attempt ${attempt}/${maxRetries}) - Could not fetch IP:`, 
+                        error.response?.data || error.message
+                    );
+                }
                 // Add longer delay for auth errors to allow for token refresh
                 await new Promise(resolve => setTimeout(resolve, 2000));
                 continue;
@@ -55,13 +75,22 @@ async function withRetry(operation, maxRetries = 3) {
         }
     }
     
+    // Get IP address for final error
+    let ipAddress;
+    try {
+        ipAddress = await getPublicIP();
+    } catch (ipError) {
+        ipAddress = 'Could not fetch IP';
+    }
+    
     throw new AccountError(
         `Operation failed after ${maxRetries} attempts`,
         'RETRY_EXHAUSTED',
         { 
             originalError: lastError,
             errorResponse: lastError.response?.data,
-            errorCode: lastError.code || lastError.response?.status
+            errorCode: lastError.code || lastError.response?.status,
+            ipAddress
         }
     );
 }
