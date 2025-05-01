@@ -28,7 +28,7 @@ This is to reduce the impact of sharp price moves where the proce shoots through
 remains at high/low levels for some period of time.  In this scenario we become 
 oversold/overbought too quickly. 
 */
-const qtyMax = 179;
+const qtyMax = 199;
 const qtyMin =  21;
 
 const tickSize = 0.0001;  // Tick Size is 1 basis point.
