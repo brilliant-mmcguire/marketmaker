@@ -9,7 +9,6 @@ Don't want to cancel orders becase we'd lose our position in the order book.
 
 Use expontnetial moving average of our recent trades to control bid/offer prices.
 There is a risk of this getting stuck at high or low prices outside the current price range. 
-TODO - analyse and test this 'getting stuck' scenario. 
 */
 
 const { fetchOpenOrders } = require('./orderTxns');
@@ -385,55 +384,66 @@ async function makeOffers(mktQuotes, allOrders, balances, params) {
     }
 }
 
+async function fetchApiData(symbol) {
+    const [prcDepth, nonZeroBalances, allOrders, position, priceStats] = await Promise.all([
+        fetchPriceDepth(symbol),
+        fetchAccountInfo(),
+        fetchOpenOrders(symbol),
+        fetchPositions(symbol, 1),
+        fetchPriceStats(symbol, '15m')
+    ]);
+    return { prcDepth, nonZeroBalances, allOrders, position, priceStats };
+}
+
+function calculateParams(balances, position, priceStats) {
+    const mktPrice = priceStats.weightedAvgPrice;
+    const targetQ = targetQty(mktPrice);
+    const coinQty = balances.usdc.total;
+    const deviation = (coinQty - targetQ) / posLimit;
+
+    const taperSellPrice = taperTradePrice(
+        position.mAvgSellPrice, 
+        position.mAvgSellAge, 
+        mktPrice);
+    const taperBuyPrice = taperTradePrice(
+        position.mAvgBuyPrice, 
+        position.mAvgBuyAge, 
+        mktPrice);
+
+    return {
+        mktPrice,
+        coinQty,
+        targetQty: targetQ,
+        deviation,
+        avgBuy: {
+            price: position.mAvgBuyPrice,
+            qty: position.mAvgBuyQty,
+            age: position.mAvgBuyAge,
+            taperPrice: taperBuyPrice
+        },
+        avgSell: {
+            price: position.mAvgSellPrice,
+            qty: position.mAvgSellQty,
+            age: position.mAvgSellAge,
+            taperPrice: taperSellPrice
+        }
+    };
+}
+
 exports.placeSCoinOrders = placeSCoinOrders;
 async function placeSCoinOrders() {
     try {        
         console.log("Fetching price depth, account info, open orders and trading position.");
-
-        const prcDepth = await fetchPriceDepth(symbol);
-        const noneZeroBalances =  await fetchAccountInfo();
-        const allOrders = await fetchOpenOrders(symbol);
-        const position = await fetchPositions(symbol, 1);
-        const priceStats  = await fetchPriceStats(symbol, '15m');
+        const { 
+            prcDepth, nonZeroBalances, allOrders, position, priceStats 
+        } = await fetchApiData(symbol);
 
         let balances = {
-            usdc : noneZeroBalances.balances.filter(balance => (balance.asset=='USDC'))[0],
-            usdt : noneZeroBalances.balances.filter(balance => (balance.asset=='USDT'))[0]
+            usdc : nonZeroBalances.balances.filter(balance => (balance.asset=='USDC'))[0],
+            usdt : nonZeroBalances.balances.filter(balance => (balance.asset=='USDT'))[0]
         }    
       
-        let mktPrice = priceStats.weightedAvgPrice;
-        let targetQ = targetQty(mktPrice);
-        let coinQty = balances.usdc.total;
-        let deviation = (coinQty - targetQ)/posLimit;
-
-        let taperSellPrice = taperTradePrice(  
-            position.mAvgSellPrice,
-            position.mAvgSellAge,
-            mktPrice);
-            
-        let taperBuyPrice = taperTradePrice( 
-            position.mAvgBuyPrice,
-            position.mAvgBuyAge,
-            mktPrice);
-
-        let params = {
-            mktPrice: mktPrice,
-            coinQty: coinQty, 
-            targetQty : targetQty(mktPrice),
-            deviation : deviation,
-            avgBuy : { 
-                price : position.mAvgBuyPrice,
-                qty : position.mAvgBuyQty, 
-                age : position.mAvgBuyAge,
-                taperPrice : taperBuyPrice
-            },
-            avgSell : { 
-                price : position.mAvgSellPrice,
-                qty : position.mAvgSellQty,
-                age : position.mAvgSellAge, 
-                taperPrice : taperSellPrice
-            }
-        };
+        const params = calculateParams(balances,position,priceStats);
         console.log(params); 
 
         makeBids(
