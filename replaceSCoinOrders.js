@@ -40,21 +40,10 @@ const target = {
     loQty : 3000, // Buy more USDC when its price is low. 
 };
 
-/* 
-Quantity Quantum is used to place orders in proportion to the volume of orders at a given price level.
-This is the help regulate the rate of execution of our orders. 
-The more orders are in queue ahead of us, the more orders we need to keep in the queue.
-The goal is to maintin a steady rate of execution and to baclance to rate of buy and sell trades. 
-*/
-// const qtyQuanta = [212345, 623456 , 1123456, 5123456, 11123456, 100123456];
-
 /*
-Target USDC balance uses a linear function between the upper and lower target quantities.
+Target USDC balance uses a sigmoid function between the upper and lower target quantities.
 At the upper target we can tolerate a smaller position in the expectation of prices falling again. 
-At the lower target we allow for a larger position, expecting a price increase in the near future.
-
-Try using a signmoid funtion instead?  
-Not sure if there is much benifit; can't think of a godd rationale but feels right.  
+At the lower target we allow for a larger position, expecting a price increase in the near future.  
 */
 function targetQty(bestPrice) {
     /*  Price	Target
@@ -76,20 +65,7 @@ function targetQty(bestPrice) {
     const qty = qZero + qMax*sigmoid(prcDeviation);
     return qty;
 }
-/*
-function pwLinear() {   // PIECEWISE LINEAR. 
-    //let qty = 0.5*(target.hiQty + target.loQty); 
-    //let prc = bestPrice;
-    prc = (bestPrice > target.hiPrice) ? target.hiPrice : bestPrice;
-    prc = (bestPrice < target.loPrice) ?  target.loPrice : bestPrice;
-    
-    qty = ( target.loQty * (target.hiPrice - prc) 
-            + 
-            target.hiQty * (prc - target.loPrice) )
-        /  (target.hiPrice-target.loPrice);
-    return qty;
-}
-*/
+
 function sigmoid(x) {
     /*  Expected outputs:
         10	1.0000
@@ -104,7 +80,6 @@ function sigmoid(x) {
     return 1 / (1 + Math.exp(-x));
 }
 
-// qtyQuanta = [212345, 623456 , 1123456, 5123456, 11123456, 100123456];
 function quoteQuota(mktQuoteSize) {
 /*  108,731	    0 (from 1)
     295,562	    2
@@ -158,7 +133,6 @@ function quotePriceAdjustment(normalisedDeviation) {
     return -2.0 * tickSize * normalisedDeviation**3;
 }
 
-
 function scaleOrderQty(balances) {
     const totalUSD = balances.usdc.total+balances.usdt.total;
     const freeUSD = 2.0 * Math.min(balances.usdc.free, balances.usdt.free);
@@ -184,7 +158,6 @@ function randomisedInterval(activeOrderCount) {
     let rnd = Math.ceil(
         Math.random() * xxMilliSeconds * Math.max(1,activeOrderCount)
         );
-    //console.log(`Randomised Order Interval ${(rnd/60/1000).toFixed(2)} minutes`);
     return rnd;
 }
 
@@ -430,6 +403,21 @@ function calculateParams(balances, position, priceStats) {
     };
 }
 
+async function manageOrders(prcDepth, openOrders, balances, params) {
+    await makeBids(
+        prcDepth.bids, 
+        openOrders.filter(order => order.side === 'BUY'), 
+        balances, 
+        params
+    );
+    await makeOffers(
+        prcDepth.asks, 
+        openOrders.filter(order => order.side === 'SELL'), 
+        balances,
+        params
+    );
+}
+
 exports.placeSCoinOrders = placeSCoinOrders;
 async function placeSCoinOrders() {
     try {        
@@ -442,28 +430,15 @@ async function placeSCoinOrders() {
             usdc : nonZeroBalances.balances.filter(balance => (balance.asset=='USDC'))[0],
             usdt : nonZeroBalances.balances.filter(balance => (balance.asset=='USDT'))[0]
         }    
-      
+
         const params = calculateParams(balances,position,priceStats);
         console.log(params); 
-
-        makeBids(
-            prcDepth.bids, 
-            allOrders.filter(order => (order.side==='BUY')), 
-            balances, 
-            params
-        );
-
-        makeOffers(
-            prcDepth.asks, 
-            allOrders.filter(order => (order.side==='SELL')), 
-            balances,
-            params
-        ); 
-
+        
+        await manageOrders(prcDepth, allOrders, balances, params);
+        
     } catch (error) {
         console.error(error.message);
     }
 }
 
 if (require.main === module) placeSCoinOrders();
-
