@@ -161,8 +161,8 @@ function randomisedInterval(activeOrderCount) {
     return rnd;
 }
 
-// Want to place an order ever xx Minutes on average.  
-// Rather than place an order after at set intervals we use a random number 
+// Want to place an order every xx Minutes on average.  
+// Rather than place an order at set intervals we use a random number 
 // to space out order placement with an average interval of xx minutes.
 // Assume a polling period of 1 minute. 
 /* random variable bar when timeFactor is 1.1 
@@ -190,7 +190,6 @@ function stochasticDecision(orderCount) {
 async function makeBids(mktQuotes, allOrders, balances, params) {
     console.log(`Making bids for ${symbol} at ${new Date()}`);
 
-   // let usdcTotal = params.coinQty;
     let deviation = params.deviation;
     let prcFloor = mktQuotes[1].price;
     let taperPrice = params.avgBuy.taperPrice;
@@ -441,4 +440,8 @@ async function placeSCoinOrders() {
     }
 }
 
-if (require.main === module) placeSCoinOrders();
+if (require.main === module) {
+    (async () => {
+        await placeSCoinOrders();
+    })();
+}
