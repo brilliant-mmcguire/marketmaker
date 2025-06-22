@@ -200,7 +200,7 @@ function calculateBidPriceCeiling(mktQuotes, params, target, tickSize) {
     let prcCeiling = Math.min(taperPrice, params.mktPrice);
     let adjustment = quotePriceAdjustment(params.deviation);
     prcCeiling += adjustment;
-
+  
     // If market price is above our high target, be more conservative.
     // Testing a strategy to     
     // a) encourage a short position when price pops up. 
@@ -269,6 +269,7 @@ function calculateParams(balances, position, priceStats) {
         coinQty,
         targetQty: targetQ,
         deviation,
+        orderQty: scaleOrderQty(balances),
         avgBuy: {
             price: position.mAvgBuyPrice,
             qty: position.mAvgBuyQty,
@@ -295,7 +296,7 @@ async function fetchApiData(symbol) {
     return { prcDepth, nonZeroBalances, allOrders, position, priceStats };
 }
 
-async function makeBids(mktQuotes, allOrders, balances, params) {
+async function makeBids(mktQuotes, allOrders, params) {
     console.log(`Making bids for ${symbol} at ${new Date()}`);
 
     let prcFloor = mktQuotes[1].price;
@@ -313,7 +314,7 @@ async function makeBids(mktQuotes, allOrders, balances, params) {
     
     for(let i = 0; i< mktQuotes.length; i++) {
         let bid = mktQuotes[i];
-        let qty = scaleOrderQty(balances);
+        let qty = params.orderQty; // scaleOrderQty(balances);
 
         // Reduce quota for quote levels that are away from best. 
         let quota = Math.max(0,quoteQuota(bid.qty)-i);
@@ -357,7 +358,7 @@ async function makeBids(mktQuotes, allOrders, balances, params) {
     };
 }
 
-async function makeOffers(mktQuotes, allOrders, balances, params) {
+async function makeOffers(mktQuotes, allOrders, params) {
     console.log(`Making offers for ${symbol} at ${new Date()}`);
 
     const prcCeiling = mktQuotes[1].price;
@@ -371,11 +372,11 @@ async function makeOffers(mktQuotes, allOrders, balances, params) {
     if(staleOrders.length>0) {
          console.log(`Cancel orders below price floor`);
          await cancelOrders(staleOrders);
-    }    
+    }
     
     for(let i = 0; i< mktQuotes.length; i++) {
         let offer = mktQuotes[i];
-        let qty = scaleOrderQty(balances);
+        let qty = params.orderQty; //scaleOrderQty(balances);
 
         // Reduce quote for quote levels that are away from best. 
         let quota = Math.max(0,quoteQuota(offer.qty)-i);
@@ -396,7 +397,7 @@ async function makeOffers(mktQuotes, allOrders, balances, params) {
 
         console.log(
             `${orders.length} orders @ ${offer.price} (${offer.qty}) quota: ${quota} orders freshOrders: ${freshOrders}`
-        );      
+        );
             
         if(quotaFull) continue;
         if( ! stochasticDecision(orders.length)) continue;
@@ -418,17 +419,15 @@ async function makeOffers(mktQuotes, allOrders, balances, params) {
     }
 }
 
-async function manageOrders(prcDepth, openOrders, balances, params) {
+async function manageOrders(prcDepth, openOrders, params) {
     await makeBids(
         prcDepth.bids, 
         openOrders.filter(order => order.side === 'BUY'), 
-        balances, 
         params
     );
     await makeOffers(
         prcDepth.asks, 
         openOrders.filter(order => order.side === 'SELL'), 
-        balances,
         params
     );
 }
@@ -449,7 +448,7 @@ async function placeSCoinOrders() {
         const params = calculateParams(balances,position,priceStats);
         console.log(params); 
         
-        await manageOrders(prcDepth, allOrders, balances, params);
+        await manageOrders(prcDepth, allOrders, params);
         
     } catch (error) {
         console.error(error.message);
