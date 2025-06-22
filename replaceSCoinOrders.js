@@ -187,23 +187,22 @@ function stochasticDecision(orderCount) {
     return decision;
 }
 
-async function makeBids(mktQuotes, allOrders, balances, params) {
-    console.log(`Making bids for ${symbol} at ${new Date()}`);
-
-    let deviation = params.deviation;
-    let prcFloor = mktQuotes[1].price;
+/**
+ * Calculate the price ceiling for bids.
+ * @param {Array} mktQuotes - The market bid quotes.
+ * @param {Object} params - The trading parameters.
+ * @param {Object} target - The target config object.
+ * @param {number} tickSize - The tick size.
+ * @returns {number} The calculated price ceiling.
+ */
+function calculateBidPriceCeiling(mktQuotes, params, target, tickSize) {
     let taperPrice = params.avgBuy.taperPrice;
+    let prcCeiling = Math.min(taperPrice, params.mktPrice);
+    let adjustment = quotePriceAdjustment(params.deviation);
+    prcCeiling += adjustment;
 
-    // If mkt price falls below recent buy price we want to switch to
-    // ceiling based on mkt price and apply position adjustment to that.  
-    let prcCeiling = Math.min(taperPrice,params.mktPrice);
-
-    // Adjust price ceiling to allow for position deviation.  
-    // If we are overweight, we want to be more demanding on price improvement. 
-    let adjustment = quotePriceAdjustment(deviation); 
-    prcCeiling += adjustment; 
-    
-    // Testing a strategy to:
+    // If market price is above our high target, be more conservative.
+    // Testing a strategy to     
     // a) encourage a short position when price pops up. 
     // b) avoid buying at very high prices, when for example there is a short lived liquidity hole.
     // Enforce bid to be at least one tick away from the current best bid. 
@@ -213,9 +212,48 @@ async function makeBids(mktQuotes, allOrders, balances, params) {
     console.log({ 
         taperPrice : taperPrice,
         adjustment : adjustment,
-        prcCeiling : prcCeiling,
-        prcFloor   : prcFloor
+        prcCeiling : prcCeiling
     });
+
+    return prcCeiling;
+}
+
+/**
+ * Calculate the price floor for offers.
+ * @param {Array} mktQuotes - The market ask quotes.
+ * @param {Object} params - The trading parameters.
+ * @param {Object} target - The target config object.
+ * @param {number} tickSize - The tick size.
+ * @returns {number} The calculated price floor.
+ */
+function calculateOfferPriceFloor(mktQuotes, params, target, tickSize) {
+    let taperPrice = params.avgSell.taperPrice;
+    let prcFloor = Math.max(taperPrice, params.mktPrice);
+    let adjustment = quotePriceAdjustment(params.deviation);
+    prcFloor += adjustment;
+
+    // If market price is below our low target, be more conservative
+    // Testing a strategy to 
+    // a) encourage a long position when price drops. 
+    // b) avoid selling at very low prices, when for example there is a short lived liquidity hole.
+    // Default bid is one tick away from the current best bid. 
+    if((mktQuotes[0].price) < target.loPrice) { 
+        prcFloor = Math.max(mktQuotes[0].price + tickSize, prcFloor);
+    }
+    console.log({ 
+        taperPrice : taperPrice, 
+        adjustment : adjustment,
+        prcFloor : prcFloor
+    });
+
+    return prcFloor;
+}
+
+async function makeBids(mktQuotes, allOrders, balances, params) {
+    console.log(`Making bids for ${symbol} at ${new Date()}`);
+
+    let prcFloor = mktQuotes[1].price;
+    let prcCeiling = calculateBidPriceCeiling(mktQuotes, params, target, tickSize);
 
     //cancel any open orders exceeding the price ceiling and fallen under the price floor. 
     let staleOrders = allOrders.filter(order => (
@@ -233,7 +271,7 @@ async function makeBids(mktQuotes, allOrders, balances, params) {
 
         // Reduce quota for quote levels that are away from best. 
         let quota = Math.max(0,quoteQuota(bid.qty)-i);
-        if(i==0 && deviation < -0.33) quota++; // Add to quota if we are in a short position.  
+        if(i==0 && params.deviation < -0.33) quota++; // Add to quota if we are in a short position.  
 
         let orders = allOrders.filter(order => parseFloat(order.price) === bid.price ); 
  
@@ -274,33 +312,11 @@ async function makeBids(mktQuotes, allOrders, balances, params) {
 }
 
 async function makeOffers(mktQuotes, allOrders, balances, params) {
-
     console.log(`Making offers for ${symbol} at ${new Date()}`);
 
-    let deviation = params.deviation;
-    let prcCeiling = mktQuotes[1].price;
-    let taperPrice = params.avgSell.taperPrice;
-   
-    // Adjust price floor to allow for position deviation. 
-    let prcFloor = Math.max(taperPrice,params.mktPrice);
-    let adjustment = quotePriceAdjustment(deviation); 
-    prcFloor += adjustment; 
-    
-    // Testing a strategy to 
-    // a) encourage a long position when price drops. 
-    // b) avoid selling at very low prices, when for example there is a short lived liquidity hole.
-    // Default bid is one tick away from the current best bid. 
-    if((mktQuotes[0].price) < target.loPrice) { 
-        prcFloor = Math.max(mktQuotes[0].price + tickSize, prcFloor);
-    }
+    const prcCeiling = mktQuotes[1].price;
+    const prcFloor = calculateOfferPriceFloor(mktQuotes, params, target, tickSize);
 
-    console.log({ 
-        taperPrice : taperPrice, 
-        adjustment : adjustment,
-        prcCeiling : prcCeiling,
-        prcFloor : prcFloor
-    });
-    
     //cancel any open orders exceeding the price ceiling or fallen under the price floor. 
     let staleOrders = allOrders.filter(order => (
         (parseFloat(order.price)<prcFloor) || (parseFloat(order.price)>prcCeiling)
@@ -317,7 +333,7 @@ async function makeOffers(mktQuotes, allOrders, balances, params) {
 
         // Reduce quote for quote levels that are away from best. 
         let quota = Math.max(0,quoteQuota(offer.qty)-i);
-        if(i==0 && deviation > 0.33) quota++; // Add to quota if we are in a long position.  
+        if(i==0 && params.deviation > 0.33) quota++; // Add to quota if we are in a long position.  
 
         let orders = allOrders.filter(order => parseFloat(order.price) === offer.price ); 
         

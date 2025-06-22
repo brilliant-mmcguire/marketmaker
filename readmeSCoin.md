@@ -1,6 +1,6 @@
 # Purpose:
 
-Automates and manages order placement for USDCUSDT, aiming to maintain a balanced and adaptive market-making strategy. Dynamically places and cancels buy/sell orders based on market conditions, current position, and recent trading activity.
+Automates and manages order placement for USDCUSDT, aiming to maintain a balanced and adaptive market-making strategy.  Places and cancels buy/sell orders based on market conditions, current position, and recent trading activity.
 
 # Key Features & Logic
 
