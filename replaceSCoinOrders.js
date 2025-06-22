@@ -249,6 +249,52 @@ function calculateOfferPriceFloor(mktQuotes, params, target, tickSize) {
     return prcFloor;
 }
 
+function calculateParams(balances, position, priceStats) {
+    const mktPrice = priceStats.weightedAvgPrice;
+    const targetQ = targetQty(mktPrice);
+    const coinQty = balances.usdc.total;
+    const deviation = (coinQty - targetQ) / posLimit;
+
+    const taperSellPrice = taperTradePrice(
+        position.mAvgSellPrice, 
+        position.mAvgSellAge, 
+        mktPrice);
+    const taperBuyPrice = taperTradePrice(
+        position.mAvgBuyPrice, 
+        position.mAvgBuyAge, 
+        mktPrice);
+
+    return {
+        mktPrice,
+        coinQty,
+        targetQty: targetQ,
+        deviation,
+        avgBuy: {
+            price: position.mAvgBuyPrice,
+            qty: position.mAvgBuyQty,
+            age: position.mAvgBuyAge,
+            taperPrice: taperBuyPrice
+        },
+        avgSell: {
+            price: position.mAvgSellPrice,
+            qty: position.mAvgSellQty,
+            age: position.mAvgSellAge,
+            taperPrice: taperSellPrice
+        }
+    };
+}
+
+async function fetchApiData(symbol) {
+    const [prcDepth, nonZeroBalances, allOrders, position, priceStats] = await Promise.all([
+        fetchPriceDepth(symbol),
+        fetchAccountInfo(),
+        fetchOpenOrders(symbol),
+        fetchPositions(symbol, 1),
+        fetchPriceStats(symbol, '15m')
+    ]);
+    return { prcDepth, nonZeroBalances, allOrders, position, priceStats };
+}
+
 async function makeBids(mktQuotes, allOrders, balances, params) {
     console.log(`Making bids for ${symbol} at ${new Date()}`);
 
@@ -370,52 +416,6 @@ async function makeOffers(mktQuotes, allOrders, balances, params) {
             console.error(error.message);
         }
     }
-}
-
-async function fetchApiData(symbol) {
-    const [prcDepth, nonZeroBalances, allOrders, position, priceStats] = await Promise.all([
-        fetchPriceDepth(symbol),
-        fetchAccountInfo(),
-        fetchOpenOrders(symbol),
-        fetchPositions(symbol, 1),
-        fetchPriceStats(symbol, '15m')
-    ]);
-    return { prcDepth, nonZeroBalances, allOrders, position, priceStats };
-}
-
-function calculateParams(balances, position, priceStats) {
-    const mktPrice = priceStats.weightedAvgPrice;
-    const targetQ = targetQty(mktPrice);
-    const coinQty = balances.usdc.total;
-    const deviation = (coinQty - targetQ) / posLimit;
-
-    const taperSellPrice = taperTradePrice(
-        position.mAvgSellPrice, 
-        position.mAvgSellAge, 
-        mktPrice);
-    const taperBuyPrice = taperTradePrice(
-        position.mAvgBuyPrice, 
-        position.mAvgBuyAge, 
-        mktPrice);
-
-    return {
-        mktPrice,
-        coinQty,
-        targetQty: targetQ,
-        deviation,
-        avgBuy: {
-            price: position.mAvgBuyPrice,
-            qty: position.mAvgBuyQty,
-            age: position.mAvgBuyAge,
-            taperPrice: taperBuyPrice
-        },
-        avgSell: {
-            price: position.mAvgSellPrice,
-            qty: position.mAvgSellQty,
-            age: position.mAvgSellAge,
-            taperPrice: taperSellPrice
-        }
-    };
 }
 
 async function manageOrders(prcDepth, openOrders, balances, params) {
