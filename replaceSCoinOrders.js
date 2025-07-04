@@ -296,7 +296,11 @@ async function fetchApiData(symbol) {
     return { prcDepth, nonZeroBalances, allOrders, position, priceStats };
 }
 
-async function makeBids(mktQuotes, allOrders, params) {
+// Parse command line arguments for read-only mode
+const args = process.argv.slice(2);
+const readOnly = args.includes('--read-only');
+
+async function makeBids(mktQuotes, allOrders, params, readOnly) {
     console.log(`Making bids for ${symbol} at ${new Date()}`);
 
     let prcFloor = mktQuotes[1].price;
@@ -308,8 +312,12 @@ async function makeBids(mktQuotes, allOrders, params) {
         ));
     
     if(staleOrders.length>0) {
-         console.log(`Cancel orders above price ceiling`);
-         await cancelOrders(staleOrders);
+         if (readOnly) {
+             console.log(`[READ ONLY] Would cancel orders above price ceiling`);
+         } else {
+             console.log(`Cancel orders above price ceiling`);
+             await cancelOrders(staleOrders);
+         }
     }
     
     for(let i = 0; i< mktQuotes.length; i++) {
@@ -327,8 +335,12 @@ async function makeBids(mktQuotes, allOrders, params) {
         let quotaBreach = orders.length > quota;
         
         if(quotaBreach) {
-            cancelOrders([orders[orders.length-1]]);
-            console.log(`Quota breach @ ${bid.price} (${bid.qty})and cancelling last order.`);
+            if (readOnly) {
+                console.log(`[READ ONLY] Would cancel last order for quota breach @ ${bid.price}`);
+            } else {
+                cancelOrders([orders[orders.length-1]]);
+                console.log(`Quota breach @ ${bid.price} (${bid.qty})and cancelling last order.`);
+            }
         }
 
         if (bid.price > bidCeiling || bid.price < prcFloor) continue; 
@@ -342,6 +354,11 @@ async function makeBids(mktQuotes, allOrders, params) {
         if( ! stochasticDecision(orders.length)) continue;
     
         console.log(`> Place BUY at ${bid.price}`);
+
+        if (readOnly) {
+            console.log(`[READ ONLY] Would place BUY at ${bid.price}`);
+            break;
+        }
 
         try {
             joinBid = await placeOrder(
@@ -358,7 +375,7 @@ async function makeBids(mktQuotes, allOrders, params) {
     };
 }
 
-async function makeOffers(mktQuotes, allOrders, params) {
+async function makeOffers(mktQuotes, allOrders, params, readOnly) {
     console.log(`Making offers for ${symbol} at ${new Date()}`);
 
     const prcCeiling = mktQuotes[1].price;
@@ -370,8 +387,12 @@ async function makeOffers(mktQuotes, allOrders, params) {
         ));
 
     if(staleOrders.length>0) {
-         console.log(`Cancel orders below price floor`);
-         await cancelOrders(staleOrders);
+         if (readOnly) {
+             console.log(`[READ ONLY] Would cancel orders below price floor`);
+         } else {
+             console.log(`Cancel orders below price floor`);
+             await cancelOrders(staleOrders);
+         }
     }
     
     for(let i = 0; i< mktQuotes.length; i++) {
@@ -389,8 +410,12 @@ async function makeOffers(mktQuotes, allOrders, params) {
         let quotaBreach = orders.length > quota;
            
         if(quotaBreach) {
-            cancelOrders([orders[orders.length-1]]);
-            console.log(`Quota breach @ ${offer.price} (${offer.qty}) and cancelling last order.`);
+            if (readOnly) {
+                console.log(`[READ ONLY] Would cancel last order for quota breach @ ${offer.price}`);
+            } else {
+                cancelOrders([orders[orders.length-1]]);
+                console.log(`Quota breach @ ${offer.price} (${offer.qty}) and cancelling last order.`);
+            }
         }
         
         if (offer.price > prcCeiling || offer.price < offerFloor) continue; 
@@ -403,6 +428,11 @@ async function makeOffers(mktQuotes, allOrders, params) {
         if( ! stochasticDecision(orders.length)) continue;
         
         console.log(`> Place SELL @ ${offer.price}`);
+
+        if (readOnly) {
+            console.log(`[READ ONLY] Would place SELL at ${offer.price}`);
+            break;
+        }
 
         try {
             joinOffer = await placeOrder(
@@ -419,16 +449,18 @@ async function makeOffers(mktQuotes, allOrders, params) {
     }
 }
 
-async function manageOrders(prcDepth, openOrders, params) {
+async function manageOrders(prcDepth, openOrders, params, readOnly) {
     await makeBids(
         prcDepth.bids, 
         openOrders.filter(order => order.side === 'BUY'), 
-        params
+        params,
+        readOnly
     );
     await makeOffers(
         prcDepth.asks, 
         openOrders.filter(order => order.side === 'SELL'), 
-        params
+        params,
+        readOnly
     );
 }
 
@@ -445,10 +477,12 @@ async function placeSCoinOrders() {
             usdt : nonZeroBalances.balances.filter(balance => (balance.asset=='USDT'))[0]
         }    
 
+        console.log(`Calculate parameters`)
         const params = calculateParams(balances,position,priceStats);
         console.log(params); 
-        
-        await manageOrders(prcDepth, allOrders, params);
+       
+        console.log(`Managing orders --read-only: ${readOnly}`)
+        await manageOrders(prcDepth, allOrders, params, readOnly);
         
     } catch (error) {
         console.error(error.message);
