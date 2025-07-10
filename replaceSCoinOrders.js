@@ -303,7 +303,7 @@ const readOnly = args.includes('--read-only');
 async function makeBids(mktQuotes, allOrders, params, readOnly) {
     console.log(`Making bids for ${symbol} at ${new Date()}`);
 
-    let prcFloor = mktQuotes[1].price;
+    let prcFloor = mktQuotes[0].price;
     let bidCeiling = calculateBidCeiling(mktQuotes, params, target, tickSize);
 
     //cancel any open orders exceeding the price ceiling and fallen under the price floor. 
@@ -336,7 +336,7 @@ async function makeBids(mktQuotes, allOrders, params, readOnly) {
         
         if(quotaBreach) {
             if (readOnly) {
-                console.log(`[READ ONLY] Would cancel last order for quota breach @ ${bid.price}`);
+                console.log(`[READ ONLY] Would cancel newest of ${orders.length} orders for quota breach @ ${bid.price}`);
             } else {
                 cancelOrders([orders[orders.length-1]]);
                 console.log(`Quota breach @ ${bid.price} (${bid.qty})and cancelling last order.`);
@@ -378,7 +378,7 @@ async function makeBids(mktQuotes, allOrders, params, readOnly) {
 async function makeOffers(mktQuotes, allOrders, params, readOnly) {
     console.log(`Making offers for ${symbol} at ${new Date()}`);
 
-    const prcCeiling = mktQuotes[1].price;
+    const prcCeiling = mktQuotes[0].price;
     const offerFloor = calculateOfferFloor(mktQuotes, params, target, tickSize);
 
     //cancel any open orders exceeding the price ceiling or fallen under the price floor. 
@@ -411,7 +411,7 @@ async function makeOffers(mktQuotes, allOrders, params, readOnly) {
            
         if(quotaBreach) {
             if (readOnly) {
-                console.log(`[READ ONLY] Would cancel last order for quota breach @ ${offer.price}`);
+                console.log(`[READ ONLY] Would cancel newest of ${orders.length} orders for quota breach @ ${offer.price}`);
             } else {
                 cancelOrders([orders[orders.length-1]]);
                 console.log(`Quota breach @ ${offer.price} (${offer.qty}) and cancelling last order.`);
