@@ -477,7 +477,7 @@ async function placeSCoinOrders() {
             usdt : nonZeroBalances.balances.filter(balance => (balance.asset=='USDT'))[0]
         }    
 
-        console.log(`Calculate parameters`)
+        console.log(`Calculating parameters at ${new Date()}`)
         const params = calculateParams(balances,position,priceStats);
         console.log(params); 
        
