@@ -58,7 +58,6 @@ function targetQty(bestPrice) {
         0.9995	1445.4
         0.9990	1151.7
         0.9985	1046.0 */ 
-    // 0.25 -> About 90% of hiQty at hiPrice. 
     const prcDeviation = 0.25*(bestPrice-1.0)/tickSize; 
     const qZero =  target.loQty;
     const qMax = target.hiQty - target.loQty;
@@ -105,7 +104,7 @@ function quoteQuota(mktQuoteSize) {
     let logQuoteSize =
         normalisedQuoteSize >= 1 ?  Math.log(normalisedQuoteSize) : 0;
     
-    logQuoteSize*=1.3; // Scale up order count. 
+    logQuoteSize*=1.3; // Scale up order count.
 
     if (mktQuoteSize < 200000) return 0; // avoid placing orders into small quote sizes.
     return Math.round(logQuoteSize - 0.5); /*round up*/
@@ -322,6 +321,8 @@ async function makeBids(mktQuotes, allOrders, params, readOnly) {
     
     for(let i = 0; i< mktQuotes.length; i++) {
         let bid = mktQuotes[i];
+        if (bid.price > bidCeiling || bid.price < prcFloor) continue; 
+
         let qty = params.orderQty; // scaleOrderQty(balances);
 
         // Reduce quota for quote levels that are away from best. 
@@ -334,6 +335,10 @@ async function makeBids(mktQuotes, allOrders, params, readOnly) {
         let quotaFull = orders.length >= quota
         let quotaBreach = orders.length > quota;
         
+        console.log(
+            `${orders.length} orders @ ${bid.price} (${bid.qty}) quota: ${quota} orders freshOrders: ${freshOrders}`
+        );
+
         if(quotaBreach) {
             if (readOnly) {
                 console.log(`[READ ONLY] Would cancel newest of ${orders.length} orders for quota breach @ ${bid.price}`);
@@ -342,15 +347,8 @@ async function makeBids(mktQuotes, allOrders, params, readOnly) {
                 console.log(`Quota breach @ ${bid.price} (${bid.qty})and cancelling last order.`);
             }
         }
-
-        if (bid.price > bidCeiling || bid.price < prcFloor) continue; 
-
-        console.log(
-            `${orders.length} orders @ ${bid.price} (${bid.qty}) quota: ${quota} orders freshOrders: ${freshOrders}`
-        );
-
-        if(quotaFull) continue; 
         
+        if(quotaFull) continue; 
         if( ! stochasticDecision(orders.length)) continue;
     
         console.log(`> Place BUY at ${bid.price}`);
@@ -397,6 +395,8 @@ async function makeOffers(mktQuotes, allOrders, params, readOnly) {
     
     for(let i = 0; i< mktQuotes.length; i++) {
         let offer = mktQuotes[i];
+        if (offer.price > prcCeiling || offer.price < offerFloor) continue;  
+
         let qty = params.orderQty; //scaleOrderQty(balances);
 
         // Reduce quote for quote levels that are away from best. 
@@ -409,6 +409,10 @@ async function makeOffers(mktQuotes, allOrders, params, readOnly) {
         let quotaFull = orders.length >= quota;
         let quotaBreach = orders.length > quota;
            
+        console.log(
+            `${orders.length} orders @ ${offer.price} (${offer.qty}) quota: ${quota} orders freshOrders: ${freshOrders}`
+        );
+
         if(quotaBreach) {
             if (readOnly) {
                 console.log(`[READ ONLY] Would cancel newest of ${orders.length} orders for quota breach @ ${offer.price}`);
@@ -417,13 +421,8 @@ async function makeOffers(mktQuotes, allOrders, params, readOnly) {
                 console.log(`Quota breach @ ${offer.price} (${offer.qty}) and cancelling last order.`);
             }
         }
-        
-        if (offer.price > prcCeiling || offer.price < offerFloor) continue; 
+   
 
-        console.log(
-            `${orders.length} orders @ ${offer.price} (${offer.qty}) quota: ${quota} orders freshOrders: ${freshOrders}`
-        );
-            
         if(quotaFull) continue;
         if( ! stochasticDecision(orders.length)) continue;
         
