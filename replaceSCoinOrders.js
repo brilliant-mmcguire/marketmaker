@@ -301,7 +301,7 @@ const readOnly = args.includes('--read-only');
 async function makeBids(mktQuotes, allOrders, params, readOnly) {
     console.log(`Making bids for ${symbol} at ${new Date()}`);
 
-    let prcFloor = mktQuotes[0].price;
+    let prcFloor = mktQuotes[1].price;
     let bidCeiling = calculateBidCeiling(mktQuotes, params, target, tickSize);
 
     //cancel any open orders exceeding the price ceiling and fallen under the price floor. 
@@ -375,7 +375,7 @@ async function makeBids(mktQuotes, allOrders, params, readOnly) {
 async function makeOffers(mktQuotes, allOrders, params, readOnly) {
     console.log(`Making offers for ${symbol} at ${new Date()}`);
 
-    const prcCeiling = mktQuotes[0].price;
+    const prcCeiling = mktQuotes[1].price;
     const offerFloor = calculateOfferFloor(mktQuotes, params, target, tickSize);
 
     //cancel any open orders exceeding the price ceiling or fallen under the price floor. 
