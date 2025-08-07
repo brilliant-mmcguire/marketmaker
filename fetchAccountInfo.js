@@ -107,6 +107,7 @@ const SUPPORTED_ASSETS = {
     ETH: { pair: 'ETHUSDT' },
     XRP: { pair: 'XRPUSDT' },
     ADA: { pair: 'ADAUSDT' },
+    XLM: { pair: 'XLMUSDT' },
     BNB: { pair: 'BNBUSDT' }
 };
 
