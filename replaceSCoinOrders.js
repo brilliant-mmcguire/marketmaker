@@ -96,8 +96,7 @@ function quoteQuota(mktQuoteSize) {
     const normalisedQuoteSize = mktQuoteSize / scaleFactorQuoteSize; 
     let logQuoteSize =
         normalisedQuoteSize >= 1 ?  Math.log(normalisedQuoteSize) : 0;
-    //logQuoteSize*=1.3; // Scale up order count.
-
+ 
     return Math.round(logQuoteSize - 0.5); /*round up*/
 }
 
