@@ -130,6 +130,7 @@ function scaleOrderQty(balances) {
     return Math.round(qty); 
 }
 
+/*
 function hasFreshOrders(orders) {
     const orderCount = orders.length;
     let freshOrders = false;
@@ -141,6 +142,7 @@ function hasFreshOrders(orders) {
     return freshOrders;
 }
 
+
 function randomisedInterval(activeOrderCount) {
     const xxMinutes = 7; // Max number of minutes between orders, with one active order.
     const xxMilliSeconds = xxMinutes * 60 * 1000; // xx minutes expressed in milliseconds.
@@ -149,26 +151,27 @@ function randomisedInterval(activeOrderCount) {
         );
     return rnd;
 }
+*/
 
 // Want to place an order every xx Minutes on average.  
 // Rather than place an order at set intervals we use a random number 
 // to space out order placement with an average interval of xx minutes.
 // Assume a polling period of 1 minute. 
-/* random variable bar when timeFactor is 1.1 
-    Go	Don't go
-0	0.91	0.09
-1	0.45	0.55
-2	0.30	0.70
-3	0.23	0.77
-4	0.18	0.82
-5	0.15	0.85
-6	0.13	0.87
-7	0.11	0.89
-8	0.10	0.90
+/* random variable bar when timeFactor is 2.0 
+	Go	    Don't go	Expected interval
+0	0.50	0.50	    2
+1	0.25	0.75	    4
+2	0.17	0.83	    6
+3	0.13	0.88	    8
+4	0.10	0.90	    10
+5	0.08	0.92	    12
+6	0.07	0.93	    14
+7	0.06	0.94	    16
+8	0.06	0.94	    18
 */ 
 function stochasticDecision(orderCount) { 
     const x = Math.random();
-    const timeScaleFactor = 1.4; 
+    const timeScaleFactor = 2.0; 
     const bar = 1.0/(timeScaleFactor*(1+orderCount)); 
     const decision = x <= bar;
 
@@ -323,12 +326,12 @@ async function makeBids(mktQuotes, allOrders, params, readOnly) {
 
         let orders = allOrders.filter(order => parseFloat(order.price) === bid.price ); 
  
-        let freshOrders = hasFreshOrders(orders);
+        //let freshOrders = hasFreshOrders(orders);
         let quotaFull = orders.length >= quota
         let quotaBreach = orders.length > quota;
         
         console.log(
-            `${orders.length} orders @ ${bid.price} (${bid.qty} -> quota: ${quota} orders) freshOrders: ${freshOrders}`
+            `${orders.length} orders @ ${bid.price} (${bid.qty} -> quota: ${quota} orders)`
         );
 
         if(quotaBreach) {
@@ -400,12 +403,12 @@ async function makeOffers(mktQuotes, allOrders, params, readOnly) {
 
         let orders = allOrders.filter(order => parseFloat(order.price) === offer.price ); 
         
-        let freshOrders = hasFreshOrders(orders);
+        //let freshOrders = hasFreshOrders(orders);
         let quotaFull = orders.length >= quota;
         let quotaBreach = orders.length > quota;
            
         console.log(
-            `${orders.length} orders @ ${offer.price} (${offer.qty} -> quota: ${quota} orders) freshOrders: ${freshOrders}`
+            `${orders.length} orders @ ${offer.price} (${offer.qty} -> quota: ${quota} orders)`
         );
 
         if(quotaBreach) {
