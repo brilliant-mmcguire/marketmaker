@@ -292,7 +292,7 @@ const readOnly = args.includes('--read-only');
 async function makeBids(mktQuotes, allOrders, params, readOnly) {
     console.log(`Making bids for ${symbol} at ${new Date()}`);
 
-    let prcFloor = mktQuotes[1].price;
+    let prcFloor = mktQuotes[2].price;
     let bidCeiling = calculateBidCeiling(mktQuotes, params, target, tickSize);
 
     //cancel any open orders exceeding the price ceiling and fallen under the price floor. 
@@ -315,8 +315,7 @@ async function makeBids(mktQuotes, allOrders, params, readOnly) {
 
         let qty = params.orderQty; // scaleOrderQty(balances);
 
-     
-        let quota = Math.max(0,quoteQuota(bid.qty)-i); // Reduce quota for quote levels that are away from best. 
+        let quota = quoteQuota(bid.qty)-(i*i); // Reduce quota for quote levels that are away from best. 
         if(i==0 && params.deviation < -0.33) quota++; // Add to quota if we are in a short position.  
         if(i==0 && params.deviation < -0.66) quota++; // Add to quota if we are in a short position.  
         if(i==0 && params.deviation > 0.33) quota--; // Reduce quota when already long.  
@@ -369,7 +368,7 @@ async function makeBids(mktQuotes, allOrders, params, readOnly) {
 async function makeOffers(mktQuotes, allOrders, params, readOnly) {
     console.log(`Making offers for ${symbol} at ${new Date()}`);
 
-    const prcCeiling = mktQuotes[1].price;
+    const prcCeiling = mktQuotes[2].price;
     const offerFloor = calculateOfferFloor(mktQuotes, params, target, tickSize);
 
     //cancel any open orders exceeding the price ceiling or fallen under the price floor. 
@@ -393,7 +392,7 @@ async function makeOffers(mktQuotes, allOrders, params, readOnly) {
         let qty = params.orderQty; //scaleOrderQty(balances);
 
         
-        let quota = Math.max(0,quoteQuota(offer.qty)-i);// Reduce quote for quote levels that are away from best. 
+        let quota = quoteQuota(offer.qty)-(i*i);// Reduce quote for quote levels that are away from best. 
         if(i==0 && params.deviation > 0.33) quota++; // Add to quota if we are in a long position.  
         if(i==0 && params.deviation > 0.66) quota++; // Add to quota if we are in a short position.  
         if(i==0 && params.deviation < -0.33) quota--; // Reduce quota when already short.  
