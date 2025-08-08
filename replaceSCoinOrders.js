@@ -89,9 +89,9 @@ function quoteQuota(mktQuoteSize) {
     10,966,332	7
     29,809,580	8
     81,030,839	9 */
-  
+    
     if (mktQuoteSize < 200000) return 0; // avoid placing orders into small quote sizes.
-  
+    
     const scaleFactorQuoteSize = 10000; 
     const normalisedQuoteSize = mktQuoteSize / scaleFactorQuoteSize; 
     let logQuoteSize =
@@ -318,6 +318,7 @@ async function makeBids(mktQuotes, allOrders, params, readOnly) {
      
         let quota = Math.max(0,quoteQuota(bid.qty)-i); // Reduce quota for quote levels that are away from best. 
         if(i==0 && params.deviation < -0.33) quota++; // Add to quota if we are in a short position.  
+        if(i==0 && params.deviation < -0.66) quota++; // Add to quota if we are in a short position.  
         if(i==0 && params.deviation > 0.33) quota--; // Reduce quota when already long.  
         if(i==0 && params.deviation > 0.66) quota--; // Reduce quota when already long.  
 
@@ -394,6 +395,7 @@ async function makeOffers(mktQuotes, allOrders, params, readOnly) {
         
         let quota = Math.max(0,quoteQuota(offer.qty)-i);// Reduce quote for quote levels that are away from best. 
         if(i==0 && params.deviation > 0.33) quota++; // Add to quota if we are in a long position.  
+        if(i==0 && params.deviation > 0.66) quota++; // Add to quota if we are in a short position.  
         if(i==0 && params.deviation < -0.33) quota--; // Reduce quota when already short.  
         if(i==0 && params.deviation < -0.66) quota--; // Reduce quota when already short.  
 
