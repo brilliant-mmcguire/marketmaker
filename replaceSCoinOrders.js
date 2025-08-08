@@ -329,7 +329,7 @@ async function makeBids(mktQuotes, allOrders, params, readOnly) {
         let quotaBreach = orders.length > quota;
         
         console.log(
-            `${orders.length} orders @ ${bid.price} (${bid.qty}) quota: ${quota} orders freshOrders: ${freshOrders}`
+            `${orders.length} orders @ ${bid.price} (${bid.qty} -> quota: ${quota} orders) freshOrders: ${freshOrders}`
         );
 
         if(quotaBreach) {
@@ -405,7 +405,7 @@ async function makeOffers(mktQuotes, allOrders, params, readOnly) {
         let quotaBreach = orders.length > quota;
            
         console.log(
-            `${orders.length} orders @ ${offer.price} (${offer.qty}) quota: ${quota} orders freshOrders: ${freshOrders}`
+            `${orders.length} orders @ ${offer.price} (${offer.qty} -> quota: ${quota} orders) freshOrders: ${freshOrders}`
         );
 
         if(quotaBreach) {
