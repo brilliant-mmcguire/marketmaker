@@ -80,15 +80,7 @@ function sigmoid(x) {
 }
 
 function quoteQuota(mktQuoteSize) {
-/*  108,731	    0 (from 1)
-    295,562	    2
-    803,421	    3
-    2,183,926	4
-    5,936,526	5
-    16,137,152	6
-    43,865,326	7
-    119,238,319	8 
-    27,183      0 (1)
+/*  27,183      0 (1)
     73,891      0 (2)
     200,855	    3
     545,982	    4
@@ -104,7 +96,7 @@ function quoteQuota(mktQuoteSize) {
     const normalisedQuoteSize = mktQuoteSize / scaleFactorQuoteSize; 
     let logQuoteSize =
         normalisedQuoteSize >= 1 ?  Math.log(normalisedQuoteSize) : 0;
-    logQuoteSize*=1.3; // Scale up order count.
+    //logQuoteSize*=1.3; // Scale up order count.
 
     return Math.round(logQuoteSize - 0.5); /*round up*/
 }
