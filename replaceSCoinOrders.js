@@ -295,7 +295,8 @@ const readOnly = args.includes('--read-only');
 async function makeBids(mktQuotes, allOrders, params, readOnly) {
     console.log(`Making bids for ${symbol} at ${new Date()}`);
 
-    let prcFloor = mktQuotes[2].price;
+    //let prcFloor = mktQuotes[2].price;
+    let prcFloor = mktQuotes[mktQuotes.length-1].price;
     let bidCeiling = calculateBidCeiling(mktQuotes, params, target, tickSize);
 
     //cancel any open orders exceeding the price ceiling and fallen under the price floor. 
@@ -314,16 +315,19 @@ async function makeBids(mktQuotes, allOrders, params, readOnly) {
     
     for(let i = 0; i< mktQuotes.length; i++) {
         let bid = mktQuotes[i];
-        if (bid.price > bidCeiling || bid.price < prcFloor) continue; 
+        //if (bid.price > bidCeiling || bid.price < prcFloor) continue; 
+        if (bid.price > bidCeiling) continue; 
 
         let qty = params.orderQty; // scaleOrderQty(balances);
 
-        let quota = quoteQuota(bid.qty)-(i*i); // Reduce quota for quote levels that are away from best. 
+        let quota = quoteQuota(bid.qty); 
+        quota -= (i*i); // Reduce quota for quote levels that are away from best. 
         if(i==0 && params.deviation < -0.33) quota++; // Add to quota if we are in a short position.  
         if(i==0 && params.deviation < -0.66) quota++; // Add to quota if we are in a short position.  
         if(i==0 && params.deviation > 0.33) quota--; // Reduce quota when already long.  
         if(i==0 && params.deviation > 0.66) quota--; // Reduce quota when already long.  
-
+        quota = Math.max(0,quota);
+        
         let orders = allOrders.filter(order => parseFloat(order.price) === bid.price ); 
  
         //let freshOrders = hasFreshOrders(orders);
@@ -331,12 +335,13 @@ async function makeBids(mktQuotes, allOrders, params, readOnly) {
         let quotaBreach = orders.length > quota;
         
         console.log(
-            `${orders.length} orders @ ${bid.price} (${bid.qty} -> quota: ${quota} orders)`
+            `${orders.length} orders @ ${bid.price} (${bid.qty} q:${bid.qty} i:${i} d:${params.deviation}  -> quota: ${quota} orders)`
         );
 
         if(quotaBreach) {
             if (readOnly) {
                 console.log(`[READ ONLY] Would cancel newest of ${orders.length} orders for quota breach @ ${bid.price}`);
+                console.log(orders[orders.length-1])
             } else {
                 cancelOrders([orders[orders.length-1]]);
                 console.log(`Quota breach @ ${bid.price} (${bid.qty})and cancelling last order.`);
@@ -371,7 +376,7 @@ async function makeBids(mktQuotes, allOrders, params, readOnly) {
 async function makeOffers(mktQuotes, allOrders, params, readOnly) {
     console.log(`Making offers for ${symbol} at ${new Date()}`);
 
-    const prcCeiling = mktQuotes[2].price;
+    const prcCeiling = mktQuotes[mktQuotes.length-1].price;
     const offerFloor = calculateOfferFloor(mktQuotes, params, target, tickSize);
 
     //cancel any open orders exceeding the price ceiling or fallen under the price floor. 
@@ -392,28 +397,29 @@ async function makeOffers(mktQuotes, allOrders, params, readOnly) {
         let offer = mktQuotes[i];
         if (offer.price > prcCeiling || offer.price < offerFloor) continue;  
 
-        let qty = params.orderQty; //scaleOrderQty(balances);
+        let qty = params.orderQty; 
 
-        
-        let quota = quoteQuota(offer.qty)-(i*i);// Reduce quote for quote levels that are away from best. 
+        let quota = quoteQuota(offer.qty);
+        quota -= (i*i); // Reduce quote for quote levels that are away from best. 
         if(i==0 && params.deviation > 0.33) quota++; // Add to quota if we are in a long position.  
         if(i==0 && params.deviation > 0.66) quota++; // Add to quota if we are in a short position.  
         if(i==0 && params.deviation < -0.33) quota--; // Reduce quota when already short.  
         if(i==0 && params.deviation < -0.66) quota--; // Reduce quota when already short.  
+        quota = Math.max(0,quota);
 
         let orders = allOrders.filter(order => parseFloat(order.price) === offer.price ); 
         
-        //let freshOrders = hasFreshOrders(orders);
         let quotaFull = orders.length >= quota;
         let quotaBreach = orders.length > quota;
            
         console.log(
-            `${orders.length} orders @ ${offer.price} (${offer.qty} -> quota: ${quota} orders)`
+            `${orders.length} orders @ ${offer.price} (q:${offer.qty} i:${i} d:${params.deviation} -> quota: ${quota} orders)`
         );
 
         if(quotaBreach) {
             if (readOnly) {
                 console.log(`[READ ONLY] Would cancel newest of ${orders.length} orders for quota breach @ ${offer.price}`);
+                console.log(orders[orders.length-1])
             } else {
                 cancelOrders([orders[orders.length-1]]);
                 console.log(`Quota breach @ ${offer.price} (${offer.qty}) and cancelling last order.`);
