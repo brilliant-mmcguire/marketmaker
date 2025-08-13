@@ -295,7 +295,6 @@ const readOnly = args.includes('--read-only');
 async function makeBids(mktQuotes, allOrders, params, readOnly) {
     console.log(`Making bids for ${symbol} at ${new Date()}`);
 
-    //let prcFloor = mktQuotes[2].price;
     let prcFloor = mktQuotes[mktQuotes.length-1].price;
     let bidCeiling = calculateBidCeiling(mktQuotes, params, target, tickSize);
 
@@ -335,7 +334,7 @@ async function makeBids(mktQuotes, allOrders, params, readOnly) {
         let quotaBreach = orders.length > quota;
         
         console.log(
-            `${orders.length} orders @ ${bid.price} (q:${bid.qty} i:${i} d:${params.deviation}  -> quota: ${quota} orders)`
+            `[${i}] ${orders.length} orders @ ${bid.price} (q:${bid.qty} d:${params.deviation}  -> quota: ${quota} orders)`
         );
 
         if(quotaBreach) {
@@ -386,7 +385,7 @@ async function makeOffers(mktQuotes, allOrders, params, readOnly) {
     let staleOrders = allOrders.filter(order => (
         (parseFloat(order.price)<offerFloor) || (parseFloat(order.price)>prcCeiling)
         ));
-
+        
     if(staleOrders.length>0) {
          if (readOnly) {
              console.log(`[READ ONLY] Would cancel orders below price floor`);
@@ -416,13 +415,14 @@ async function makeOffers(mktQuotes, allOrders, params, readOnly) {
         let quotaBreach = orders.length > quota;
            
         console.log(
-            `${orders.length} orders @ ${offer.price} (q:${offer.qty} i:${i} d:${params.deviation} -> quota: ${quota} orders)`
+            `[${i}] ${orders.length} orders @ ${offer.price} (q:${offer.qty} d:${params.deviation} -> quota: ${quota} orders)`
         );
 
         if(quotaBreach) {
-            const mostRecentOrder = orders.reduce((latest, order) => 
+            const mostRecentOrder = orders.reduce((latest, order) =>
                 order.time > latest.time ? order : latest
             ); 
+
             if (readOnly) {
                 console.log(`[READ ONLY] Would cancel newest of ${orders.length} orders for quota breach @ ${offer.price}`);
                 console.log(mostRecentOrder)
