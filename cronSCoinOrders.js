@@ -8,7 +8,7 @@ console.log("Starting cron: placing StableCoin orders for USDCUSCT.");
 const job = cron.schedule('*/1 * * * *', async () => {
     console.log('Invoking place orders at ' + new Date().toLocaleString());
     try {
-        await cancelStaleOrders('USDCUSDT');  
+        //await cancelStaleOrders('USDCUSDT');  
         await placeSCoinOrders();   
     } catch (error) {    
         console.error(`Error placing orders: ${error}`);

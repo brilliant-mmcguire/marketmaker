@@ -21,6 +21,7 @@ const { fetchPriceStats } = require('./marketDataTxns');
 
 const symbol = 'USDCUSDT';
 
+
 /*
 Use a quantity maximum and scale back as we run low on coinage.  
 This is to reduce the impact of sharp price moves where the price shoots through and 
