@@ -103,11 +103,12 @@ function quoteQuota(mktQuoteSize) {
 function taperTradePrice(tradePrice, tradeAge, mktPrice) {
     // Weight our avg trade price with the market price depending on the age of our trades. 
     // If we have'd traded for a while (up to lifeTime hours), 
-    // we tend to the hourly weighted market price.   
+    // we tend to the hourly weighted market price.
     const lifeTime = 12.0; // hours.
-    const ageScalar = Math.sqrt(Math.max(6.0 - tradeAge,0)/lifeTime); 
+    //const ageScalar = Math.sqrt(Math.max(6.0 - tradeAge,0)/lifeTime); 
+    const ageScalar = Math.sqrt(Math.max(lifeTime - tradeAge,0)/lifeTime); 
     console.assert(ageScalar<=1.0 && ageScalar >=0.0 ,`0 <= trade age scalar <= 1`);
-    return ageScalar*tradePrice + (1.0-ageScalar)*mktPrice; 
+    return ageScalar*tradePrice + (1.0-ageScalar)*mktPrice;
 }
 
 function quotePriceAdjustment(normalisedDeviation) { 
