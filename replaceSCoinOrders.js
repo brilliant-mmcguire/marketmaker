@@ -26,8 +26,8 @@ const tickSize = 0.0001;  // Tick Size is 1 basis point.
 const posLimit = 1200  // aim to remain inside targetQ +- posLimit
 
 const target = {
-    hiPrice : 1.0008,  //
-    loPrice : 0.9990,  // 
+    hiPrice : 1.0007,  //
+    loPrice : 0.9991,  // 
     hiQty : 1000, // Hold less USDC when its price is high in anticipation of mean reversion.  
     loQty : 3000, // Buy more USDC when its price is low. 
 };
