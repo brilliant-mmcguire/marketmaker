@@ -1,14 +1,5 @@
 /*
 Refresh orders for USDCUSDT trading pair.
-
-The objective is to keep a certain number of orders on the bid and offer, 
-within the min-max bounds.
-
-Let's say we keep 3 orders active at each price level.  
-Don't want to cancel orders becase we'd lose our position in the order book. 
-
-Use expontnetial moving average of our recent trades to control bid/offer prices.
-There is a risk of this getting stuck at high or low prices outside the current price range. 
 */
 
 const { fetchOpenOrders } = require('./orderTxns');
@@ -29,7 +20,7 @@ remains at high/low levels for some period of time.  In this scenario we become
 oversold/overbought too quickly. 
 */
 const qtyMax = 199;
-const qtyMin =  13;
+const qtyMin =  33;
 
 const tickSize = 0.0001;  // Tick Size is 1 basis point.
 const posLimit = 1200  // aim to remain inside targetQ +- posLimit
