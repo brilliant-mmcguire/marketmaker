@@ -98,7 +98,8 @@ function taperTradePrice(tradePrice, tradeAge, mktPrice) {
     // we tend to the hourly weighted market price.
     const lifeTime = 12.0; // hours.
     //const ageScalar = Math.sqrt(Math.max(6.0 - tradeAge,0)/lifeTime); 
-    const ageScalar = Math.sqrt(Math.max(lifeTime - tradeAge,0)/lifeTime); 
+    //const ageScalar = Math.sqrt(Math.max(lifeTime - tradeAge,0)/lifeTime);
+    const ageScalar = Math.max(lifeTime - tradeAge,0)/lifeTime; 
     console.assert(ageScalar<=1.0 && ageScalar >=0.0 ,`0 <= trade age scalar <= 1`);
     return ageScalar*tradePrice + (1.0-ageScalar)*mktPrice;
 }
