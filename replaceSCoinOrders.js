@@ -72,15 +72,16 @@ function sigmoid(x) {
 }
 
 function quoteQuota(mktQuoteSize) {
-/*  27,183      0 (1)
-    73,891      0 (2)
-    200,855	    3
-    545,982	    4
-    1,484,132	5
-    4,034,288	6
-    10,966,332	7
-    29,809,580	8
-    81,030,839	9 */
+/*  <  200,000   0
+    >= 200,000   5
+       403,429	 6
+     1,096,633	 7
+     2,980,958	 8
+     8,103,084	 9
+    22,026,466	10
+    59,874,142	11
+    162,754,791	12
+*/
     
     if (mktQuoteSize < 200000) return 0; // avoid placing orders into small quote sizes.
     
@@ -105,14 +106,14 @@ function taperTradePrice(tradePrice, tradeAge, mktPrice) {
 }
 
 function quotePriceAdjustment(normalisedDeviation) { 
-    /*  DEV   OLD   NEW ADJUSTMENT  
-        +1.5 -6.75 -6.75
-        +1.0 -3.00 -2.00 
-        +0.5 -0.75 -0.25
-        +0.0 +0.00 +0.00
-        -0.5 +0.75 +0.25
-        -1.0 +3.00 +2.00
--       -1.5 +6.75 +6.75 */
+    /*  DEV  ADJUSTMENT  
+        +1.5  -6.75
+        +1.0  -2.00 
+        +0.5  -0.25
+        +0.0  +0.00
+        -0.5  +0.25
+        -1.0  +2.00
+-       -1.5  +6.75 */
     return -2.0 * tickSize * normalisedDeviation**3;
 }
 
