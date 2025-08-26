@@ -84,7 +84,7 @@ function quoteQuota(mktQuoteSize) {
     
     if (mktQuoteSize < 200000) return 0; // avoid placing orders into small quote sizes.
     
-    const scaleFactorQuoteSize = 5000; 
+    const scaleFactorQuoteSize = 1000; 
     const normalisedQuoteSize = mktQuoteSize / scaleFactorQuoteSize; 
     let logQuoteSize =
         normalisedQuoteSize >= 1 ?  Math.log(normalisedQuoteSize) : 0;
