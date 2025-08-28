@@ -12,7 +12,6 @@ const { fetchPriceStats } = require('./marketDataTxns');
 
 const symbol = 'USDCUSDT';
 
-
 /*
 Use a quantity maximum and scale back as we run low on coinage.  
 This is to reduce the impact of sharp price moves where the price shoots through and 
@@ -310,7 +309,7 @@ async function makeBids(mktQuotes, allOrders, params, readOnly) {
     for(let i = 0; i< mktQuotes.length; i++) {
         let bid = mktQuotes[i];
         //if (bid.price > bidCeiling || bid.price < prcFloor) continue; 
-        if (bid.price > bidCeiling) continue; 
+        //if (bid.price > bidCeiling) continue; 
 
         let qty = params.orderQty; // scaleOrderQty(balances);
 
@@ -325,7 +324,8 @@ async function makeBids(mktQuotes, allOrders, params, readOnly) {
         if(i==0 && params.deviation > 0.66) quota--; // Reduce quota when already long.  
         if(i==0 && params.deviation > 1.00) quota--; // Reduce quota when already long.  
         quota = Math.max(0,quota);
-        
+        if (bid.price > bidCeiling) quota = 0; 
+
         let orders = allOrders.filter(order => parseFloat(order.price) === bid.price ); 
  
         //let freshOrders = hasFreshOrders(orders);
@@ -396,7 +396,8 @@ async function makeOffers(mktQuotes, allOrders, params, readOnly) {
     
     for(let i = 0; i< mktQuotes.length; i++) {
         let offer = mktQuotes[i];
-        if (offer.price > prcCeiling || offer.price < offerFloor) continue;  
+        //if (offer.price > prcCeiling || offer.price < offerFloor) continue;  
+        //if (offer.price < offerFloor) continue;
 
         let qty = params.orderQty; 
 
@@ -411,6 +412,7 @@ async function makeOffers(mktQuotes, allOrders, params, readOnly) {
         if(i==0 && params.deviation < -0.66) quota--; // Reduce quota when already short.  
         if(i==0 && params.deviation < -1.00) quota--; // Reduce quota when already short.  
         quota = Math.max(0,quota);
+        if (offer.price < offerFloor) quota = 0;
 
         let orders = allOrders.filter(order => parseFloat(order.price) === offer.price ); 
         
@@ -435,7 +437,6 @@ async function makeOffers(mktQuotes, allOrders, params, readOnly) {
             }
         }
    
-
         if(quotaFull) continue;
         if( ! stochasticDecision(orders.length)) continue;
         
@@ -445,7 +446,7 @@ async function makeOffers(mktQuotes, allOrders, params, readOnly) {
             console.log(`[READ ONLY] Would place SELL at ${offer.price}`);
             break;
         }
-
+        
         try {
             joinOffer = await placeOrder(
                 'SELL', 
