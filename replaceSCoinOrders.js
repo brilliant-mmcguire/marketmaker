@@ -71,25 +71,23 @@ function sigmoid(x) {
 }
 
 function quoteQuota(mktQuoteSize) {
-/*   <  50,000   0
-     >= 50,000   4
-       148,413   5
-       403,429	 6
-     1,096,633	 7
-     2,980,958	 8
-     8,103,084	 9
-    22,026,466	10
-    59,874,142	11
-    162,754,791	12
+/*     100,000   0
+       271,828	 2
+       738,906   4
+     2,008,554   6
+     5,459,815   8
+    14,841,316  10
+    40,342,879  12
+   109,663,316  14
 */
+    //if (mktQuoteSize < 50000) return 0; // avoid placing orders into small quote sizes.
     
-    if (mktQuoteSize < 50000) return 0; // avoid placing orders into small quote sizes.
-    
-    const scaleFactorQuoteSize = 1000; 
-    const normalisedQuoteSize = mktQuoteSize / scaleFactorQuoteSize; 
-    let logQuoteSize =
-        normalisedQuoteSize >= 1 ?  Math.log(normalisedQuoteSize) : 0;
- 
+    const zeroOrderQuoteSize = 100000; 
+    const scaleUpFactor = 2;
+    const normalisedQuoteSize = mktQuoteSize / zeroOrderQuoteSize; 
+    let logQuoteSize = scaleUpFactor * (
+        normalisedQuoteSize >= 1 ?  Math.log(normalisedQuoteSize) : 0
+    );
     return Math.round(logQuoteSize - 0.5); /*round up*/
 }
 
