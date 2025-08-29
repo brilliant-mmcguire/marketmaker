@@ -18,8 +18,8 @@ This is to reduce the impact of sharp price moves where the price shoots through
 remains at high/low levels for some period of time.  In this scenario we become 
 oversold/overbought too quickly. 
 */
-const qtyMax = 129;
-const qtyMin =  13;
+const qtyMax =  99;
+const qtyMin =  11;
 
 const tickSize = 0.0001;  // Tick Size is 1 basis point.
 const posLimit = 1200  // aim to remain inside targetQ +- posLimit
@@ -119,7 +119,9 @@ function quotePriceAdjustment(normalisedDeviation) {
 function scaleOrderQty(balances) {
     const totalUSD = balances.usdc.total+balances.usdt.total;
     const freeUSD = 2.0 * Math.min(balances.usdc.free, balances.usdt.free);
-    const scaleFactor = freeUSD / totalUSD;
+    const scaleFactor = Math.sqrt(freeUSD / totalUSD);
+   //const scaleFactor = freeUSD / totalUSD;
+     console.assert(scaleFactor >= 0 && scaleFactor <= 1, "Order qty scale factor must be between 0 and 1" ); 
     const qty = Math.max(qtyMin,qtyMax * scaleFactor);
     return Math.round(qty); 
 }
@@ -418,7 +420,7 @@ async function makeOffers(mktQuotes, allOrders, params, readOnly) {
         
         let quotaFull = orders.length >= quota;
         let quotaBreach = orders.length > quota;
-           
+        
         console.log(
             `[${i}] ${orders.length} orders @ ${offer.price} (q:${offer.qty} d:${params.deviation} -> quota: ${quota} orders)`
         );
@@ -446,7 +448,7 @@ async function makeOffers(mktQuotes, allOrders, params, readOnly) {
             console.log(`[READ ONLY] Would place SELL at ${offer.price}`);
             break;
         }
-        
+
         try {
             joinOffer = await placeOrder(
                 'SELL', 
