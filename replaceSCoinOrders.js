@@ -71,8 +71,9 @@ function sigmoid(x) {
 }
 
 function quoteQuota(mktQuoteSize) {
-/*  <  200,000   0
-    >= 200,000   5
+/*   <  50,000   0
+     >= 50,000   4
+       148,413   5
        403,429	 6
      1,096,633	 7
      2,980,958	 8
@@ -82,7 +83,7 @@ function quoteQuota(mktQuoteSize) {
     162,754,791	12
 */
     
-    if (mktQuoteSize < 200000) return 0; // avoid placing orders into small quote sizes.
+    if (mktQuoteSize < 50000) return 0; // avoid placing orders into small quote sizes.
     
     const scaleFactorQuoteSize = 1000; 
     const normalisedQuoteSize = mktQuoteSize / scaleFactorQuoteSize; 
@@ -120,8 +121,8 @@ function scaleOrderQty(balances) {
     const totalUSD = balances.usdc.total+balances.usdt.total;
     const freeUSD = 2.0 * Math.min(balances.usdc.free, balances.usdt.free);
     const scaleFactor = Math.sqrt(freeUSD / totalUSD);
-   //const scaleFactor = freeUSD / totalUSD;
-     console.assert(scaleFactor >= 0 && scaleFactor <= 1, "Order qty scale factor must be between 0 and 1" ); 
+    //const scaleFactor = freeUSD / totalUSD;
+    console.assert(scaleFactor >= 0 && scaleFactor <= 1, "Order qty scale factor must be between 0 and 1" ); 
     const qty = Math.max(qtyMin,qtyMax * scaleFactor);
     return Math.round(qty); 
 }
