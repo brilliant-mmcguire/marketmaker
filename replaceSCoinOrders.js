@@ -295,7 +295,7 @@ async function makeBids(mktQuotes, allOrders, params, readOnly) {
 
     //cancel any open orders exceeding the price ceiling and fallen under the price floor. 
     let staleOrders = allOrders.filter(order => (
-        (parseFloat(order.price)>mktQuotes[0].price) || (parseFloat(order.price)<prcFloor)
+        parseFloat(order.price)<prcFloor
         ));
     
     if(staleOrders.length>0) {
@@ -383,7 +383,7 @@ async function makeOffers(mktQuotes, allOrders, params, readOnly) {
 
     //cancel any open orders exceeding the price ceiling or fallen under the price floor. 
     let staleOrders = allOrders.filter(order => (
-        (parseFloat(order.price)<mktQuotes[0].price) || (parseFloat(order.price)>prcCeiling)
+        parseFloat(order.price)>prcCeiling
         ));
 
     if(staleOrders.length>0) {
