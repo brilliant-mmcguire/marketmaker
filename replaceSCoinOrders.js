@@ -318,10 +318,12 @@ async function makeBids(mktQuotes, allOrders, params, readOnly) {
         if (bid.price > bidCeiling) quota = 0; 
 
         quota -= (i*i); // Reduce quota for quote levels that are away from best. 
+        if(i==0 && params.deviation < -0.25) quota++; // Add to quota if we are in a short position.  
         if(i==0 && params.deviation < -0.33) quota++; // Add to quota if we are in a short position.  
         if(i==0 && params.deviation < -0.50) quota++; // Add to quota if we are in a short position.  
         if(i==0 && params.deviation < -0.66) quota++; // Add to quota if we are in a short position.  
         if(i==0 && params.deviation < -1.00) quota++; // Add to quota if we are in a short position.  
+        if(i==0 && params.deviation > 0.25) quota--; // Reduce quota when already long.  
         if(i==0 && params.deviation > 0.33) quota--; // Reduce quota when already long.  
         if(i==0 && params.deviation > 0.50) quota--; // Reduce quota when already long.  
         if(i==0 && params.deviation > 0.66) quota--; // Reduce quota when already long.  
@@ -402,15 +404,17 @@ async function makeOffers(mktQuotes, allOrders, params, readOnly) {
         //if (offer.price < offerFloor) continue;
 
         let qty = params.orderQty; 
-        
+
         let quota = quoteQuota(offer.qty);
         if (offer.price < offerFloor) quota = 0;
 
         quota -= (i*i); // Reduce quote for quote levels that are away from best. 
+        if(i==0 && params.deviation > 0.25) quota++; // Add to quota if we are in a long position.  
         if(i==0 && params.deviation > 0.33) quota++; // Add to quota if we are in a long position.  
         if(i==0 && params.deviation > 0.50) quota++; // Add to quota if we are in a short position.  
         if(i==0 && params.deviation > 0.66) quota++; // Add to quota if we are in a short position. 
         if(i==0 && params.deviation > 1.00) quota++; // Add to quota if we are in a short position.   
+        if(i==0 && params.deviation < -0.25) quota--; // Reduce quota when already short.  
         if(i==0 && params.deviation < -0.33) quota--; // Reduce quota when already short.  
         if(i==0 && params.deviation < -0.50) quota--; // Reduce quota when already short.  
         if(i==0 && params.deviation < -0.66) quota--; // Reduce quota when already short.  
