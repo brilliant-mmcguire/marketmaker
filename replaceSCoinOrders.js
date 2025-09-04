@@ -112,7 +112,8 @@ function quotePriceAdjustment(normalisedDeviation) {
         -0.5  +0.25
         -1.0  +2.00
 -       -1.5  +6.75 */
-    return -2.0 * tickSize * normalisedDeviation**3;
+    // return -2.0 * tickSize * normalisedDeviation**3;
+    return 0;
 }
 
 function scaleOrderQty(balances) {
@@ -241,7 +242,7 @@ function calculateParams(balances, position, priceStats) {
     const targetQ = targetQty(mktPrice);
     const coinQty = balances.usdc.total;
     const deviation = (coinQty - targetQ) / posLimit;
-
+    
     const taperSellPrice = taperTradePrice(
         position.mAvgSellPrice, 
         position.mAvgSellAge, 
