@@ -72,13 +72,13 @@ function sigmoid(x) {
 
 function quoteQuota(mktQuoteSize) {
 /*     100,000   0
-       271,828	 2
-       738,906   4
-     2,008,554   6
-     5,459,815   8
-    14,841,316  10
-    40,342,879  12
-   109,663,316  14
+       271,828	 3
+       738,906   6
+     2,008,554   9
+     5,459,815  12
+    14,841,316  15
+    40,342,879  18
+   109,663,316  21
 */
     //if (mktQuoteSize < 50000) return 0; // avoid placing orders into small quote sizes.
     
