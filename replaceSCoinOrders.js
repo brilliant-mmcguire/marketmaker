@@ -88,7 +88,8 @@ function quoteQuota(mktQuoteSize) {
     let logQuoteSize = scaleUpFactor * (
         normalisedQuoteSize >= 1 ?  Math.log(normalisedQuoteSize) : 0
     );
-    return Math.round(logQuoteSize - 0.5); /*round up*/
+    return logQuoteSize;
+    //return Math.round(logQuoteSize - 0.5); /*round up*/
 }
 
 function taperTradePrice(tradePrice, tradeAge, mktPrice) {
@@ -315,7 +316,14 @@ async function makeBids(mktQuotes, allOrders, params, readOnly) {
         let qty = params.orderQty; // scaleOrderQty(balances);
 
         let quota = quoteQuota(bid.qty); 
-        if (bid.price > bidCeiling) quota = 0; 
+        //if(bid.price > bidCeiling ) quota = 0; 
+        
+        if (bid.price > bidCeiling+tickSize) {
+            quota = 0;
+        } else if(bid.price > bidCeiling ) {
+            quota *= (1.0 - (bid.price-bidCeiling)/tickSize);
+            //quota = Math.round(quota)
+        }
 
         quota -= (i*i); // Reduce quota for quote levels that are away from best. 
         //if(i==0 && params.deviation < -0.25) quota++; // Add to quota if we are in a short position.  
@@ -335,7 +343,7 @@ async function makeBids(mktQuotes, allOrders, params, readOnly) {
         let orders = allOrders.filter(order => parseFloat(order.price) === bid.price ); 
  
         //let freshOrders = hasFreshOrders(orders);
-        let quotaFull = orders.length >= quota
+        let quotaFull = orders.length >= quota;
         let quotaBreach = orders.length > quota;
         
         console.log(
@@ -408,7 +416,15 @@ async function makeOffers(mktQuotes, allOrders, params, readOnly) {
         let qty = params.orderQty; 
 
         let quota = quoteQuota(offer.qty);
-        if (offer.price < offerFloor) quota = 0;
+        //if(offer.price < offerFloor) quota = 0; 
+
+        if (offer.price < offerFloor-tickSize) {
+            quota = 0;
+        } else if(offer.price < offerFloor) {
+            quota *= (1.0 - (offerFloor - offer.price)/tickSize);
+            // quota = Math.round(quota);
+        }
+        
 
         quota -= (i*i); // Reduce quote for quote levels that are away from best. 
         //if(i==0 && params.deviation > 0.25) quota++; // Add to quota if we are in a long position.  
