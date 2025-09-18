@@ -187,6 +187,7 @@ function calculateBidCeiling(mktQuotes, params, target, tickSize) {
     let taperPrice = params.avgBuy.taperPrice;
     let bidCeiling = Math.min(taperPrice, params.mktPrice);
     let adjustment = Math.min(quotePriceAdjustment(params.deviation),0);
+    bidCeiling += tickSize;  // temporary adjustment to match situation at time of writing. 
     bidCeiling += adjustment;
   
     // If market price is above our high target, be more conservative.
@@ -218,8 +219,9 @@ function calculateOfferFloor(mktQuotes, params, target, tickSize) {
     let taperPrice = params.avgSell.taperPrice;
     let offerFloor = Math.max(taperPrice, params.mktPrice);
     let adjustment = Math.max(quotePriceAdjustment(params.deviation),0);
+    offerFloor -= tickSize; // temporary adjustment to match situation at time of writing.
     offerFloor += adjustment;
-
+    
     // If market price is below our low target, be more conservative
     // Testing a strategy to 
     // a) encourage a long position when price drops. 
@@ -318,10 +320,10 @@ async function makeBids(mktQuotes, allOrders, params, readOnly) {
         let quota = quoteQuota(bid.qty); 
         //if(bid.price > bidCeiling ) quota = 0; 
         
-        if (bid.price > bidCeiling+tickSize) {
+        if (bid.price > bidCeiling) {
             quota = 0;
-        } else if(bid.price > bidCeiling ) {
-            quota *= (1.0 - (bid.price-bidCeiling)/tickSize);
+        } else if(bid.price > (bidCeiling - tickSize) ) {
+            quota *= (1.0 - (bid.price - (bidCeiling - tickSize))/tickSize);
             //quota = Math.round(quota)
         }
 
@@ -418,10 +420,10 @@ async function makeOffers(mktQuotes, allOrders, params, readOnly) {
         let quota = quoteQuota(offer.qty);
         //if(offer.price < offerFloor) quota = 0; 
 
-        if (offer.price < offerFloor-tickSize) {
+        if (offer.price < offerFloor) {
             quota = 0;
-        } else if(offer.price < offerFloor) {
-            quota *= (1.0 - (offerFloor - offer.price)/tickSize);
+        } else if(offer.price < (offerFloor + tickSize)) {
+            quota *= (1.0 - ((offerFloor + tickSize) - offer.price)/tickSize);
             // quota = Math.round(quota);
         }
         
