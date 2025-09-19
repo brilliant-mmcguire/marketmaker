@@ -187,7 +187,7 @@ function calculateBidCeiling(mktQuotes, params, target, tickSize) {
     let taperPrice = params.avgBuy.taperPrice;
     let bidCeiling = Math.min(taperPrice, params.mktPrice);
     let adjustment = Math.min(quotePriceAdjustment(params.deviation),0);
-    bidCeiling += tickSize;  // temporary adjustment to match situation at time of writing. 
+    // bidCeiling += tickSize;  // temporary adjustment to match situation at time of writing. 
     bidCeiling += adjustment;
   
     // If market price is above our high target, be more conservative.
@@ -219,7 +219,7 @@ function calculateOfferFloor(mktQuotes, params, target, tickSize) {
     let taperPrice = params.avgSell.taperPrice;
     let offerFloor = Math.max(taperPrice, params.mktPrice);
     let adjustment = Math.max(quotePriceAdjustment(params.deviation),0);
-    offerFloor -= tickSize; // temporary adjustment to match situation at time of writing.
+   //  offerFloor -= tickSize; // temporary adjustment to match situation at time of writing.
     offerFloor += adjustment;
     
     // If market price is below our low target, be more conservative
