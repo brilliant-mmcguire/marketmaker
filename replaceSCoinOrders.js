@@ -246,12 +246,12 @@ function calculateParams(balances, position, priceStats) {
     const deviation = (coinQty - targetQ) / posLimit;
     
     const taperSellPrice = taperTradePrice(
-        position.mAvgSellPrice, 
-        position.mAvgSellAge, 
+        position.mAvgSellPrice - 0.5*tickSize,
+        position.mAvgSellAge,
         mktPrice);
     const taperBuyPrice = taperTradePrice(
-        position.mAvgBuyPrice, 
-        position.mAvgBuyAge, 
+        position.mAvgBuyPrice + 0.5*tickSize,
+        position.mAvgBuyAge,
         mktPrice);
 
     return {
