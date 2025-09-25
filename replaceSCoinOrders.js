@@ -312,13 +312,8 @@ async function makeBids(mktQuotes, allOrders, params, readOnly) {
     
     for(let i = 0; i< mktQuotes.length; i++) {
         let bid = mktQuotes[i];
-        //if (bid.price > bidCeiling || bid.price < prcFloor) continue; 
-        //if (bid.price > bidCeiling) continue; 
-
-        let qty = params.orderQty; // scaleOrderQty(balances);
-
+        let qty = params.orderQty; // scaled order quantity;
         let quota = quoteQuota(bid.qty); 
-        //if(bid.price > bidCeiling ) quota = 0; 
         
         if (bid.price > bidCeiling) {
             quota = 0;
@@ -412,14 +407,9 @@ async function makeOffers(mktQuotes, allOrders, params, readOnly) {
     
     for(let i = 0; i< mktQuotes.length; i++) {
         let offer = mktQuotes[i];
-        //if (offer.price > prcCeiling || offer.price < offerFloor) continue;  
-        //if (offer.price < offerFloor) continue;
-
         let qty = params.orderQty; 
-
         let quota = quoteQuota(offer.qty);
-        //if(offer.price < offerFloor) quota = 0; 
-
+       
         if (offer.price < offerFloor) {
             quota = 0;
         } else if(offer.price <= (offerFloor + tickSize)) {
