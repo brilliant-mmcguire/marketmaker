@@ -322,12 +322,13 @@ async function makeBids(mktQuotes, allOrders, params, readOnly) {
         
         if (bid.price > bidCeiling) {
             quota = 0;
-        } else if(bid.price > (bidCeiling - tickSize) ) {
-            quota *= (1.0 - (bid.price - (bidCeiling - tickSize))/tickSize);
-            //quota = Math.round(quota)
+        } else if(bid.price >= (bidCeiling - tickSize) ) {
+            quota *= 1.0 - ((bid.price - (bidCeiling - tickSize))/tickSize);
+        } else { //bid.price <  (bidCeiling - tickSize)
+            quota *= 1.0 - ((bidCeiling - tickSize) - bid.price)/(2.0*tickSize);
         }
 
-        quota -= (i*i); // Reduce quota for quote levels that are away from best. 
+        //quota -= (i*i); // Reduce quota for quote levels that are away from best. 
         
         if(i==0 && params.deviation < -0.50) quota++; // Add to quota if we are in a short position.  
         if(i==0 && params.deviation < -0.66) quota++; // Add to quota if we are in a short position.  
@@ -421,13 +422,13 @@ async function makeOffers(mktQuotes, allOrders, params, readOnly) {
 
         if (offer.price < offerFloor) {
             quota = 0;
-        } else if(offer.price < (offerFloor + tickSize)) {
-            quota *= (1.0 - ((offerFloor + tickSize) - offer.price)/tickSize);
-            // quota = Math.round(quota);
+        } else if(offer.price <= (offerFloor + tickSize)) {
+            quota *= 1.0 - (((offerFloor + tickSize) - offer.price)/tickSize);
+        } else { // offer.price > (offerFloor + tickSize)
+            quota *= 1.0 - ((offer.price - (offerFloor + tickSize))/(2.0*tickSize));
         }
-        
 
-        quota -= (i*i); // Reduce quote for quote levels that are away from best. 
+        // quota -= (i*i); // Reduce quote for quote levels that are away from best. 
         
         if(i==0 && params.deviation > 0.50) quota++; // Add to quota if we are in a short position.  
         if(i==0 && params.deviation > 0.66) quota++; // Add to quota if we are in a short position. 
