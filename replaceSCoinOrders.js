@@ -324,7 +324,7 @@ async function makeBids(mktQuotes, allOrders, params, readOnly) {
         }
 
         //quota -= (i*i); // Reduce quota for quote levels that are away from best. 
-        
+        /*
         if(i==0 && params.deviation < -0.50) quota++; // Add to quota if we are in a short position.  
         if(i==0 && params.deviation < -0.66) quota++; // Add to quota if we are in a short position.  
         if(i==0 && params.deviation < -1.00) quota++; // Add to quota if we are in a short position.  
@@ -334,6 +334,7 @@ async function makeBids(mktQuotes, allOrders, params, readOnly) {
         if(i==0 && params.deviation > 0.66) quota--; // Reduce quota when already long.  
         if(i==0 && params.deviation > 1.00) quota--; // Reduce quota when already long.  
         if(i==0 && params.deviation > 1.33) quota--; // Reduce quota when already long.  
+        */
        
         quota = Math.max(0,quota);
 
@@ -420,6 +421,7 @@ async function makeOffers(mktQuotes, allOrders, params, readOnly) {
 
         // quota -= (i*i); // Reduce quote for quote levels that are away from best. 
         
+        /* 
         if(i==0 && params.deviation > 0.50) quota++; // Add to quota if we are in a short position.  
         if(i==0 && params.deviation > 0.66) quota++; // Add to quota if we are in a short position. 
         if(i==0 && params.deviation > 1.00) quota++; // Add to quota if we are in a short position.   
@@ -429,7 +431,8 @@ async function makeOffers(mktQuotes, allOrders, params, readOnly) {
         if(i==0 && params.deviation < -0.66) quota--; // Reduce quota when already short.  
         if(i==0 && params.deviation < -1.00) quota--; // Reduce quota when already short.  
         if(i==0 && params.deviation < -1.33) quota--; // Reduce quota when already short.  
-        
+        */ 
+
         quota = Math.max(0,quota);
 
         let orders = allOrders.filter(order => parseFloat(order.price) === offer.price ); 
