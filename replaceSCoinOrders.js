@@ -25,7 +25,7 @@ const tickSize = 0.0001;  // Tick Size is 1 basis point.
 const posLimit = 1200  // aim to remain inside targetQ +- posLimit
 
 const target = {
-    hiPrice : 1.0002,  //
+    hiPrice : 1.0001,  //
     loPrice : 0.9992,  // 
     hiQty : 1000, // Hold less USDC when its price is high in anticipation of mean reversion.  
     loQty : 3000, // Buy more USDC when its price is low. 
@@ -335,7 +335,7 @@ async function makeBids(mktQuotes, allOrders, params, readOnly) {
         if(i==0 && params.deviation > 1.00) quota--; // Reduce quota when already long.  
         if(i==0 && params.deviation > 1.33) quota--; // Reduce quota when already long.  
         */
-       
+
         quota = Math.max(0,quota);
 
         let orders = allOrders.filter(order => parseFloat(order.price) === bid.price ); 
