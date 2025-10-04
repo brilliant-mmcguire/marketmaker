@@ -227,9 +227,9 @@ function calculateOfferFloor(mktQuotes, params, target, tickSize) {
     // a) encourage a long position when price drops. 
     // b) avoid selling at very low prices, when for example there is a short lived liquidity hole.
     // Default bid is one tick away from the current best bid. 
-    if((mktQuotes[0].price) < target.loPrice) { 
-        offerFloor = Math.max(mktQuotes[0].price + tickSize, offerFloor);
-    }
+   // if((mktQuotes[0].price) < target.loPrice) { 
+   //     offerFloor = Math.max(mktQuotes[0].price + tickSize, offerFloor);
+   // }
     console.log({ 
         taperPrice : taperPrice, 
         adjustment : adjustment,
