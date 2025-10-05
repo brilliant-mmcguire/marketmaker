@@ -195,9 +195,9 @@ function calculateBidCeiling(mktQuotes, params, target, tickSize) {
     // a) encourage a short position when price pops up. 
     // b) avoid buying at very high prices, when for example there is a short lived liquidity hole.
     // Enforce bid to be at least one tick away from the current best bid. 
-    if((mktQuotes[0].price) > target.hiPrice) { 
-        bidCeiling = Math.min(mktQuotes[0].price - tickSize, bidCeiling);
-    }
+    //if((mktQuotes[0].price) > target.hiPrice) { 
+    //    bidCeiling = Math.min(mktQuotes[0].price - tickSize, bidCeiling);
+    //}
     console.log({ 
         taperPrice : taperPrice,
         adjustment : adjustment,
