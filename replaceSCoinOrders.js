@@ -323,12 +323,12 @@ async function makeBids(mktQuotes, allOrders, params, readOnly) {
             quota *= 1.0 - ((bidCeiling - tickSize) - bid.price)/(2.0*tickSize);
         }
 
-        /*
+        
         if(i==0 && params.deviation < -0.50) quota++; // Add to quota if we are in a short position.  
         if(i==0 && params.deviation < -0.66) quota++; // Add to quota if we are in a short position.  
         if(i==0 && params.deviation < -1.00) quota++; // Add to quota if we are in a short position.  
         if(i==0 && params.deviation < -1.33) quota++; // Add to quota if we are in a short position.  
-        */
+        
        
         if(i==0 && params.deviation > 0.50) quota--; // Reduce quota when already long.  
         if(i==0 && params.deviation > 0.66) quota--; // Reduce quota when already long.  
@@ -418,12 +418,12 @@ async function makeOffers(mktQuotes, allOrders, params, readOnly) {
             quota *= 1.0 - ((offer.price - (offerFloor + tickSize))/(2.0*tickSize));
         }
 
-        /*
-        if(i==0 && params.deviation > 0.50) quota++; // Add to quota if we are in a short position.  
-        if(i==0 && params.deviation > 0.66) quota++; // Add to quota if we are in a short position. 
-        if(i==0 && params.deviation > 1.00) quota++; // Add to quota if we are in a short position.   
-        if(i==0 && params.deviation > 1.33) quota++; // Add to quota if we are in a short position.   
-        */
+        
+        if(i==0 && params.deviation > 0.50) quota++; // Add to quota if we are in a long position.  
+        if(i==0 && params.deviation > 0.66) quota++; // Add to quota if we are in a long position. 
+        if(i==0 && params.deviation > 1.00) quota++; // Add to quota if we are in a long position.   
+        if(i==0 && params.deviation > 1.33) quota++; // Add to quota if we are in a long position.   
+        
         
         if(i==0 && params.deviation < -0.50) quota--; // Reduce quota when already short.  
         if(i==0 && params.deviation < -0.66) quota--; // Reduce quota when already short.  
