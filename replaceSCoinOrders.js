@@ -36,7 +36,7 @@ Target USDC balance uses a sigmoid function between the upper and lower target q
 At the upper target we can tolerate a smaller position in the expectation of prices falling again. 
 At the lower target we allow for a larger position, expecting a price increase in the near future.  
 */
-function targetQty(mktPrice) {
+function targetQty(mktPrice, meanPrc) {
     /*  Price	Target
         1.0015	1,046
         1.0010	1,152
@@ -49,7 +49,6 @@ function targetQty(mktPrice) {
         0.9995	2,555
         0.9990	2,848
         0.9985	2,954 */ 
-    const meanPrc = 0.5*(target.hiPrice+target.loPrice)
     const prcDeviation = 0.25*(mktPrice-meanPrc)/tickSize; 
     const qZero =  target.loQty;
     const qMax = target.hiQty - target.loQty;
@@ -239,10 +238,10 @@ function calculateOfferFloor(mktQuotes, params, target, tickSize) {
 
 function calculateParams(balances, position, priceStats) {
     const mktPrice = priceStats.weightedAvgPrice;
-    const targetQ = targetQty(mktPrice);
+    const meanPrc = 0.5*(target.hiPrice+target.loPrice)
+    const targetQ = targetQty(mktPrice, meanPrc);
     const coinQty = balances.usdc.total;
     const deviation = (coinQty - targetQ) / posLimit;
-    const neutralPrc = 0.5*(target.hiPrice+target.loPrice) 
      
     const taperSellPrice = taperTradePrice(
         position.mAvgSellPrice - 0.5*tickSize,
@@ -255,10 +254,10 @@ function calculateParams(balances, position, priceStats) {
 
     return {
         mktPrice,
+        meanPrc,
         coinQty,
         targetQty: targetQ,
         deviation,
-        neutralPrc,
         orderQty: scaleOrderQty(balances),
         avgBuy: {
             price: position.mAvgBuyPrice,
