@@ -25,7 +25,7 @@ const tickSize = 0.0001;  // Tick Size is 1 basis point.
 const posLimit = 1200  // aim to remain inside targetQ +- posLimit
 
 const target = {
-    hiPrice : 1.0001,  //
+    hiPrice : 1.0010,  //
     loPrice : 0.9990,  // 
     hiQty   : 1000, // Hold less USDC when its price is high in anticipation of mean reversion.  
     loQty   : 3000, // Buy more USDC when its price is low. 
@@ -187,7 +187,6 @@ function calculateBidCeiling(mktQuotes, params, target, tickSize) {
     let taperPrice = params.avgBuy.taperPrice;
     let bidCeiling = Math.min(taperPrice, params.mktPrice);
     let adjustment = Math.min(quotePriceAdjustment(params.deviation),0);
-    // bidCeiling += tickSize;  // temporary adjustment to match situation at time of writing. 
     bidCeiling += adjustment;
   
     // If market price is above our high target, be more conservative.
@@ -219,7 +218,6 @@ function calculateOfferFloor(mktQuotes, params, target, tickSize) {
     let taperPrice = params.avgSell.taperPrice;
     let offerFloor = Math.max(taperPrice, params.mktPrice);
     let adjustment = Math.max(quotePriceAdjustment(params.deviation),0);
-   //  offerFloor -= tickSize; // temporary adjustment to match situation at time of writing.
     offerFloor += adjustment;
     
     // If market price is below our low target, be more conservative
@@ -244,7 +242,7 @@ function calculateParams(balances, position, priceStats) {
     const coinQty = balances.usdc.total;
     const deviation = (coinQty - targetQ) / posLimit;
     const neutralPrc = 0.5*(target.hiPrice+target.loPrice) 
-    
+     
     const taperSellPrice = taperTradePrice(
         position.mAvgSellPrice - 0.5*tickSize,
         position.mAvgSellAge,
