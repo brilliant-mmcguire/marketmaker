@@ -25,10 +25,10 @@ const tickSize = 0.0001;  // Tick Size is 1 basis point.
 const posLimit = 1200  // aim to remain inside targetQ +- posLimit
 
 const target = {
-    hiPrice : 0.9998,  //
+    hiPrice : 1.0001,  //
     loPrice : 0.9990,  // 
-    hiQty : 1000, // Hold less USDC when its price is high in anticipation of mean reversion.  
-    loQty : 3000, // Buy more USDC when its price is low. 
+    hiQty   : 1000, // Hold less USDC when its price is high in anticipation of mean reversion.  
+    loQty   : 3000, // Buy more USDC when its price is low. 
 };
 
 /*
@@ -66,7 +66,7 @@ function sigmoid(x) {
         -1	0.2689
         -3	0.0474
         -5	0.0067
-       -10	0.0000*/
+       -10	0.0000 */
     return 1 / (1 + Math.exp(-x));
 }
 
@@ -195,9 +195,9 @@ function calculateBidCeiling(mktQuotes, params, target, tickSize) {
     // a) encourage a short position when price pops up. 
     // b) avoid buying at very high prices, when for example there is a short lived liquidity hole.
     // Enforce bid to be at least one tick away from the current best bid. 
-    //if((mktQuotes[0].price) > target.hiPrice) { 
-    //    bidCeiling = Math.min(mktQuotes[0].price - tickSize, bidCeiling);
-    //}
+    if((mktQuotes[0].price) > target.hiPrice) { 
+        bidCeiling = Math.min(target.hiPrice, bidCeiling);
+    }
     console.log({ 
         taperPrice : taperPrice,
         adjustment : adjustment,
@@ -243,6 +243,7 @@ function calculateParams(balances, position, priceStats) {
     const targetQ = targetQty(mktPrice);
     const coinQty = balances.usdc.total;
     const deviation = (coinQty - targetQ) / posLimit;
+    const neutralPrc = 0.5*(target.hiPrice+target.loPrice) 
     
     const taperSellPrice = taperTradePrice(
         position.mAvgSellPrice - 0.5*tickSize,
@@ -258,6 +259,7 @@ function calculateParams(balances, position, priceStats) {
         coinQty,
         targetQty: targetQ,
         deviation,
+        neutralPrc,
         orderQty: scaleOrderQty(balances),
         avgBuy: {
             price: position.mAvgBuyPrice,
