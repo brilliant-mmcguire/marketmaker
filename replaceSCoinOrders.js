@@ -25,7 +25,7 @@ const tickSize = 0.0001;  // Tick Size is 1 basis point.
 const posLimit = 1200  // aim to remain inside targetQ +- posLimit
 
 const target = {
-    hiPrice : 1.0006,  //
+    hiPrice : 1.0004,  //
     loPrice : 0.9990,  // 
     hiQty   : 1000, // Hold less USDC when its price is high in anticipation of mean reversion.  
     loQty   : 3000, // Buy more USDC when its price is low. 
@@ -336,10 +336,10 @@ async function makeBids(mktQuotes, allOrders, params, readOnly) {
         if(i==0 && params.deviation > 1.33) quota--; // Reduce quota when already long.  
         
 
-        quota = Math.max(0,quota);
+        quota = Math.max(0,Math.floor(quota));
 
-        let orders = allOrders.filter(order => parseFloat(order.price) === bid.price ); 
- 
+        let orders = allOrders.filter(order => parseFloat(order.price) === bid.price )
+                        
         //let freshOrders = hasFreshOrders(orders);
         let quotaFull = orders.length >= quota;
         let quotaBreach = orders.length > quota;
@@ -349,15 +349,18 @@ async function makeBids(mktQuotes, allOrders, params, readOnly) {
         );
 
         if(quotaBreach) {
-            const mostRecentOrder = orders.reduce((latest, order) => 
-                order.time > latest.time ? order : latest
-            ); 
+            const mostRecentOrders = orders
+                                        .sort((a, b) => b.time - a.time)  // newest order first.
+                                        .slice(0,orders.length - quota);
+           // const mostRecentOrder = orders.reduce((latest, order) => 
+           //     order.time > latest.time ? order : latest
+           // ); 
             if (readOnly) {
                 console.log(`[READ ONLY] Would cancel newest of ${orders.length} orders for quota breach @ ${bid.price}`);
-                console.log(mostRecentOrder);
+                console.log(mostRecentOrders);
             } else {
-                cancelOrders([mostRecentOrder]);
-                console.log(`Quota breach @ ${bid.price} (${bid.qty}) and cancelling last order.`);
+                cancelOrders(mostRecentOrders);
+                console.log(`Quota breach @ ${bid.price} (${bid.qty}) and cancelling last orders.`);
             }
         }
         
@@ -433,7 +436,7 @@ async function makeOffers(mktQuotes, allOrders, params, readOnly) {
         if(i==0 && params.deviation < -1.33) quota--; // Reduce quota when already short.  
          
 
-        quota = Math.max(0,quota);
+        quota = Math.max(0,Math.floor(quota));
 
         let orders = allOrders.filter(order => parseFloat(order.price) === offer.price ); 
         
@@ -445,16 +448,19 @@ async function makeOffers(mktQuotes, allOrders, params, readOnly) {
         );
 
         if(quotaBreach) {
-            const mostRecentOrder = orders.reduce((latest, order) =>
-                order.time > latest.time ? order : latest
-            ); 
+            const mostRecentOrders = orders
+                                        .sort((a, b) => b.time - a.time)  // newest order first.
+                                        .slice(0,orders.length - quota);
+            //const mostRecentOrder = orders.reduce((latest, order) =>
+            //    order.time > latest.time ? order : latest
+            //); 
 
             if (readOnly) {
                 console.log(`[READ ONLY] Would cancel newest of ${orders.length} orders for quota breach @ ${offer.price}`);
-                console.log(mostRecentOrder)
+                console.log(mostRecentOrders)
             } else {
-                cancelOrders([mostRecentOrder]);
-                console.log(`Quota breach @ ${offer.price} (${offer.qty}) and cancelling last order.`);
+                cancelOrders(mostRecentOrders);
+                console.log(`Quota breach @ ${offer.price} (${offer.qty}) and cancelling last orders.`);
             }
         }
    
