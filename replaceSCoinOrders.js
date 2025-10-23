@@ -71,7 +71,18 @@ function sigmoid(x) {
 }
 
 function quoteQuota(mktQuoteSize) {
-/*     100,000   0
+/* SCALE FACTOR 2 
+       100,000   0
+       271,828	 2
+       738,906   4
+     2,008,554   6
+     5,459,815   8
+    14,841,316  10
+    40,342,879  12
+   109,663,316  14
+*/
+/* SCALE FACTOR 3 
+     100,000   0
        271,828	 3
        738,906   6
      2,008,554   9
@@ -83,7 +94,7 @@ function quoteQuota(mktQuoteSize) {
     //if (mktQuoteSize < 50000) return 0; // avoid placing orders into small quote sizes.
     
     const zeroOrderQuoteSize = 100000; 
-    const scaleUpFactor = 3;
+    const scaleUpFactor = 2;
     const normalisedQuoteSize = mktQuoteSize / zeroOrderQuoteSize; 
     let logQuoteSize = scaleUpFactor * (
         normalisedQuoteSize >= 1 ?  Math.log(normalisedQuoteSize) : 0
