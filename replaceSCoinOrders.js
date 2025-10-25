@@ -37,7 +37,7 @@ At the upper target we can tolerate a smaller position in the expectation of pri
 At the lower target we allow for a larger position, expecting a price increase in the near future.  
 */
 function targetQty(mktPrice, meanRevPrc) {
-    /*  Price	Target
+    /*  Price	Target - fudge factor of 0.25 
         1.0015	1,046
         1.0010	1,152
         1.0005	1,445
@@ -48,8 +48,20 @@ function targetQty(mktPrice, meanRevPrc) {
         0.9997	2,358
         0.9995	2,555
         0.9990	2,848
-        0.9985	2,954 */ 
-    const prcDeviation = 0.25*(mktPrice-meanRevPrc)/tickSize; 
+        0.9985	2,954 */
+/*  Price	Target - fudge factor of 0.5
+        1.0015	1000
+        1.0010	1003
+        1.0005	1036
+        1.0003	1095
+        1.0001	1238
+        1.0000	1365
+        0.9999	1538
+        0.9997	2000
+        0.9995	2462
+        0.9990	2941
+        0.9985	2995 */ 
+    const prcDeviation = 0.5*(mktPrice-meanRevPrc)/tickSize; 
     const qZero =  target.loQty;
     const qMax = target.hiQty - target.loQty;
     const qty = qZero + qMax*sigmoid(prcDeviation);
