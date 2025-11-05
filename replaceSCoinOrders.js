@@ -191,7 +191,7 @@ function randomisedInterval(activeOrderCount) {
 function stochasticDecision(orderCount) { 
     const x = Math.random();
     const timeScaleFactor = 2.0; 
-    const bar = 1.0/(timeScaleFactor*(1+Math.pow(orderCount,1.2))); 
+    const bar = 1.0/(timeScaleFactor*(1+Math.pow(orderCount,1.5))); 
     const decision = x <= bar;
 
     console.log(`> Stochastic decision: ${decision} (x: ${x.toFixed(4)} bar: ${bar.toFixed(4)})`)
