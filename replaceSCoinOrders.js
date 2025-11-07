@@ -25,8 +25,8 @@ const tickSize = 0.0001;  // Tick Size is 1 basis point.
 const posLimit = 1200  // aim to remain inside targetQ +- posLimit
 
 const target = {
-    hiPrice : 1.0004,  //
-    loPrice : 0.9990,  // 
+    hiPrice : 1.00045,  //
+    loPrice : 0.9985,  // 
     hiQty   : 1000, // Hold less USDC when its price is high in anticipation of mean reversion.  
     loQty   : 3000, // Buy more USDC when its price is low. 
 };
@@ -83,26 +83,26 @@ function sigmoid(x) {
 }
 
 function quoteQuota(mktQuoteSize) {
-/* SCALE FACTOR 2 
-       100,000   0
-       271,828	 2
-       738,906   4
-     2,008,554   6
-     5,459,815   8
-    14,841,316  10
-    40,342,879  12
-   109,663,316  14
-*/
-/* SCALE FACTOR 3 
-     100,000   0
-       271,828	 3
-       738,906   6
-     2,008,554   9
-     5,459,815  12
-    14,841,316  15
-    40,342,879  18
-   109,663,316  21
-*/
+    /* SCALE FACTOR 2 
+        100,000   0
+        271,828	 2
+        738,906   4
+        2,008,554   6
+        5,459,815   8
+        14,841,316  10
+        40,342,879  12
+        109,663,316  14
+    */
+    /* SCALE FACTOR 3 
+        100,000   0
+        271,828	 3
+        738,906   6
+        2,008,554   9
+        5,459,815  12
+        14,841,316  15
+        40,342,879  18
+        109,663,316  21
+    */
     //if (mktQuoteSize < 50000) return 0; // avoid placing orders into small quote sizes.
     
     const zeroOrderQuoteSize = 100000; 
@@ -444,7 +444,6 @@ async function makeOffers(mktQuotes, allOrders, params, readOnly) {
         } else { // offer.price > (offerFloor + tickSize)
             quota *= 1.0 - ((offer.price - (offerFloor + tickSize))/(2.0*tickSize));
         }
-
 
         /*
         if(i==0 && params.deviation > 0.50) quota++; // Add to quota if we are in a long position.  
