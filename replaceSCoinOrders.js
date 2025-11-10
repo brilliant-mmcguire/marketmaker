@@ -312,6 +312,30 @@ async function fetchApiData(symbol) {
 const args = process.argv.slice(2);
 const readOnly = args.includes('--read-only');
 
+/**
+ * Calculates the total sum of 'origQty' from an array of order objects.
+ *
+ * @param {Array<Object>} orderArray - The array of order objects.
+ * @returns {number} The calculated total quantity.
+ */
+function calculateTotalQuantity(orderArray) {
+    // Use the reduce method to iterate over the array and accumulate the sum.
+    // The initial value for the accumulator (total) is 0.
+    return orderArray.reduce((total, order) => {
+        // Convert the string value of origQty to a floating-point number
+        // and add it to the running total.
+        const quantity = parseFloat(order.origQty);
+
+        // Add the quantity to the total, ensuring we handle potential NaN if
+        // parsing fails (though it shouldn't with the given input format).
+        if (!isNaN(quantity)) {
+            return total + quantity;
+        }
+
+        return total; // Return the total unchanged if parsing fails
+    }, 0);
+}
+
 async function makeBids(mktQuotes, allOrders, params, readOnly) {
     console.log(`Making bids for ${symbol} at ${new Date()}`);
 
@@ -352,12 +376,14 @@ async function makeBids(mktQuotes, allOrders, params, readOnly) {
         if(i==0 && params.deviation < -1.00) quota++; // Add to quota if we are in a short position.  
         if(i==0 && params.deviation < -1.33) quota++; // Add to quota if we are in a short position.  
         */
-       
+        if(i==0 && params.deviation > 0) quota -= 0.33*Math.abs(params.deviation); 
+        /*
         if(i==0 && params.deviation > 0.33) quota--; // Reduce quota when already long.  
         if(i==0 && params.deviation > 0.66) quota--; // Reduce quota when already long.  
         if(i==0 && params.deviation > 1.00) quota--; // Reduce quota when already long.  
         if(i==0 && params.deviation > 1.33) quota--; // Reduce quota when already long.  
-        
+        */ 
+
         quota = Math.max(0,Math.floor(quota));
 
         let orders = allOrders.filter(order => parseFloat(order.price) === bid.price )
@@ -365,16 +391,17 @@ async function makeBids(mktQuotes, allOrders, params, readOnly) {
         //let freshOrders = hasFreshOrders(orders);
         let quotaFull = orders.length >= quota;
         let quotaBreach = orders.length > quota;
+        let activeQty = calculateTotalQuantity(orders);
         
         console.log(
             /* q:${bid.qty} -> */
-            `[${i}] ${orders.length} orders @ ${bid.price} (quota: ${quota} orders)`
+            `[${i}] ${orders.length} orders @ ${bid.price} (quota: ${quota} orders) qty: ${activeQty}`
         );
 
         if(quotaBreach) {
             const mostRecentOrders = orders
-                                        .sort((a, b) => b.time - a.time)  // newest order first.
-                                        .slice(0,orders.length - quota);
+                                .sort((a, b) => b.time - a.time)  // newest order first.
+                                .slice(0,orders.length - quota);
            // const mostRecentOrder = orders.reduce((latest, order) => 
            //     order.time > latest.time ? order : latest
            // ); 
@@ -451,12 +478,13 @@ async function makeOffers(mktQuotes, allOrders, params, readOnly) {
         if(i==0 && params.deviation > 1.00) quota++; // Add to quota if we are in a long position.   
         if(i==0 && params.deviation > 1.33) quota++; // Add to quota if we are in a long position.   
         */
-        
+        if(i==0 && params.deviation < 0) quota -= 0.33*Math.abs(params.deviation); 
+        /*
         if(i==0 && params.deviation < -0.33) quota--; // Reduce quota when already short.  
         if(i==0 && params.deviation < -0.66) quota--; // Reduce quota when already short.  
         if(i==0 && params.deviation < -1.00) quota--; // Reduce quota when already short.  
         if(i==0 && params.deviation < -1.33) quota--; // Reduce quota when already short.  
-         
+        */
 
         quota = Math.max(0,Math.floor(quota));
 
@@ -464,16 +492,17 @@ async function makeOffers(mktQuotes, allOrders, params, readOnly) {
         
         let quotaFull = orders.length >= quota;
         let quotaBreach = orders.length > quota;
-        
+        let activeQty = calculateTotalQuantity(orders);
+
         console.log(
             /* q:${offer.qty} -> */
-            `[${i}] ${orders.length} orders @ ${offer.price} (quota: ${quota} orders)`
+            `[${i}] ${orders.length} orders @ ${offer.price} (quota: ${quota} orders) qty: ${activeQty}`
         );
 
         if(quotaBreach) {
             const mostRecentOrders = orders
-                                        .sort((a, b) => b.time - a.time)  // newest order first.
-                                        .slice(0,orders.length - quota);
+                                .sort((a, b) => b.time - a.time)  // newest order first.
+                                .slice(0,orders.length - quota);
             //const mostRecentOrder = orders.reduce((latest, order) =>
             //    order.time > latest.time ? order : latest
             //); 
