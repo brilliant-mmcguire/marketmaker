@@ -106,7 +106,7 @@ function quoteQuota(mktQuoteSize) {
     //if (mktQuoteSize < 50000) return 0; // avoid placing orders into small quote sizes.
     
     const zeroOrderQuoteSize = 100000; 
-    const scaleUpFactor = 1;  // --- TEMPORARY LOW SCALE FACTOR WHILE PRICE OUTSIDE RANGE.
+    const scaleUpFactor = 2;  // --- TEMPORARY LOW SCALE FACTOR WHILE PRICE OUTSIDE RANGE.
     const normalisedQuoteSize = mktQuoteSize / zeroOrderQuoteSize; 
     let logQuoteSize = scaleUpFactor * (
         normalisedQuoteSize >= 1 ?  Math.log(normalisedQuoteSize) : 0
