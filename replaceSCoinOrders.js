@@ -302,7 +302,7 @@ async function fetchApiData(symbol) {
         fetchPriceDepth(symbol),
         fetchAccountInfo(),
         fetchOpenOrders(symbol),
-        fetchPositions(symbol, 1),
+        fetchPositions(symbol, 2),
         fetchPriceStats(symbol, '15m')
     ]);
     return { prcDepth, nonZeroBalances, allOrders, position, priceStats };
