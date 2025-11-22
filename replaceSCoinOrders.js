@@ -22,7 +22,7 @@ const qtyMax =  129;
 const qtyMin =  11;
 
 const tickSize = 0.0001;  // Tick Size is 1 basis point.
-const posLimit = 1200  // aim to remain inside targetQ +- posLimit
+const posLimit = 1000  // aim to remain inside targetQ +- posLimit
 
 const target = {
     hiPrice : 1.00042,  //
@@ -106,7 +106,7 @@ function quoteQuota(mktQuoteSize) {
     //if (mktQuoteSize < 50000) return 0; // avoid placing orders into small quote sizes.
     
     const zeroOrderQuoteSize = 100000; 
-    const scaleUpFactor = 2;  // --- TEMPORARY LOW SCALE FACTOR WHILE PRICE OUTSIDE RANGE.
+    const scaleUpFactor = 2;  
     const normalisedQuoteSize = mktQuoteSize / zeroOrderQuoteSize; 
     let logQuoteSize = scaleUpFactor * (
         normalisedQuoteSize >= 1 ?  Math.log(normalisedQuoteSize) : 0
