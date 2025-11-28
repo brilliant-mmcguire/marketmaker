@@ -364,9 +364,9 @@ async function makeBids(mktQuotes, allOrders, params, readOnly) {
         if (bid.price > bidCeiling) {
             quota = 0;
         } else if(bid.price >= (bidCeiling - tickSize) ) {
-            quota *= 1.0 - ((bid.price - (bidCeiling - tickSize))/tickSize);
+            quota *= (1.0 - ((bid.price - (bidCeiling - tickSize))/tickSize));
         } else { //bid.price <  (bidCeiling - tickSize)
-            quota *= 1.0 - ((bidCeiling - tickSize) - bid.price)/(2.0*tickSize);
+            quota *= (1.0 - ((bidCeiling - tickSize) - bid.price)/(2.0*tickSize));
         }
 
         
@@ -467,9 +467,9 @@ async function makeOffers(mktQuotes, allOrders, params, readOnly) {
         if (offer.price < offerFloor) {
             quota = 0;
         } else if(offer.price <= (offerFloor + tickSize)) {
-            quota *= 1.0 - (((offerFloor + tickSize) - offer.price)/tickSize);
+            quota *= (1.0 - (((offerFloor + tickSize) - offer.price)/tickSize));
         } else { // offer.price > (offerFloor + tickSize)
-            quota *= 1.0 - ((offer.price - (offerFloor + tickSize))/(2.0*tickSize));
+            quota *= (1.0 - ((offer.price - (offerFloor + tickSize))/(2.0*tickSize)));
         }
 
         /*
