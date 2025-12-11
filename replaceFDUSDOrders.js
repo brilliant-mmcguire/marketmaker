@@ -22,7 +22,7 @@ const qtyMax =  21;
 const qtyMin =  11;
 
 const tickSize = 0.0001;  // Tick Size is 1 basis point.
-const posLimit = 200  // aim to remain inside targetQ +- posLimit
+const posLimit = 100  // aim to remain inside targetQ +- posLimit
 
 const target = {
     hiPrice : 1.00005,  //
