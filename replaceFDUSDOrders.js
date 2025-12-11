@@ -545,8 +545,8 @@ async function manageOrders(prcDepth, openOrders, params, readOnly) {
     );
 }
 
-exports.placeSCoinOrders = placeSCoinOrders;
-async function placeSCoinOrders() {
+exports.placeFDUSDOrders = placeFDUSDOrders;
+async function placeFDUSDOrders() {
     try {        
         console.log("Fetching price depth, account info, open orders and trading position.");
         const { 
@@ -571,6 +571,6 @@ async function placeSCoinOrders() {
 
 if (require.main === module) {
     (async () => {
-        await placeSCoinOrders();
+        await placeFDUSDOrders();
     })();
 }
