@@ -12,6 +12,12 @@ const { fetchPriceStats } = require('./marketDataTxns');
 
 const symbol = 'USDCUSDT';
 
+// Additional trading pairs:
+//const symbol = 'FDUSDUSDT';
+//symbol = 'FDUSDUSDC';
+//symbol = 'USDPUSDT';
+
+
 /*
 Use a quantity maximum and scale back as we run low on coinage.  
 This is to reduce the impact of sharp price moves where the price shoots through and 
@@ -24,12 +30,23 @@ const qtyMin =  11;
 const tickSize = 0.0001;  // Tick Size is 1 basis point.
 const posLimit = 1000  // aim to remain inside targetQ +- posLimit
 
+/*
+const target = {
+    hiPrice : 0.9986,  //
+    loPrice : 0.9962,  // 
+    hiQty   : 100, // Hold less FDUSD when its price is high in anticipation of mean reversion.  
+    loQty   : 300, // Buy more FDUSD when its price is low. 
+}; 
+*/
+
+
 const target = {
     hiPrice : 1.00005,  //
     loPrice : 0.99925,  // 
-    hiQty   : 1000, // Hold less USDC when its price is high in anticipation of mean reversion.  
-    loQty   : 3000, // Buy more USDC when its price is low. 
+    hiQty   : 1000, // Hold less SCoin when its price is high in anticipation of mean reversion.  
+    loQty   : 3000, // Buy more SCoin when its price is low. 
 };
+
 
 /*
 Target USDC balance uses a sigmoid function between the upper and lower target quantities.
