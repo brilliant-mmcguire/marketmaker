@@ -22,11 +22,11 @@ const qtyMax =  21;
 const qtyMin =  11;
 
 const tickSize = 0.0001;  // Tick Size is 1 basis point.
-const posLimit = 100  // aim to remain inside targetQ +- posLimit
+const posLimit = 50  // aim to remain inside targetQ +- posLimit
 
 const target = {
-    hiPrice : 1.00005,  //
-    loPrice : 0.99775,  // 
+    hiPrice : 0.99775,  //
+    loPrice : 0.99895,  // 
     hiQty   : 50, // Hold less SCoin when its price is high in anticipation of mean reversion.  
     loQty   : 100, // Buy more SCoin when its price is low. 
 };
