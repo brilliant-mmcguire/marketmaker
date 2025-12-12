@@ -102,6 +102,8 @@ const SUPPORTED_ASSETS = {
         fixedPrice: 1.00  // Special case for USDT with fixed price
     },
     USDC: { pair: 'USDCUSDT' },
+    USDP: { pair: 'USDPUSDT' },
+    FDUSD: { pair: 'FDUSDUSDT' },
     BTC: { pair: 'BTCUSDT' },
     SOL: { pair: 'SOLUSDT' },
     ETH: { pair: 'ETHUSDT' },
@@ -162,7 +164,7 @@ async function main() {
        
         console.log(`Balances for uid ${noneZeroBalances.uid} @ `, new Date());
         console.log(`total:      usd:${totalUsd}`);
-        console.log(`usdt+usdc:  usd:${balances.USDT.usd + balances.USDC.usd} qty:${balances.USDT.qty + balances.USDC.qty}` );
+        console.log(`usd-t+c+p:  usd:${balances.USDT.usd + balances.USDC.usd + balances.USDP.usd + balances.FDUSD.usd} qty:${balances.USDT.qty + balances.USDC.qty + balances.USDP.qty + balances.FDUSD.qty}` );
         console.log(`btc+sol+xrp:    usd:${balances.XRP.usd+balances.SOL.usd+balances.BTC.usd}`);
         console.log(`eth+ada:usd:${balances.ADA.usd+balances.ETH.usd}`);
         console.log(balances);
