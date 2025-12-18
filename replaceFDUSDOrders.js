@@ -18,17 +18,17 @@ This is to reduce the impact of sharp price moves where the price shoots through
 remains at high/low levels for some period of time.  In this scenario we become 
 oversold/overbought too quickly. 
 */
-const qtyMax =  21;
+const qtyMax =  31;
 const qtyMin =  11;
 
 const tickSize = 0.0001;  // Tick Size is 1 basis point.
 const posLimit = 50  // aim to remain inside targetQ +- posLimit
 
 const target = {
-    hiPrice : 0.99895,  //
-    loPrice : 0.99665,  // 
+    hiPrice : 0.99905,  //
+    loPrice : 0.99755,  // 
     hiQty   : 50, // Hold less SCoin when its price is high in anticipation of mean reversion.  
-    loQty   : 300, // Buy more SCoin when its price is low. 
+    loQty   : 350, // Buy more SCoin when its price is low. 
 };
 
 
