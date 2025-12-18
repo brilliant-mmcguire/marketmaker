@@ -207,9 +207,9 @@ function calculateBidCeiling(mktQuotes, params, target, tickSize) {
     // a) encourage a short position when price pops up. 
     // b) avoid buying at very high prices, when for example there is a short lived liquidity hole.
     // Enforce bid to be at least one tick away from the current best bid. 
-    if((mktQuotes[0].price) > target.hiPrice) { 
+  //  if((mktQuotes[0].price) > target.hiPrice) { 
         bidCeiling = Math.min(target.hiPrice, bidCeiling);
-    }
+  //  }
     console.log({ 
         taperPrice : taperPrice,
         adjustment : adjustment,
@@ -237,9 +237,9 @@ function calculateOfferFloor(mktQuotes, params, target, tickSize) {
     // Testing a strategy to 
     // a) encourage a long position when price drops. 
     // b) avoid selling at very low prices, when for example there is a short lived liquidity hole.
-    if((mktQuotes[0].price) < target.loPrice) { 
+  //  if((mktQuotes[0].price) < target.loPrice) { 
         offerFloor = Math.max(target.loPrice, offerFloor);
-    }
+  //  }
     console.log({ 
         taperPrice : taperPrice, 
         adjustment : adjustment,
