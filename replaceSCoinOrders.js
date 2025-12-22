@@ -47,7 +47,6 @@ const target = {
     loQty   : 3000, // Buy more SCoin when its price is low. 
 };
 
-
 /*
 Target USDC balance uses a sigmoid function between the upper and lower target quantities.
 At the upper target we can tolerate a smaller position in the expectation of prices falling again. 
