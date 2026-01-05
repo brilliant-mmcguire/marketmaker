@@ -18,11 +18,11 @@ This is to reduce the impact of sharp price moves where the price shoots through
 remains at high/low levels for some period of time.  In this scenario we become 
 oversold/overbought too quickly. 
 */
-const qtyMax =  51;
+const qtyMax =  129;
 const qtyMin =  11;
 
 const tickSize = 0.0001;  // Tick Size is 1 basis point.
-const posLimit = 100  // aim to remain inside targetQ +- posLimit
+const posLimit = 200  // aim to remain inside targetQ +- posLimit
 
 const target = {
     hiPrice : 0.99955,  //
