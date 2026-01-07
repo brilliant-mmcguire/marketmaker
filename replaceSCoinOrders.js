@@ -37,6 +37,7 @@ const target = {
     hiQty   : 100, // Hold less FDUSD when its price is high in anticipation of mean reversion.  
     loQty   : 300, // Buy more FDUSD when its price is low. 
 }; 
+
 */
 
 const target = {
