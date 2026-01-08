@@ -26,8 +26,8 @@ const posLimit = 200  // aim to remain inside targetQ +- posLimit
 
 const target = {
     hiPrice : 0.99992,  //
-    loPrice : 0.99725,  // 
-    hiQty   : 100, // Hold less SCoin when its price is high in anticipation of mean reversion.  
+    loPrice : 0.99775,  // 
+    hiQty   : 200, // Hold less SCoin when its price is high in anticipation of mean reversion.  
     loQty   : 1000, // Buy more SCoin when its price is low. 
 };
 
