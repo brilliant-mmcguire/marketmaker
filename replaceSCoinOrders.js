@@ -41,7 +41,7 @@ const target = {
 */
 
 const target = {
-    hiPrice : 1.00075,  //
+    hiPrice : 1.00082,  //
     loPrice : 0.99945,  // 
     hiQty   : 400, // Hold less SCoin when its price is high in anticipation of mean reversion.  
     loQty   : 2600, // Buy more SCoin when its price is low. 
@@ -379,10 +379,10 @@ async function makeBids(mktQuotes, allOrders, params, readOnly) {
         
         if (bid.price > bidCeiling) {
             quota = 0;
-        } else if(bid.price >= (bidCeiling - tickSize) ) {
-            quota *= (1.0 - ((bid.price - (bidCeiling - tickSize))/tickSize));
-        } else { //bid.price <  (bidCeiling - tickSize)
-            quota *= (1.0 - ((bidCeiling - tickSize) - bid.price)/(2.0*tickSize));
+        } else if(bid.price >= (bidCeiling - 2.0*tickSize) ) {
+            quota *= (1.0 - ((bid.price - (bidCeiling - 2.0*tickSize))/tickSize));
+        } else { //bid.price <  (bidCeiling - 2.0*tickSize)
+            quota *= (1.0 - ((bidCeiling - 2.0*tickSize) - bid.price)/(2.0*tickSize));
         }
 
         
