@@ -381,9 +381,13 @@ async function makeBids(mktQuotes, allOrders, params, readOnly) {
         if (bid.price > bidCeiling) {
             quota = 0;
         } else if(bid.price >= (bidCeiling - PRC_RANGE*tickSize) ) {
-            quota *= (1.0 - ((bid.price - (bidCeiling - PRC_RANGE*tickSize)/(PRC_RANGE*tickSize))));
+            quota *= (1.0 - (
+                (bid.price - (bidCeiling - PRC_RANGE*tickSize))/(PRC_RANGE*tickSize)
+            ));
         } else { //bid.price <  (bidCeiling - PRC_RANGE*tickSize)
-            quota *= (1.0 - ((bidCeiling - PRC_RANGE*tickSize) - bid.price)/(PRC_RANGE*tickSize));
+            quota *= (1.0 - (
+                ((bidCeiling - PRC_RANGE*tickSize) - bid.price)/(PRC_RANGE*tickSize)
+            ));
         }
         
         /*
