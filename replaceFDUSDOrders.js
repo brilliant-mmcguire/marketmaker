@@ -356,9 +356,8 @@ async function makeBids(mktQuotes, allOrders, params, readOnly) {
         } else if(bid.price >= (bidCeiling - tickSize) ) {
             quota *= (1.0 - ((bid.price - (bidCeiling - tickSize))/tickSize));
         } else { //bid.price <  (bidCeiling - tickSize)
-            quota *= (1.0 - ((bidCeiling - tickSize) - bid.price)/(2.0*tickSize));
+            quota *= (1.0 - ((bidCeiling - tickSize) - bid.price)/tickSize);
         }
-
         
         /*
         if(i==0 && params.deviation < -0.50) quota++; // Add to quota if we are in a short position.  
