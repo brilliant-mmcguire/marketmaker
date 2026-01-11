@@ -41,7 +41,7 @@ const target = {
 */
 
 const target = {
-    hiPrice : 1.00082,  //
+    hiPrice : 1.00092,  //
     loPrice : 0.99945,  // 
     hiQty   : 400, // Hold less SCoin when its price is high in anticipation of mean reversion.  
     loQty   : 2600, // Buy more SCoin when its price is low. 
@@ -122,7 +122,7 @@ function quoteQuota(mktQuoteSize) {
     //if (mktQuoteSize < 50000) return 0; // avoid placing orders into small quote sizes.
     
     const zeroOrderQuoteSize = 100000; 
-    const scaleUpFactor = 2;  
+    const scaleUpFactor = 1;  
     const normalisedQuoteSize = mktQuoteSize / zeroOrderQuoteSize; 
     let logQuoteSize = scaleUpFactor * (
         normalisedQuoteSize >= 1 ?  Math.log(normalisedQuoteSize) : 0
