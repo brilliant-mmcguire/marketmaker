@@ -377,12 +377,13 @@ async function makeBids(mktQuotes, allOrders, params, readOnly) {
         let qty = params.orderQty; // scaled order quantity;
         let quota = quoteQuota(bid.qty); 
         
+        const PRC_RANGE = 1.0;
         if (bid.price > bidCeiling) {
             quota = 0;
-        } else if(bid.price >= (bidCeiling - 2.0*tickSize) ) {
-            quota *= (1.0 - ((bid.price - (bidCeiling - 2.0*tickSize))/tickSize));
-        } else { //bid.price <  (bidCeiling - 2.0*tickSize)
-            quota *= (1.0 - ((bidCeiling - 2.0*tickSize) - bid.price)/(2.0*tickSize));
+        } else if(bid.price >= (bidCeiling - PRC_RANGE*tickSize) ) {
+            quota *= (1.0 - ((bid.price - (bidCeiling - PRC_RANGE*tickSize))/tickSize));
+        } else { //bid.price <  (bidCeiling - PRC_RANGE*tickSize)
+            quota *= (1.0 - ((bidCeiling - PRC_RANGE*tickSize) - bid.price)/(PRC_RANGE*tickSize));
         }
 
         
