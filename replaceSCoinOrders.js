@@ -36,11 +36,10 @@ const target = {
     hiQty   : 100, // Hold less FDUSD when its price is high in anticipation of mean reversion.  
     loQty   : 300, // Buy more FDUSD when its price is low. 
 }; 
-
 */
 
 const target = {
-    hiPrice : 1.00092,  //
+    hiPrice : 1.00102,  //
     loPrice : 0.99945,  // 
     hiQty   : 400, // Hold less SCoin when its price is high in anticipation of mean reversion.  
     loQty   : 2600, // Buy more SCoin when its price is low. 
