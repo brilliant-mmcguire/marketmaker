@@ -17,7 +17,6 @@ const symbol = 'USDCUSDT';
 //symbol = 'FDUSDUSDC';
 //symbol = 'USDPUSDT';
 
-
 /*
 Use a quantity maximum and scale back as we run low on coinage.  
 This is to reduce the impact of sharp price moves where the price shoots through and 
