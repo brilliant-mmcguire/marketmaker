@@ -375,7 +375,7 @@ async function makeBids(mktQuotes, allOrders, params, readOnly) {
         let qty = params.orderQty; // scaled order quantity;
         let quota = quoteQuota(bid.qty); 
         
-        const PRC_RANGE = 1.0;
+        const PRC_RANGE = 1.0; // In units of a Tick.
         if (bid.price > bidCeiling) {
             quota = 0;
         } else if(bid.price >= (bidCeiling - PRC_RANGE*tickSize) ) {
