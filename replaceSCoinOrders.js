@@ -27,7 +27,7 @@ const qtyMax =  129;
 const qtyMin =  11;
 
 const tickSize = 0.0001;  // Tick Size is 1 basis point.
-const posLimit = 800  // aim to remain inside targetQ +- posLimit
+const posLimit = 600  // aim to remain inside targetQ +- posLimit
 
 /*
 const target = {
