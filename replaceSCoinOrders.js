@@ -40,7 +40,7 @@ const target = {
 
 const target = {
     hiPrice : 1.00122,  //
-    loPrice : 0.99925,  // 
+    loPrice : 0.99942,  // 
     hiQty   : 400, // Hold less SCoin when its price is high in anticipation of mean reversion.  
     loQty   : 2200, // Buy more SCoin when its price is low. 
 };
