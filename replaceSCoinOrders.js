@@ -40,7 +40,7 @@ const target = {
 
 const target = {
     hiPrice : 1.00126,  //
-    loPrice : 0.99992,  // 
+    loPrice : 0.99999,  // 
     hiQty   : 400, // Hold less SCoin when its price is high in anticipation of mean reversion.  
     loQty   : 2200, // Buy more SCoin when its price is low. 
 };
@@ -123,7 +123,7 @@ function taperTradePrice(tradePrice, tradeAge, mktPrice) {
     // Weight our avg trade price with the market price depending on the age of our trades. 
     // If we have'd traded for a while (up to lifeTime hours), 
     // we tend to the recent market price.
-    const lifeTime = 8.0; // hours.
+    const lifeTime = 12.0; // hours.
     //const ageScalar = Math.sqrt(Math.max(6.0 - tradeAge,0)/lifeTime); 
     //const ageScalar = Math.sqrt(Math.max(lifeTime - tradeAge,0)/lifeTime);
     const ageScalar = Math.max(lifeTime - tradeAge,0)/lifeTime; 
