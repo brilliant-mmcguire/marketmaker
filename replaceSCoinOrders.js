@@ -26,7 +26,7 @@ oversold/overbought too quickly.
 const qtyMax =  129;
 const qtyMin =  11;
 
-const tickSize = 0.0001;  // Tick Size is 1 basis point.
+const tickSize = 0.00001;  // Tick Size is 1 basis point.
 const posLimit = 600  // aim to remain inside targetQ +- posLimit
 
 /*
