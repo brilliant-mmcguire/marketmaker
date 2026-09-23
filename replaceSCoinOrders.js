@@ -2,7 +2,6 @@
 Refresh orders for USDCUSDT trading pair.
 */
 
-
 const { fetchOpenOrders } = require('./orderTxns');
 const { placeOrder } = require('./orderTxns');
 const { fetchPriceDepth } = require('./marketDataTxns');
@@ -14,9 +13,7 @@ const { fetchPriceStats } = require('./marketDataTxns');
 const symbol = 'USDCUSDT';
 
 // Additional trading pairs:
-//const symbol = 'FDUSDUSDT';
 //symbol = 'FDUSDUSDC';
-//symbol = 'USDPUSDT';
 
 /*
 Use a quantity maximum and scale back as we run low on coinage.  
@@ -30,20 +27,11 @@ const qtyMin =  11;
 const tickSize = 0.00001;  // Tick Size is 1 basis point.
 const posLimit = 600  // aim to remain inside targetQ +- posLimit
 
-/*
-const target = {
-    hiPrice : 0.9986,  //
-    loPrice : 0.9962,  // 
-    hiQty   : 100, // Hold less FDUSD when its price is high in anticipation of mean reversion.  
-    loQty   : 300, // Buy more FDUSD when its price is low. 
-}; 
-*/
-
 const target = {
     hiPrice : 1.00126,  //
-    loPrice : 0.99999,  // 
-    hiQty   : 400, // Hold less SCoin when its price is high in anticipation of mean reversion.  
-    loQty   : 2200, // Buy more SCoin when its price is low. 
+    loPrice : 0.99966,  // 
+    hiQty   : 600, // Hold less SCoin when its price is high in anticipation of mean reversion.  
+    loQty   : 2600, // Buy more SCoin when its price is low. 
 };
 
 /*
